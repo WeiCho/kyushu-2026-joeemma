@@ -1,0 +1,17 @@
+{
+  "name": "九州六日五夜親子包車慢旅（阿蘇芒草・別府溫泉）",
+  "short_name": "別府）",
+  "start_url": "./行程表.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f7f3ea",
+  "theme_color": "#f7f3ea",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

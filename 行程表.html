@@ -1,0 +1,1879 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>九州六日五夜親子包車慢旅（阿蘇芒草・別府溫泉）｜旅程手冊</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#f7f3ea" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#191d1a" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="別府）">
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<script>
+/* 早期套用主題與字級偏好，避免載入閃爍。亮色為預設；深色/大字為選用 */
+(function(){try{var d=document.documentElement;
+  var t=localStorage.getItem("theme")||(window.matchMedia&&matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light");
+  d.setAttribute("data-theme",t);
+  if(localStorage.getItem("textsize")==="large")d.setAttribute("data-theme-size","large");
+}catch(e){document.documentElement.setAttribute("data-theme","light");}})();
+</script>
+<style>
+:root{
+  --ink:#24342d;        /* 墨綠 */
+  --pine:#315b49;       /* 松綠 */
+  --sage:#dfe9dc;       /* 鼠尾草 */
+  --paper:#f7f3ea;      /* 紙 */
+  --warm:#d86736;       /* 暖橘 */
+  --line:#d8d6c9;       /* 分隔線 */
+  --card:#fffdf8;       /* 卡片白 */
+  --muted:#5b6b62;      /* 次要字 */
+  --focus:#b64b24;
+  --serif:"Noto Serif TC",Georgia,"Times New Roman",serif;
+  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+}
+
+/* ── 深色模式（選用；亮色仍為預設與識別，仍是編輯風而非 App 風）── */
+:root[data-theme="dark"]{
+  --ink:#ece7db; --pine:#8bb89c; --sage:#2a332d; --paper:#191d1a;
+  --warm:#f0885c; --line:#38403a; --card:#20261f; --muted:#a7b3a9; --focus:#f0885c;
+}
+:root[data-theme="dark"] .hero{
+  background:
+    radial-gradient(circle at 82% 22%,#ffffff14 0 10%,#0000 10.5%),
+    linear-gradient(125deg,#20302a 0 48%,#243a30 48% 66%,#3a2a22 66% 100%);
+}
+:root[data-theme="dark"] .hero:after{color:#ffffff12}
+:root[data-theme="dark"] .hero-pills span{background:#ffffff14;border-color:#ffffff2e}
+:root[data-theme="dark"] .sticky-nav{background:#191d1ae6}
+:root[data-theme="dark"] .decision-grid{background:#ffffff08}
+:root[data-theme="dark"] .alert-grid>div{background:#2e241c;border-color:#5a4632;color:var(--ink)}
+:root[data-theme="dark"] .pending-banner details{background:#2e241c;border-color:#5a4632}
+:root[data-theme="dark"] .pending-banner summary{color:#f0a578}
+:root[data-theme="dark"] .pending-banner a{color:var(--warm)}
+:root[data-theme="dark"] .route-btn{background:#20261f}
+:root[data-theme="dark"] .stay-link{background:#2f5544}
+:root[data-theme="dark"] .recommendation,
+:root[data-theme="dark"] .now-bar{background:#1f2b25}
+:root[data-theme="dark"] .now-go{color:#1f2b25}
+:root[data-theme="dark"] .tico{filter:saturate(.85) brightness(.92)}
+
+/* ── 長輩模式（放大關鍵閱讀文字 + 更高對比）── */
+:root[data-theme-size="large"]{--muted:#3f4a43}
+:root[data-theme="dark"][data-theme-size="large"]{--muted:#c6cfc7}
+[data-theme-size="large"] body{font-size:18px}
+[data-theme-size="large"] .lead{font-size:19px}
+[data-theme-size="large"] .sticky-nav a{font-size:16px}
+[data-theme-size="large"] .stop time{font-size:16px}
+[data-theme-size="large"] .stop h4{font-size:19px}
+[data-theme-size="large"] .stop .desc{font-size:16px}
+[data-theme-size="large"] .stop .meta{font-size:15px}
+[data-theme-size="large"] .day-route,
+[data-theme-size="large"] .day-weather{font-size:15px}
+[data-theme-size="large"] .decision-grid p{font-size:16px}
+[data-theme-size="large"] .check-grid>div,
+[data-theme-size="large"] .alert-grid>div,
+[data-theme-size="large"] .emergency-grid p,
+[data-theme-size="large"] .stay p,
+[data-theme-size="large"] .pending-banner li{font-size:16px}
+[data-theme-size="large"] .emergency-grid a.tel{font-size:17px}
+[data-theme-size="large"] .pack-items label{font-size:17px}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:4.5rem}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.65}
+a{color:inherit}
+a:focus-visible{outline:3px solid var(--focus);outline-offset:4px;border-radius:8px}
+
+/* ── Hero ── */
+.hero{
+  position:relative;overflow:hidden;display:grid;place-items:center;
+  min-height:min(78vh,560px);padding:64px 24px;
+  background:
+    radial-gradient(circle at 82% 22%,#ffffff73 0 10%,#0000 10.5%),
+    linear-gradient(125deg,#dce8d8 0 48%,#b9d0bd 48% 66%,#ecb68f 66% 100%);
+}
+.hero:after{
+  content:"別府）";
+  position:absolute;bottom:-.28em;right:-.06em;
+  color:#ffffff42;font-weight:900;font-family:var(--sans);
+  font-size:clamp(120px,34vw,240px);letter-spacing:-.08em;line-height:1;
+  pointer-events:none;
+}
+.hero-inner{position:relative;z-index:1;width:min(1120px,100%)}
+.eyebrow{margin:0 0 14px;color:var(--pine);font-size:12px;font-weight:800;letter-spacing:.18em}
+h1{
+  margin:0;font-family:var(--serif);font-weight:700;
+  font-size:clamp(46px,11vw,96px);line-height:1.04;letter-spacing:-.02em;
+  text-wrap:balance;
+}
+.lead{margin:26px 0 18px;font-size:17px;max-width:34em}
+.hero-pills{display:flex;flex-wrap:wrap;gap:8px}
+.hero-pills span{
+  background:#ffffffb3;border:1px solid #24342d29;border-radius:999px;
+  padding:8px 13px;font-size:13px;font-variant-numeric:tabular-nums;
+}
+
+/* ── Sticky nav ── */
+.sticky-nav{
+  position:sticky;top:0;z-index:10;
+  display:flex;align-items:stretch;gap:0;padding:0 14px;
+  background:#f7f3eaf0;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);
+}
+.nav-links{
+  position:relative;flex:1;min-width:0;
+  display:flex;justify-content:center;gap:26px;
+  overflow-x:auto;scrollbar-width:none;
+}
+.nav-links::-webkit-scrollbar{display:none}
+.sticky-nav a{
+  display:flex;align-items:center;min-height:48px;white-space:nowrap;
+  font-size:14px;font-weight:700;text-decoration:none;color:var(--muted);
+  border-bottom:3px solid transparent;margin-bottom:-1px;
+}
+.sticky-nav a.active{color:var(--ink);border-bottom-color:var(--warm)}
+.nav-tools{
+  display:flex;align-items:center;gap:2px;flex:0 0 auto;
+  padding-left:8px;margin-left:6px;border-left:1px solid var(--line);
+}
+.nav-tool{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:40px;min-height:44px;padding:0 6px;
+  background:none;border:0;border-radius:10px;cursor:pointer;
+  color:var(--muted);font:inherit;font-size:15px;font-weight:800;line-height:1;
+}
+.nav-tool:hover{background:var(--sage);color:var(--ink)}
+.nav-tool[aria-pressed="true"]{color:var(--warm)}
+
+/* ── Sections ── */
+.section{width:min(920px,100% - 40px);margin:0 auto;padding:72px 0 0}
+.section-heading{margin-bottom:34px}
+.section-heading h2{
+  margin:0 0 10px;font-family:var(--serif);font-size:clamp(30px,5vw,46px);
+  line-height:1.12;letter-spacing:-.01em;
+}
+.section-heading p{margin:0;color:var(--muted);line-height:1.8}
+
+/* ── 總覽 ── */
+.decision-grid{display:grid;grid-template-columns:repeat(2,1fr);border:1px solid var(--line);background:#ffffff57}
+.decision-grid article{padding:26px;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+.decision-grid article:nth-child(2n){border-right:0}
+.decision-grid article:nth-last-child(-n+2):nth-child(odd),
+.decision-grid article:last-child{border-bottom:0}
+.decision-grid b{color:var(--warm);font-size:13px;letter-spacing:.08em}
+.decision-grid h3{margin:26px 0 8px;font-size:18px;line-height:1.4}
+.decision-grid p{margin:0;color:var(--muted);font-size:14px;line-height:1.75}
+
+/* ── Day 卡片（可展開）── */
+.days{display:grid;gap:26px}
+.day{
+  background:var(--card);border:1px solid var(--line);border-radius:22px;
+  overflow:hidden;box-shadow:0 16px 35px #2d3e340f;
+}
+.day>summary{
+  background:var(--sage);display:grid;grid-template-columns:120px 1fr 32px;
+  gap:22px;padding:26px 30px;cursor:pointer;list-style:none;align-items:start;
+}
+.day>summary::-webkit-details-marker{display:none}
+.day>summary i{
+  font-style:normal;font-size:26px;line-height:1;color:var(--pine);
+  justify-self:end;transition:transform .2s;
+}
+.day[open]>summary i{transform:rotate(45deg)}
+.toggle-all{
+  background:none;border:1px solid var(--line);border-radius:999px;
+  padding:9px 16px;font:inherit;font-size:13px;font-weight:700;color:var(--pine);
+  cursor:pointer;
+}
+.toggle-all:hover{background:var(--sage)}
+.heading-row{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin-bottom:34px}
+.heading-row .section-heading{margin-bottom:0}
+.day-no{display:flex;flex-direction:column;gap:4px}
+.day-no b{font-size:13px;font-weight:900;letter-spacing:.12em}
+.day-no small{color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums}
+.day>header h3{margin:0 0 6px;font-family:var(--serif);font-size:24px;line-height:1.3}
+.day-route{
+  margin:0;color:var(--muted);font-size:13.5px;line-height:1.6;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+.timeline{list-style:none;margin:0;padding:16px 30px 22px}
+.stop{
+  display:grid;grid-template-columns:76px 1fr;gap:20px;
+  padding:16px 0;border-bottom:1px dashed var(--line);position:relative;
+}
+.stop:last-child{border-bottom:0}
+.stop time{color:var(--warm);font-weight:800;font-variant-numeric:tabular-nums;padding-top:1px}
+.stop h4{margin:0 0 4px;font-size:16px;line-height:1.45}
+.stop h4 a.name{color:var(--pine);text-decoration:underline;text-underline-offset:3px}
+.loc{
+  display:inline-block;padding:.3rem .35rem;margin:-.3rem 0;
+  font-size:13px;font-weight:400;text-decoration:none;color:var(--pine);
+}
+.loc:hover{text-decoration:underline}
+.stop .desc{margin:0;color:var(--muted);font-size:14px;line-height:1.7}
+.stop .meta{
+  margin:6px 0 0;color:var(--muted);font-size:13px;
+  font-variant-numeric:tabular-nums;
+}
+.stop .meta b{color:var(--ink);letter-spacing:.03em}
+.go{
+  display:inline-flex;align-items:center;gap:6px;min-height:44px;
+  margin:2px 0 -10px;color:var(--warm);font-size:13.5px;font-weight:700;
+  text-decoration:none;
+}
+.go:hover{text-decoration:underline}
+.go span{font-weight:400}
+
+/* ── 訂位卡片 ── */
+.stay-list{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.stay{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:26px}
+.stay-top{display:flex;justify-content:space-between;align-items:center;gap:14px}
+.stay-top>span{color:var(--muted);font-size:13px;font-weight:800}
+.stay em{
+  font-style:normal;font-weight:800;font-size:12px;
+  background:var(--sage);color:var(--pine);border-radius:999px;padding:6px 10px;
+  white-space:nowrap;
+}
+.stay h3{margin:18px 0 10px;font-family:var(--serif);font-size:22px;line-height:1.3}
+.stay p{margin:0;color:var(--muted);font-size:14px;line-height:1.7}
+.stay .code{
+  margin-top:14px;padding-top:14px;border-top:1px dashed var(--line);
+  font-size:13px;color:var(--muted);
+}
+.stay .code b{
+  display:block;color:var(--ink);font-size:19px;font-weight:800;
+  letter-spacing:.05em;font-variant-numeric:tabular-nums;
+}
+.stay-link{
+  display:flex;justify-content:space-between;align-items:center;
+  min-height:48px;margin-top:16px;padding:12px 14px;
+  background:var(--pine);color:#fff;border-radius:12px;
+  font-size:13px;font-weight:800;text-decoration:none;transition:opacity .2s;
+}
+.stay-link:hover{opacity:.88}
+
+/* ── 預算（深綠大卡）── */
+.recommendation{
+  background:var(--pine);color:#fff;border-radius:20px;padding:34px;
+}
+.recommendation .eyebrow{color:#c8ddcf}
+.recommendation h3{margin:0 0 20px;font-family:var(--serif);font-size:28px}
+.pick-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  border-top:1px solid #ffffff38;border-bottom:1px solid #ffffff38;
+}
+.pick-grid>div{border-right:1px solid #ffffff38;padding:20px}
+.pick-grid>div:nth-child(3n){border-right:0}
+.pick-grid span{
+  display:block;color:#bcd8c6;font-size:12px;font-weight:900;
+  letter-spacing:.12em;margin-bottom:8px;
+}
+.pick-grid b{display:block;font-family:var(--serif);font-size:20px;font-variant-numeric:tabular-nums}
+.budget-total{
+  display:flex;justify-content:space-between;align-items:baseline;gap:16px;
+  margin-top:20px;font-size:15px;
+}
+.budget-total b{font-family:var(--serif);font-size:26px;font-variant-numeric:tabular-nums}
+.budget-total .over-tag{color:#ffd9c4;font-weight:800}
+.pick-note{margin:14px 0 0;color:#e5eee8;font-size:14px;line-height:1.75}
+
+/* ── 備忘 ── */
+.check-grid{border-top:1px solid var(--line)}
+.check-grid>div{
+  display:flex;gap:14px;align-items:baseline;
+  border-bottom:1px solid var(--line);padding:18px 6px;font-weight:600;
+}
+.check-grid span{
+  flex:0 0 38px;color:var(--warm);font-size:12px;font-weight:900;
+  font-variant-numeric:tabular-nums;letter-spacing:.08em;
+}
+
+/* ── 提醒（你可能不知道、但該知道的事）── */
+.alert-grid{display:grid;gap:14px}
+.alert-grid>div{
+  display:flex;gap:14px;align-items:flex-start;
+  background:#fbeee4;border:1px solid #e8c7a8;border-radius:14px;
+  padding:18px 20px;font-weight:600;line-height:1.7;
+}
+.alert-grid span{
+  flex:0 0 auto;font-size:18px;line-height:1.5;
+}
+
+/* ── 每日天氣（Day 卡標頭）── */
+.day-weather{margin:8px 0 0;color:var(--muted);font-size:13px}
+
+/* ── 待確認橫幅 ── */
+.pending-banner{width:min(920px,100% - 40px);margin:28px auto 0}
+.pending-banner details{
+  background:#fbeee4;border:1px solid #e8c7a8;border-radius:14px;overflow:hidden;
+}
+.pending-banner summary{
+  list-style:none;cursor:pointer;padding:14px 18px;font-weight:800;color:#a8511f;
+  display:flex;align-items:center;gap:8px;
+}
+.pending-banner summary::-webkit-details-marker{display:none}
+.pending-banner ul{margin:0;padding:0 18px 16px;list-style:none;display:grid;gap:8px}
+.pending-banner li{font-size:14px;line-height:1.6;color:#5b6b62}
+.pending-banner a{color:#a8511f;font-weight:700}
+
+/* ── 類型圖示晶片（glanceability）── */
+.tico{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:22px;height:22px;border-radius:7px;font-size:13px;margin-right:7px;
+  vertical-align:-5px;background:var(--sage);
+}
+.t-see  .tico{background:#dce8d8}
+.t-eat  .tico{background:#f6ddc9}
+.t-go   .tico{background:#d9e4e6}
+.t-stay .tico{background:#e7dcd2}
+.t-shop .tico{background:#eed9da}
+
+/* ── 本日路線按鈕 ── */
+.day-tools{padding:16px 30px 0}
+.route-btn{
+  display:inline-flex;align-items:center;gap:6px;min-height:44px;
+  padding:9px 16px;border:1px solid var(--line);border-radius:999px;
+  color:var(--pine);font-size:13.5px;font-weight:700;text-decoration:none;background:#fff;
+}
+.route-btn:hover{background:var(--sage)}
+.route-cap{margin-left:8px;color:var(--muted);font-size:12px}
+
+/* ── 今日模式 ── */
+.day.today{box-shadow:0 0 0 2px var(--warm),0 16px 35px #2d3e340f}
+.today-badge{
+  display:inline-block;margin-left:8px;padding:2px 9px;border-radius:999px;
+  background:var(--warm);color:#fff;font-size:11px;font-weight:900;letter-spacing:.06em;
+  vertical-align:2px;
+}
+.stop.past{opacity:.42}
+.now-bar{
+  position:fixed;left:0;right:0;bottom:0;z-index:20;
+  background:var(--pine);color:#fff;
+  box-shadow:0 -8px 24px #2d3e3426;
+}
+.now-inner{
+  width:min(920px,100% - 32px);margin:0 auto;
+  display:flex;align-items:center;gap:14px;min-height:58px;padding:10px 0;
+}
+.now-inner .lbl{flex:1;font-size:14px;font-weight:700;line-height:1.4}
+.now-inner .lbl small{display:block;color:#bcd8c6;font-size:12px;font-weight:600;letter-spacing:.04em}
+.now-go{
+  display:inline-flex;align-items:center;min-height:44px;padding:9px 15px;
+  background:#fff;color:var(--pine);border-radius:999px;font-size:13px;font-weight:800;
+  text-decoration:none;white-space:nowrap;
+}
+.now-dismiss{
+  background:none;border:0;color:#bcd8c6;font-size:22px;line-height:1;cursor:pointer;padding:6px;
+}
+
+/* ── 每人分攤 & 類別占比 ── */
+.per-person{
+  display:flex;justify-content:space-between;align-items:baseline;gap:16px;
+  margin-top:18px;font-size:15px;
+}
+.per-person b{font-family:var(--serif);font-size:22px;font-variant-numeric:tabular-nums}
+.cat-bars{margin-top:18px;display:grid;gap:11px}
+.cat-row{display:grid;grid-template-columns:56px 1fr auto;gap:12px;align-items:center;font-size:13px}
+.cat-row .bar{height:9px;border-radius:999px;background:#ffffff2e;overflow:hidden}
+.cat-row .bar>i{display:block;height:100%;background:#bcd8c6;border-radius:999px}
+.cat-row .amt{font-variant-numeric:tabular-nums;color:#e5eee8}
+
+/* ── 花費未填狀態 ── */
+.budget-empty{margin:14px 0 0;color:#e5eee8;font-size:14px;line-height:1.75}
+
+/* ── 緊急資訊卡 ── */
+.emergency-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.emergency-grid .card{
+  background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px 22px;
+}
+.emergency-grid b{display:block;font-size:14px;color:var(--pine);margin-bottom:6px}
+.emergency-grid p{margin:0;color:var(--muted);font-size:14px;line-height:1.7}
+.emergency-grid a.tel{
+  display:inline-flex;align-items:center;gap:6px;min-height:44px;margin-top:8px;
+  color:var(--warm);font-weight:800;font-size:15px;text-decoration:none;
+  font-variant-numeric:tabular-nums;
+}
+.emergency-grid a.tel:hover{text-decoration:underline}
+
+/* ── 打包清單 ── */
+.packing{display:grid;gap:22px}
+.pack-group>h3{margin:0 0 12px;font-family:var(--serif);font-size:18px}
+.pack-items{list-style:none;margin:0;padding:0}
+.pack-items li{border-bottom:1px solid var(--line)}
+.pack-items label{display:flex;gap:12px;align-items:baseline;padding:13px 6px;cursor:pointer}
+.pack-items input{width:18px;height:18px;accent-color:var(--pine);flex:0 0 auto}
+.pack-items input:checked + span{color:var(--muted);text-decoration:line-through}
+
+/* ── 頁內編輯器（?edit=1）── */
+body.editing>*{display:none !important}
+body.editing>#editor{display:block !important}
+.editor{width:min(920px,100% - 40px);margin:0 auto;padding:28px 0 90px}
+.ed-title{font-family:var(--serif);font-size:clamp(28px,5vw,40px);margin:0 0 6px}
+.ed-sub{color:var(--muted);margin:0 0 18px;line-height:1.7;max-width:60ch}
+.ed-bar{
+  position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;gap:10px;align-items:center;
+  padding:12px 0;margin-bottom:8px;background:var(--paper);border-bottom:1px solid var(--line);
+}
+.ed-bar .spacer{flex:1}
+.ed-btn{
+  display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:10px 16px;
+  border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);
+  font:inherit;font-weight:700;font-size:14px;cursor:pointer;text-decoration:none;
+}
+.ed-btn.primary{background:var(--pine);color:#fff;border-color:var(--pine)}
+.ed-btn:hover{opacity:.9}
+.ed-save{color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums}
+.ed-sec{border:1px solid var(--line);border-radius:16px;background:var(--card);margin:16px 0;overflow:hidden}
+.ed-sec>summary{cursor:pointer;list-style:none;padding:15px 20px;font-weight:800;font-size:16px;background:var(--sage)}
+.ed-sec>summary::-webkit-details-marker{display:none}
+.ed-body{padding:16px 20px}
+.ed-field{display:grid;gap:5px;margin-bottom:14px}
+.ed-field label{font-size:13px;font-weight:700;color:var(--muted)}
+.ed-field input,.ed-field select,.ed-field textarea{
+  font:inherit;font-size:14px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;
+  background:var(--paper);color:var(--ink);width:100%;
+}
+.ed-field textarea{min-height:60px;resize:vertical}
+.ed-row{border:1px dashed var(--line);border-radius:12px;padding:14px;margin-bottom:12px}
+.ed-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.ed-grid .full{grid-column:1/-1}
+.ed-rowhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.ed-rowhead b{font-size:13px;color:var(--muted)}
+.ed-del{
+  background:none;border:1px solid var(--line);border-radius:8px;color:var(--warm);
+  font:inherit;font-size:12px;font-weight:700;padding:8px 12px;cursor:pointer;min-height:36px;
+}
+.ed-add{
+  background:none;border:1px dashed var(--line);border-radius:10px;color:var(--pine);
+  font:inherit;font-weight:700;font-size:13px;padding:11px 14px;cursor:pointer;width:100%;min-height:44px;
+}
+.ed-daytitle{font-family:var(--serif);font-size:17px;margin:4px 0 10px}
+.ed-strrow{display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:8px}
+.ed-strrow textarea{font:inherit;font-size:14px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink);min-height:46px;resize:vertical}
+.draft-banner{
+  width:min(920px,100% - 40px);margin:22px auto 0;background:#eef4ee;border:1px solid var(--line);
+  border-radius:14px;padding:14px 18px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;
+}
+.draft-banner span{flex:1;font-weight:700;font-size:14px;min-width:60%}
+:root[data-theme="dark"] .draft-banner{background:#20261f}
+@media (width<=560px){.ed-grid{grid-template-columns:1fr}}
+
+.footnote{
+  width:min(920px,100% - 40px);margin:0 auto;padding:56px 0 48px;
+  color:var(--muted);font-size:12px;line-height:1.7;
+  display:flex;justify-content:space-between;gap:16px;
+}
+
+/* ── RWD ── */
+@media (width<=800px){
+  .nav-links{justify-content:flex-start;gap:20px}
+  .section{padding-top:56px}
+  .day>summary{grid-template-columns:1fr 28px;gap:8px 12px}
+  .day>summary>.day-no{grid-column:1}
+  .day>summary>i{grid-column:2;grid-row:1}
+  .day>summary>div:nth-child(2){grid-column:1/-1}
+  .day-no{flex-direction:row;align-items:baseline;gap:10px}
+  .decision-grid{grid-template-columns:1fr}
+  .decision-grid article{border-right:0}
+  .decision-grid article:nth-last-child(-n+2):nth-child(odd){border-bottom:1px solid var(--line)}
+  .decision-grid h3{margin-top:16px}
+  .heading-row{flex-direction:column;align-items:flex-start}
+  .stay-list{grid-template-columns:1fr}
+  .emergency-grid{grid-template-columns:1fr}
+  .pick-grid{grid-template-columns:1fr}
+  .pick-grid>div{border-right:0;border-bottom:1px solid #ffffff38;padding:16px 0}
+  .pick-grid>div:last-child{border-bottom:0}
+}
+@media (width<=520px){
+  .hero{padding:52px 20px;min-height:440px}
+  .day>summary,.timeline{padding-left:20px;padding-right:20px}
+  .stop{grid-template-columns:56px 1fr;gap:12px}
+  .recommendation{padding:24px}
+}
+
+/* ── 列印 ── */
+@media print{
+  /* 列印一律回到亮色 token，避免深色文字消失在白紙上 */
+  :root[data-theme]{
+    --ink:#24342d;--pine:#315b49;--sage:#dfe9dc;--paper:#f7f3ea;
+    --warm:#d86736;--line:#d8d6c9;--card:#fffdf8;--muted:#5b6b62;
+  }
+  .sticky-nav,.now-bar,.pending-banner,.day-tools{display:none}
+  .stop.past{opacity:1}
+  .day.today>summary{box-shadow:none}
+  .hero{min-height:0;padding:28px 0;background:#fff}
+  .hero:after{display:none}
+  .day{break-inside:avoid;box-shadow:none}
+  .day>summary i,.toggle-all{display:none}
+  .stay-link{display:none}
+  .recommendation{background:#fff;color:var(--ink);border:1px solid var(--line)}
+  .pick-grid,.pick-grid>div,.budget-total{border-color:var(--line)}
+  a{text-decoration:none;color:inherit}
+  .loc,.go{display:none}
+  body{background:#fff}
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<script id="trip-src" type="application/json">{"trip": {"title": "九州六日五夜親子包車慢旅（阿蘇芒草・別府溫泉）", "destination": "日本・九州（福岡・阿蘇・別府）", "start_date": "2026-10-15", "end_date": "2026-10-20", "travelers": 7, "currency": "NT$", "budget": 350000, "fx": {"currency": "¥", "rate": 4.8}, "emergency": [{"label": "日本緊急電話", "value": "警察 110／消防・救護 119（手機可直撥）", "tel": "110"}, {"label": "外交部旅外急難救助專線", "value": "海外付費請撥；緊急可用（依當地撥號方式）", "tel": "800-0885-0885"}, {"label": "台北駐福岡辦事處", "value": "急難救助；出發前確認最新地址與電話", "tel": ""}, {"label": "包車公司／司機", "value": "待填：公司名稱與司機手機", "tel": ""}, {"label": "旅遊保險", "value": "待填：保單號與 24h 服務電話", "tel": ""}], "packing": [{"group": "證件文件", "items": ["護照", "登機證／機票", "包車確認單", "各飯店訂房確認碼", "旅遊保險資料"]}, {"group": "衣物", "items": ["防風外套／輕羽絨（阿蘇・別府山頂）", "泡湯換洗衣物", "長輩保暖衣物"]}, {"group": "電子", "items": ["行動電源", "萬國轉接頭", "網卡／漫遊"]}, {"group": "其他", "items": ["常備藥", "現金日幣", "環保購物袋（伴手禮）"]}]}, "highlights": [{"title": "住宿路線：博多→阿蘇→別府→博多包棟，5晚只換4次床", "text": "阿蘇一泊二食、別府杉乃井，最後兩晚博多包棟8床3衛浴，適合7人三代同堂。"}, {"title": "10月中旬正值草千里芒草季，步道平坦適合長輩散步", "text": "阿蘇中岳火山口是否開放依當日火山氣體管制而定，出發前需查氣象廳即時公告。"}, {"title": "包車3天串聯阿蘇＋別府，其餘留給福岡市區慢遊", "text": "建議預訂10人座Hiace，同時載7位大人與7–9件行李；司機住宿津貼、過路費、餐費是否已含在報價需與車行確認。"}, {"title": "重要更新：太宰府天滿宮本殿已於2026/5/17恢復參拜", "text": "原本想看的期間限定「浮かぶ森」臨時本殿（藤本壯介設計）已於2026年中拆除，10月造訪看到的會是修復完成的正式本殿，不是原規劃的臨時建築。"}, {"title": "預算為住宿＋機票實估＋餐飲/包車粗抓，待報價後再調整", "text": "目前已知住宿約NT$81,500＋機票約NT$95,100（每人NT$13,586 x 7人）＝已知約NT$176,600，包車總價、餐飲、購物尚未列入明細，先抓NT$350,000總額。"}], "days": [{"date": "2026-10-15", "theme": "抵達福岡・博多入住", "items": [{"time": "17:50", "name": "抵達福岡機場（IT720）", "type": "交通", "note": "TigerSmart IT720，桃園14:25起飛、福岡17:50抵達；國際線入境審查、行李提領與通關，7人家庭建議抓45-60分鐘，別抓太緊", "duration": "45-60m", "map_query": "福岡空港国際線", "next_transit": "出關後計程車 → 博多東急REIホテル（約15-20分鐘）"}, {"time": "19:00", "name": "博多東急REIホテル Check-in", "type": "住宿", "note": "先放下行李再出門吃晚餐；高CP首選，地鐵出口步行3分鐘，房間寬敞設備新穎；7人請先確認是否有家庭房/連通房型", "cost": 0, "url": "https://www.tokyuhotels.co.jp/en/hakata-r/index.html", "map_query": "Hakata Tokyu REI Hotel", "next_transit": "步行 → 博多車站周邊"}, {"time": "19:45", "name": "博多車站晚餐", "type": "餐廳", "note": "於飯店周邊簡單用餐（博多拉麵或超市熟食），早點休息", "duration": "1h", "map_query": "博多駅"}], "weather": "福岡市區 16–24°C，入夜微涼"}, {"date": "2026-10-16", "theme": "阿蘇火山・草千里芒草季", "items": [{"time": "08:30", "name": "包車啟程（Day 1）", "type": "交通", "note": "專車由飯店接往阿蘇（車程約2小時）", "map_query": "Hakata Tokyu REI Hotel", "next_transit": "包車 → 大觀峰"}, {"time": "10:30", "name": "大觀峰", "type": "景點", "note": "360度俯瞰阿蘇五岳與雲海", "duration": "1h", "map_query": "大観峰", "next_transit": "包車 → 午餐"}, {"time": "12:00", "name": "午餐：熊本赤牛", "type": "餐廳", "note": "品嚐阿蘇名產「赤牛」燒肉料理", "duration": "1.5h", "map_query": "あか牛 阿蘇", "next_transit": "包車 → 草千里"}, {"time": "14:00", "name": "草千里之濱", "type": "景點", "note": "秋季限定：銀白色芒草盛開絕景，步道平坦適合長輩散步，10月中旬正值花期", "duration": "1.5h", "map_query": "草千里ヶ浜", "next_transit": "包車 → 中岳火口"}, {"time": "15:45", "name": "阿蘇中岳火山口", "type": "景點", "note": "若當天火山氣體濃度管制許可可近距離觀察火口；當天請上阿蘇山公園道路官網確認即時通行狀況，封閉時備案改往阿蘇火山博物館或內牧溫泉散策", "duration": "45m", "url": "https://www.aso-volcano.jp/chinese/index.html", "map_query": "阿蘇山中岳火口", "next_transit": "包車 → 飯店"}, {"time": "17:00", "name": "亀の井ホテル 阿蘇パークリゾート Check-in", "type": "住宿", "note": "高CP溫泉飯店，露天風呂可遠眺阿蘇山，一泊二食自助餐豐富", "cost": 0, "url": "https://kamenoi-hotels.com/en/asoparkresort/", "map_query": "亀の井ホテル 阿蘇パークリゾート"}], "weather": "阿蘇山區 8–18°C，早晚冷、山頂風大"}, {"date": "2026-10-17", "theme": "阿蘇神社・由布院・別府纜車", "items": [{"time": "09:30", "name": "包車出發（Day 2）", "type": "交通", "note": "飯店出發前往阿蘇神社", "map_query": "亀の井ホテル 阿蘇パークリゾート", "next_transit": "包車 → 阿蘇神社"}, {"time": "10:00", "name": "阿蘇神社", "type": "景點", "note": "參拜擁有九州最大規模樓門的神社", "duration": "1h", "map_query": "阿蘇神社", "next_transit": "包車 → 由布院"}, {"time": "11:30", "name": "由布院・金鱗湖", "type": "餐廳", "note": "漫步溫泉小鎮，觀賞湖水倒映美景並在此用午餐", "duration": "2.5h", "map_query": "金鱗湖", "next_transit": "包車 → 別府空中纜車"}, {"time": "15:30", "name": "別府空中纜車", "type": "景點", "note": "10分鐘直達1300公尺山頂，飽覽別府灣全景；山頂風大溫差大，請幫長輩準備防風外套", "duration": "1.5h", "map_query": "別府ロープウェイ", "next_transit": "包車 → 飯店"}, {"time": "17:30", "name": "別府杉乃井ホテル Check-in", "type": "住宿", "note": "設施完善、有無障礙空間，非常適合三代同堂；階梯式溫泉體驗", "cost": 0, "url": "https://suginoi.orixhotelsandresorts.com/", "map_query": "杉乃井ホテル"}], "weather": "由布院晨霧 12–22°C，纜車山頂偏冷風大"}, {"date": "2026-10-18", "theme": "別府地獄・太宰府", "items": [{"time": "09:30", "name": "包車出發（Day 3）", "type": "交通", "note": "展開別府與太宰府行程", "map_query": "杉乃井ホテル", "next_transit": "包車 → 別府海地獄"}, {"time": "10:00", "name": "別府海地獄", "type": "景點", "note": "湛藍如海的溫泉景觀，步道規劃良好適合長輩行走", "duration": "1h", "map_query": "海地獄", "next_transit": "包車 → 地獄蒸體驗"}, {"time": "11:15", "name": "地獄蒸體驗", "type": "餐廳", "note": "利用地熱蒸熟新鮮食材，健康清淡非常適合長輩", "duration": "1.5h", "map_query": "地獄蒸し工房 鉄輪", "next_transit": "包車 → 太宰府"}, {"time": "14:30", "name": "太宰府天滿宮", "type": "景點", "note": "本殿已於2026年5月17日修復完工恢復參拜；原規劃的期間限定「浮かぶ森」臨時本殿已於2026年中拆除，此行看到的是正式本殿", "duration": "1.5h", "map_query": "太宰府天満宮", "next_transit": "包車 → 福岡"}, {"time": "17:30", "name": "Reisen Villa Hakata Check-in（包棟，共2晚）", "type": "住宿", "note": "整套別墅8張實床、3間衛浴，適合7人大家庭；入住10/18、10/19共2晚，10/20一早退房；請向房東再次確認是否有電梯，方便長輩搬運行李", "cost": 0, "url": "https://www.airbnb.com/rooms/1396225852858346948", "map_query": "Reisen Villa Hakata"}], "weather": "別府・福岡 15–23°C，日夜溫差大"}, {"date": "2026-10-19", "theme": "福岡市區慢遊", "items": [{"time": "10:00", "name": "大濠公園散策", "type": "景點", "note": "享受福岡城市綠洲，在湖畔悠閒散步", "duration": "1.5h", "map_query": "大濠公園", "next_transit": "步行／地鐵 → 天神"}, {"time": "12:00", "name": "天神地區午餐", "type": "餐廳", "note": "可選擇鰻魚飯或在地平價燒肉", "duration": "1.5h", "map_query": "天神", "next_transit": "步行 → 天神地下街"}, {"time": "14:00", "name": "福岡市區購物", "type": "購物", "note": "逛天神地下街或博多運河城，室內路線免曬太陽；回程班機是10/20 10:55早班機，隔天早上時間很趕，建議把明太子、長崎蛋糕等主要伴手禮今天先買齊", "duration": "3h", "map_query": "天神地下街", "next_transit": "地鐵 → 中洲"}, {"time": "18:00", "name": "中洲屋台體驗", "type": "餐廳", "note": "體驗道地深夜食堂氣氛；禮儀提醒：每人需點一杯飲料、屋台禁生食，長輩淺嚐即止不宜久坐", "duration": "1.5h", "map_query": "中洲屋台街"}], "weather": "福岡市區 16–24°C，適合久走"}, {"date": "2026-10-20", "theme": "退房返程（早班機，時間很趕）", "items": [{"time": "07:00", "name": "Reisen Villa Hakata 退房", "type": "住宿", "note": "回程IT241 10:55起飛，行李前一晚先收好，早起退房不拖時間", "map_query": "Reisen Villa Hakata", "next_transit": "步行 → 博多車站"}, {"time": "07:20", "name": "博多車站早餐＋最後採買", "type": "購物", "note": "簡單早餐＋若有遺漏的伴手禮快速補買（主要伴手禮已在10/19買齊）；努努雞等含肉製品提醒：不可帶回台灣，需現場食用完畢", "duration": "40m", "map_query": "博多駅", "next_transit": "計程車 → 福岡機場"}, {"time": "08:10", "name": "前往福岡機場（IT241）", "type": "交通", "note": "從博多搭計程車至機場約15分鐘；國際線建議起飛前2小時報到（約08:55前），IT241 10:55起飛、12:25抵達桃園", "map_query": "福岡空港国際線"}], "weather": "清晨 15°C 上下，早起微涼"}], "bookings": [{"type": "航班", "name": "IT720 桃園TPE → 福岡FUK（TigerSmart）", "date": "2026-10-15", "time": "14:25", "note": "Terminal 1出發，17:50抵達福岡"}, {"type": "航班", "name": "IT241 福岡FUK → 桃園TPE（TigerSmart）", "date": "2026-10-20", "time": "10:55", "cost": 0, "note": "12:25抵達桃園Terminal 1；NT$27,172為2人份去程＋回程合計，即每人NT$13,586。此處金額已換算為7人總額（NT$13,586 x 7 = NT$95,102），實際票價如7人不同价請再更新"}, {"type": "飯店", "name": "博多東急REIホテル 1晚", "date": "2026-10-15", "cost": 0, "note": "地鐵出口步行3分鐘；7人請確認房型", "url": "https://www.tokyuhotels.co.jp/en/hakata-r/index.html"}, {"type": "飯店", "name": "亀の井ホテル 阿蘇パークリゾート 1晚（一泊二食）", "date": "2026-10-16", "cost": 0, "note": "含晚餐自助餐＋露天溫泉", "url": "https://kamenoi-hotels.com/en/asoparkresort/"}, {"type": "飯店", "name": "別府杉乃井ホテル 1晚", "date": "2026-10-17", "cost": 0, "note": "有無障礙空間，適合三代同堂", "url": "https://suginoi.orixhotelsandresorts.com/"}, {"type": "飯店", "name": "Reisen Villa Hakata（包棟）2晚", "date": "2026-10-18", "cost": 0, "note": "8張實床、3間衛浴、有廚房；電梯需向房東再確認", "url": "https://www.airbnb.com/rooms/1396225852858346948"}], "alerts": ["太宰府天滿宮本殿已於2026年5月17日修復完工恢復參拜，原規劃的期間限定「浮かぶ森」臨時本殿（藤本壯介設計）已於2026年中拆除，10月造訪看到的是修復完成的正式本殿", "阿蘇中岳火山口是否開放取決於當日火山氣體濃度，並非固定景點，出發前務必查阿蘇山公園道路官網（https://www.aso-volcano.jp/chinese/index.html）即時通行狀況；封閉時備案改往阿蘇火山博物館或內牧溫泉散策", "阿蘇山區入夜後除車站周邊外幾乎沒有餐廳營業，強烈建議飯店訂一泊二食，否則長輩可能面臨晚餐無處可去", "回程IT241是10:55起飛的早班機，福岡機場國際線建議提前2小時報到，10/20早上時間非常緊湊，行李與主要伴手禮請提前一天收妥、買齊", "在日本合法載客包車須為「綠底白字」營業車牌，坊間較便宜的「白牌車」屬違法載客，事故後保險理賠可能有爭議", "阿蘇、別府過夜通常需額外補貼司機住宿費（行情約日幣8,000/晚），請與車行確認是否已含在報價內", "福岡屋台文化有潛規則：每人須點一杯飲料、依市條例禁止提供生食、吃完應盡快結帳不宜久坐", "福岡名產「努努雞（冷炸雞）」等含肉製品依規定不能帶回台灣，須在當地食用完畢", "部分老牌日系飯店可能將外國旅客安排在較舊的房型、房內插座數量偏少、浴缸較高，訂房時可留意「新館」標示並自備延長線"], "notes": ["包車報價請確認是否含高速公路過路費、停車費、司機餐費與小費", "7人建議預訂10人座（Hiace）車型，才能同時容納7位大人與7–9件28吋行李", "熱門餐廳（一蘭總本店、ShinShin拉麵等）尖峰時段排隊嚴重，建議避開用餐尖峰或改超商熟食", "建議下載 NAVITIME JAPAN（找洗手間、行李寄存）或 ロケスマ（周邊店家即時搜尋）", "10月中旬福岡市區約10–25度，但阿蘇山區與別府纜車山頂風大溫差大，務必準備防風外套或輕羽絨", "10月中旬為秋季旅遊旺季，阿蘇與別府溫泉飯店建議2–3個月前預訂", "待補充：抵達福岡的航班資訊、各飯店/包棟訂房確認碼、包車公司名稱與總費用、是否需中文司機、是否需兒童座椅"]}</script>
+<div class="editor" id="editor" hidden></div>
+
+<header class="hero">
+  <div class="hero-inner">
+    <p class="eyebrow">日本・九州（福岡・阿蘇・別府） · 2026.10.15 – 10.20</p>
+    <h1>九州六日五夜親子包車慢旅（阿蘇芒草・別府溫泉）</h1>
+    <p class="lead">6 天 7 人的旅程手冊——每天去哪、怎麼去、訂位碼與預算，都在這一頁。</p>
+    <div class="hero-pills">
+      <span>2026.10.15 – 10.20</span>
+      <span>6 天</span>
+      <span>7 人</span>
+      <span>預算 NT$350,000</span>
+    </div>
+  </div>
+</header>
+
+<nav class="sticky-nav" aria-label="快速跳轉">
+  <div class="nav-links">
+    <a href="#overview">總覽</a><a href="#alerts">提醒</a>
+    <a href="#itinerary">行程</a><a href="#bookings">訂位</a><a href="#emergency">緊急</a>
+    <a href="#budget">花費</a><a href="#notes">備忘</a><a href="#packing">打包</a>
+  </div>
+  <div class="nav-tools">
+    <button class="nav-tool" type="button" data-toggle="edit" aria-label="編輯行程資料">✎</button>
+    <button class="nav-tool" type="button" data-toggle="theme" aria-pressed="false" aria-label="切換深色模式">🌙</button>
+    <button class="nav-tool" type="button" data-toggle="size" aria-pressed="false" aria-label="切換大字模式">A⁺</button>
+  </div>
+</nav>
+
+<main>
+
+
+
+<section class="section" id="overview">
+  <div class="section-heading">
+    <h2>總覽</h2>
+    <p>先看結論——這趟旅程的重點整理。</p>
+  </div>
+  <div class="decision-grid">
+  
+    <article>
+      <b>01</b>
+      <h3>住宿路線：博多→阿蘇→別府→博多包棟，5晚只換4次床</h3>
+      <p>阿蘇一泊二食、別府杉乃井，最後兩晚博多包棟8床3衛浴，適合7人三代同堂。</p>
+    </article>
+  
+    <article>
+      <b>02</b>
+      <h3>10月中旬正值草千里芒草季，步道平坦適合長輩散步</h3>
+      <p>阿蘇中岳火山口是否開放依當日火山氣體管制而定，出發前需查氣象廳即時公告。</p>
+    </article>
+  
+    <article>
+      <b>03</b>
+      <h3>包車3天串聯阿蘇＋別府，其餘留給福岡市區慢遊</h3>
+      <p>建議預訂10人座Hiace，同時載7位大人與7–9件行李；司機住宿津貼、過路費、餐費是否已含在報價需與車行確認。</p>
+    </article>
+  
+    <article>
+      <b>04</b>
+      <h3>重要更新：太宰府天滿宮本殿已於2026/5/17恢復參拜</h3>
+      <p>原本想看的期間限定「浮かぶ森」臨時本殿（藤本壯介設計）已於2026年中拆除，10月造訪看到的會是修復完成的正式本殿，不是原規劃的臨時建築。</p>
+    </article>
+  
+    <article>
+      <b>05</b>
+      <h3>預算為住宿＋機票實估＋餐飲/包車粗抓，待報價後再調整</h3>
+      <p>目前已知住宿約NT$81,500＋機票約NT$95,100（每人NT$13,586 x 7人）＝已知約NT$176,600，包車總價、餐飲、購物尚未列入明細，先抓NT$350,000總額。</p>
+    </article>
+  
+  </div>
+</section>
+
+
+
+<section class="section" id="alerts">
+  <div class="section-heading">
+    <h2>你可能不知道、但該知道的事</h2>
+    <p>查證後發現的意外資訊——設施異動、季節限定已結束、當地潛規則等，特別留意。</p>
+  </div>
+  <div class="alert-grid">
+  
+    <div><span>⚠️</span>太宰府天滿宮本殿已於2026年5月17日修復完工恢復參拜，原規劃的期間限定「浮かぶ森」臨時本殿（藤本壯介設計）已於2026年中拆除，10月造訪看到的是修復完成的正式本殿</div>
+  
+    <div><span>⚠️</span>阿蘇中岳火山口是否開放取決於當日火山氣體濃度，並非固定景點，出發前務必查阿蘇山公園道路官網（https://www.aso-volcano.jp/chinese/index.html）即時通行狀況；封閉時備案改往阿蘇火山博物館或內牧溫泉散策</div>
+  
+    <div><span>⚠️</span>阿蘇山區入夜後除車站周邊外幾乎沒有餐廳營業，強烈建議飯店訂一泊二食，否則長輩可能面臨晚餐無處可去</div>
+  
+    <div><span>⚠️</span>回程IT241是10:55起飛的早班機，福岡機場國際線建議提前2小時報到，10/20早上時間非常緊湊，行李與主要伴手禮請提前一天收妥、買齊</div>
+  
+    <div><span>⚠️</span>在日本合法載客包車須為「綠底白字」營業車牌，坊間較便宜的「白牌車」屬違法載客，事故後保險理賠可能有爭議</div>
+  
+    <div><span>⚠️</span>阿蘇、別府過夜通常需額外補貼司機住宿費（行情約日幣8,000/晚），請與車行確認是否已含在報價內</div>
+  
+    <div><span>⚠️</span>福岡屋台文化有潛規則：每人須點一杯飲料、依市條例禁止提供生食、吃完應盡快結帳不宜久坐</div>
+  
+    <div><span>⚠️</span>福岡名產「努努雞（冷炸雞）」等含肉製品依規定不能帶回台灣，須在當地食用完畢</div>
+  
+    <div><span>⚠️</span>部分老牌日系飯店可能將外國旅客安排在較舊的房型、房內插座數量偏少、浴缸較高，訂房時可留意「新館」標示並自備延長線</div>
+  
+  </div>
+</section>
+
+
+<section class="section" id="itinerary">
+  <div class="heading-row">
+    <div class="section-heading">
+      <h2>每日動線</h2>
+      <p>點開每一天看細節；點「導航」直接開 Google Maps。</p>
+    </div>
+    <button class="toggle-all" type="button">全部展開</button>
+  </div>
+  <div class="days">
+  
+    <details class="day" id="day-1" data-date="2026-10-15">
+      <summary>
+        <div class="day-no">
+          <b>DAY 1</b>
+          <small>10月15日 · 週四</small>
+        </div>
+        <div>
+          <h3>抵達福岡・博多入住</h3>
+          <p class="day-route">抵達福岡機場（IT720） → 博多東急REIホテル Check-in → 博多車站晚餐</p>
+          <p class="day-weather">🌤 福岡市區 16–24°C，入夜微涼</p>
+        </div>
+        <i>＋</i>
+      </summary>
+      
+      <div class="day-tools">
+        <a class="route-btn" href="https://www.google.com/maps/dir/?api=1&amp;origin=%E7%A6%8F%E5%B2%A1%E7%A9%BA%E6%B8%AF%E5%9B%BD%E9%9A%9B%E7%B7%9A&amp;destination=%E5%8D%9A%E5%A4%9A%E9%A7%85&amp;waypoints=Hakata%20Tokyu%20REI%20Hotel" target="_blank" rel="noopener">🧭 本日路線一鍵導航</a>
+        
+      </div>
+      
+      <ol class="timeline">
+      
+        <li class="stop t-go" data-time="17:50" data-name="抵達福岡機場（IT720）" data-map="https://www.google.com/maps/search/?api=1&amp;query=%E7%A6%8F%E5%B2%A1%E7%A9%BA%E6%B8%AF%E5%9B%BD%E9%9A%9B%E7%B7%9A">
+          <time>17:50</time>
+          <div>
+            <h4><span class="tico">🚃</span>抵達福岡機場（IT720） <a class="loc" href="https://www.google.com/maps/search/?api=1&amp;query=%E7%A6%8F%E5%B2%A1%E7%A9%BA%E6%B8%AF%E5%9B%BD%E9%9A%9B%E7%B7%9A">📍 地圖</a></h4>
+            <p class="desc">TigerSmart IT720，桃園14:25起飛、福岡17:50抵達；國際線入境審查、行李提領與通關，7人家庭建議抓45-60分鐘，別抓太緊</p>
+            
+            
+            <p class="meta">停留 45-60m</p>
+            
+            
+              <a class="go" href="https://www.google.com/maps/dir/?api=1&amp;destination=Hakata%20Tokyu%20REI%20Hotel">→ 出關後計程車 → 博多東急REIホテル（約15-20分鐘） <span>導航 ↗</span></a>
+              
+            
+          </div>
+        </li>
+      
+        <li class="stop t-stay" data-time="19:00" data-name="博多東急REIホテル Check-in" data-map="https://www.google.com/maps/search/?api=1&amp;query=Hakata%20Tokyu%20REI%20Hotel">
+          <time>19:00</time>
+          <div>
+            <h4><span class="tico">🏨</span><a class="name" href="https://www.tokyuhotels.co.jp/en/hakata-r/index.html">博多東急REIホテル Check-in ↗</a> <a class="loc" href="https://www.google.com/maps/search/?api=1&amp;query=Hakata%20Tokyu%20REI%20Hotel">📍 地圖</a></h4>
+            <p class="desc">先放下行李再出門吃晚餐；高CP首選，地鐵出口步行3分鐘，房間寬敞設備新穎；7人請先確認是否有家庭房/連通房型</p>
+            
+            
+            
+              <a class="go" href="https://www.google.com/maps/dir/?api=1&amp;destination=%E5%8D%9A%E5%A4%9A%E9%A7%85">→ 步行 → 博多車站周邊 <span>導航 ↗</span></a>
+              
+            
+          </div>
+        </li>
+      
+        <li class="stop t-eat" data-time="19:45" data-name="博多車站晚餐" data-map="https://www.google.com/maps/search/?api=1&amp;query=%E5%8D%9A%E5%A4%9A%E9%A7%85">
+          <time>19:45</time>
+          <div>
+            <h4><span class="tico">🍜</span>博多車站晚餐 <a class="loc" href="https://www.google.com/maps/search/?api=1&amp;query=%E5%8D%9A%E5%A4%9A%E9%A7%85">📍 地圖</a></h4>
+            <p class="desc">於飯店周邊簡單用餐（博多拉麵或超市熟食），早點休息</p>
+            
+            
+            <p class="meta">停留 1h</p>
+            
+            
+          </div>
+        </li>
+      
+      </ol>
+    </details>
+  
+    <details class="day" id="day-2" data-date="2026-10-16">
+      <summary>
+        <div class="day-no">
+          <b>DAY 2</b>
+          <small>10月16日 · 週五</small>
+        </div>
+        <div>
+          <h3>阿蘇火山・草千里芒草季</h3>
+          <p class="day-route">包車啟程（Day 1） → 大觀峰 → 午餐：熊本赤牛 → 草千里之濱 → 阿蘇中岳火山口 → 亀の井ホテル 阿蘇パークリゾート Check-in</p>
+          <p class="day-weather">🌤 阿蘇山區 8–18°C，早晚冷、山頂風大</p>
+        </div>
+        <i>＋</i>
+      </summary>
+      
+      <div class="day-tools">
+        <a class="route-btn" href="https://www.google.com/maps/dir/?api=1&amp;origin=Hakata%20Tokyu%20REI%20Hotel&amp;destination=%E4%BA%80%E3%81%AE%E4%BA%95%E3%83%9B%E3%83%86%E3%83%AB%20%E9%98%BF%E8%98%87%E3%83%91%E3%83%BC%E3%82%AF%E3%83%AA%E3%82%BE%E3%83%BC%E3%83%88&amp;waypoints=%E5%A4%A7%E8%A6%B3%E5%B3%B0%7C%E3%81%82%E3%81%8B%E7%89%9B%20%E9%98%BF%E8%98%87%7C%E8%8D%89%E5%8D%83%E9%87%8C%E3%83%B6%E6%B5%9C%7C%E9%98%BF%E8%98%87%E5%B1%B1%E4%B8%AD%E5%B2%B3%E7%81%AB%E5%8F%A3" target="_blank" rel="noopener">🧭 本日路線一鍵導航</a>
+        
+      </div>
+      
+      <ol class="timeline">
+      
+        <li class="stop t-go" data-time="08:30" data-name="包車啟程（Day 1）" data-map="https://www.google.com/maps/search/?api=1&amp;query=Hakata%20Tokyu%20REI%20Hotel">
+          <time>08:30</time>
+          <div>
+            <h4><span class="tico">🚃</span>包車啟程（Day 1） <a class="loc" href="https://www.google.com/maps/search/?api=1&amp;query=Hakata%20Tokyu%20REI%20Hotel">📍 地圖</a></h4>
+            <p class="desc">專車由飯店接往阿蘇（車程約2小時）</p>
+            
+            
+            
+              <a class="go" href="https://www.google.com/maps/dir/?api=1&amp;destination=%E5%A4%A7%E8%A6%B3%E5%B3%B0">→ 包車 → 大觀峰 <span>導航 ↗</span></a>
+              
+            
+          </div>
+        </li>
+      
+        <li class="stop t-see" data-time="10:30" data-name="大觀峰" data-map="https://www.google.com/maps/search/?api=1&amp;query=%E5%A4%A7%E8%A6%B3%E5%B3%B0">
+          <time>10:30</time>
+          <div>
+            <h4><span class="tico">🏛</span>大觀峰 <a class="loc" href="https://www.google.com/maps/search/?api=1&amp;query=%E5%A4%A7%E8%A6%B3%E5%B3%B0">📍 地圖</a></h4>
+            <p class="desc">360度俯瞰阿蘇五岳與雲海</p>
+            
+            
+            <p class="meta">停留 1h</p>
+            
+            
+              <a class="go" href="https://www.google.com/maps/dir/?api=1&amp;destination=%E3%81%82%E3%81%8B%E7%89%9B%20%E9%98%BF%E8%98%87">→ 包車 → 午餐 <span>導航 ↗</span></a>
+              
+            
+          </div>
+        </li>
+      
+        <li class="stop t-eat" data-time="12:00" data-name="午餐：熊本赤牛" data-map="https://www.google.com/maps/search/?api=1&amp;query=%E3%81%82%E3%81%8B%E7%89%9B%20%E9%98%BF%E8%98%87">
+          <time>12:00</time>
+          <div>
+            <h4><span class="tico">🍜</span>午餐：熊本赤牛 <a class="loc" href="https://www.google.com/maps/search/?api=1&amp;query=%E3%81%82%E3%81%8B%E7%89%9B%20%E9%98%BF%E8%98%87">📍 地圖</a></h4>
+            <p class="desc">品嚐阿蘇名產「赤牛」燒肉料理</p>
+            
+            
+            <p class="meta">停留 1.5h</p>
+            
+            
+              <a class="go" href="https://www.google.com/maps/dir/?api=1&amp;destination=%E8%8D%89%E5%8D%83%E9%87%8C%E3%83%B6%E6%B5%9C">→ 包車 → 草千里 <span>導航 ↗</span></a>
+              
+            
+          </div>
+        </li>
+      
+        <li class="stop t-see" data-time="14:00" data-name="草千里之濱" data-map="https://www.google.com/maps/search/?api=1&amp;query=%E8%8D%89%E5%8D%83%E9%87%8C%E3%83%B6%E6%B5%9C">
+          <time>14:00</time>
+          <div>
+            <h4><span class="tico">🏛</span>草千里之濱 <a class="loc" href="https://www.google.com/maps/search/?api=1&amp;query=%E8%8D%89%E5%8D%83%E9%87%8C%E3%83%B6%E6%B5%9C">📍 地圖</a></h4>
+            <p class="desc">秋季限定：銀白色芒草盛開絕景，步道平坦適合長輩散步，10月中旬正值花期</p>
+            
+            
+            <p class="meta">停留 1.5h</p>
+            
+            
+              <a class="go" href="https://www.google.com/maps/dir/?api=1&amp;destination=%E9%98%BF%E8%98%87%E5%B1%B1%E4%B8%AD%E5%B2%B3%E7%81%AB%E5%8F%A3">→ 包車 → 中岳火口 <span>導航 ↗</span></a>
+              
+            
+          </div>
+        </li>
+      
+        <li class="stop t-see" data-time="15:45" data-name="阿蘇中岳火山口" data-map="https://www.google.com/maps/search/?api=1&amp;query=%E9%98%BF%E8%98%87%E5%B1%B1%E4%B8%AD%E5%B2%B3%E7%81%AB%E5%8F%A3">
+          <time>15:45</time>
+          <div>
+            <h4><span class="tico">🏛</span><a class="name" href="https://www.aso-volcano.jp/chinese/index.html">阿蘇中岳火山口 ↗</a> <a class="loc" href="https://www.google.com/maps/search/?api=1&amp;query=%E9%98%BF%E8%98%87%E5%B1%B1%E4%B8%AD%E5%B2%B3%E7%81%AB%E5%8F%A3">📍 地圖</a></h4>
+            <p class="desc">若當天火山氣體濃度管制許可可近距離觀察火口；當天請上阿蘇山公園道路官網確認即時通行狀況，封閉時備案改往阿蘇火山博物館或內牧溫泉散策</p>
+            
+            
+            <p class="meta">停留 45m</p>
+            
+            
+              <a class="go" href="https://www.google.com/maps/dir/?api=1&amp;destination=%E4%BA%80%E3%81%AE%E4%BA%95%E3%83%9B%E3%83%86%E3%83%AB%20%E9%98%BF%E8%98%87%E3%83%91%E3%83%BC%E3%82%AF%E3%83%AA%E3%82%BE%E3%83%BC%E3%83%88">→ 包車 → 飯店 <span>導航 ↗</span></a>
+              
+            
+          </div>
+        </li>
+      
+        <li class="stop t-stay" data-time="17:00" data-name="亀の井ホテル 阿蘇パークリゾート Check-in" data-map="https://www.google.com/maps/search/?api=1&amp;query=%E4%BA%80%E3%81%AE%E4%BA%95%E3%83%9B%E3%83%86%E3%83%AB%20%E9%98%BF%E8%98%87%E3%83%91%E3%83%BC%E3%82%AF%E3%83%AA%E3%82%BE%E3%83%BC%E3%83%88">
+          <time>17:00</time>
+          <div>
+            <h4><span class="tico">🏨</span><a class="name" href="https://kamenoi-hotels.com/en/asoparkresort/">亀の井ホテル 阿蘇パークリゾート Check-in ↗</a> <a class="loc" href="https://www.google.com/maps/search/?api=1&amp;query=%E4%BA%80%E3%81%AE%E4%BA%95%E3%83%9B%E3%83%86%E3%83%AB%20%E9%98%BF%E8%98%87%E3%83%91%E3%83%BC%E3%82%AF%E3%83%AA%E3%82%BE%E3%83%BC%E3%83%88">📍 地圖</a></h4>
+            <p class="desc">高CP溫泉飯店，露天風呂可遠眺阿蘇山，一泊二食自助餐豐富</p>
+            
+            
+            
+          </div>
+        </li>
+      
+      </ol>
+    </details>
+  
+    <details class="day" id="day-3" data-date="2026-10-17">
+      <summary>
+        <div class="day-no">
+          <b>DAY 3</b>
+          <small>10月17日 · 週六</small>
+        </div>
+        <div>
+          <h3>阿蘇神社・由布院・別府纜車</h3>
+          <p class="day-route">包車出發（Day 2） → 阿蘇神社 → 由布院・金鱗湖 → 別府空中纜車 → 別府杉乃井ホテル Check-in</p>
+          <p class="day-weather">🌤 由布院晨霧 12–22°C，纜車山頂偏冷風大</p>
+        </div>
+        <i>＋</i>
+      </summary>
+      
+      <div class="day-tools">
+        <a class="route-btn" href="https://www.google.com/maps/dir/?api=1&amp;origin=%E4%BA%80%E3%81%AE%E4%BA%95%E3%83%9B%E3%83%86%E3%83%AB%20%E9%98%BF%E8%98%87%E3%83%91%E3%83%BC%E3%82%AF%E3%83%AA%E3%82%BE%E3%83%BC%E3%83%88&amp;destination=%E6%9D%89%E4%B9%83%E4%BA%95%E3%83%9B%E3%83%86%E3%83%AB&amp;waypoints=%E9%98%BF%E8%98%87%E7%A5%9E%E7%A4%BE%7C%E9%87%91%E9%B1%97%E6%B9%96%7C%E5%88%A5%E5%BA%9C%E3%83%AD%E3%83%BC%E3%83%97%E3%82%A6%E3%82%A7%E3%82%A4" target="_blank" rel="noopener">🧭 本日路線一鍵導航</a>
+        
+      </div>
+      
+      <ol class="timeline">
+      
+        <li class="stop t-go" data-time="09:30" data-name="包車出發（Day 2）" data-map="https://www.google.com/maps/search/?api=1&amp;query=%E4%BA%80%E3%81%AE%E4%BA%95%E3%83%9B%E3%83%86%E3%83%AB%20%E9%98%BF%E8%98%87%E3%83%91%E3%83%BC%E3%82%AF%E3%83%AA%E3%82%BE%E3%83%BC%E3%83%88">
+          <time>09:30</time>
+          <div>
+            <h4><span class="tico">🚃</span>包車出發（Day 2） <a class="loc" href="https://www.google.com/maps/search/?api=1&amp;query=%E4%BA%80%E3%81%AE%E4%BA%95%E3%83%9B%E3%83%86%E3%83%AB%20%E9%98%BF%E8%98%87%E3%83%91%E3%83%BC%E3%82%AF%E3%83%AA%E3%82%BE%E3%83%BC%E3%83%88">📍 地圖</a></h4>
+            <p class="desc">飯店出發前往阿蘇神社</p>
+            
+            
+            
+              <a class="go" href="https://www.google.com/maps/dir/?api=1&amp;destination=%E9%98%BF%E8%98%87%E7%A5%9E%E7%A4%BE">→ 包車 → 阿蘇神社 <span>導航 ↗</span></a>
+              
+            
+          </div>
+        </li>
+      
+        <li class="stop t-see" data-time="10:00" data-name="阿蘇神社" data-map="https://www.google.com/maps/search/?api=1&amp;query=%E9%98%BF%E8%98%87%E7%A5%9E%E7%A4%BE">
+          <time>10:00</time>
+          <div>
+            <h4><span class="tico">🏛</span>阿蘇神社 <a class="loc" href="https://www.google.com/maps/search/?api=1&amp;query=%E9%98%BF%E8%98%87%E7%A5%9E%E7%A4%BE">📍 地圖</a></h4>
+            <p class="desc">參拜擁有九州最大規模樓門的神社</p>
+            
+            
+            <p class="meta">停留 1h</p>
+            
+            
+              <a class="go" href="https://www.google.com/maps/dir/?api=1&amp;destination=%E9%87%91%E9%B1%97%E6%B9%96">→ 包車 → 由布院 <span>導航 ↗</span></a>
+              
+            
+          </div>
+        </li>
+      
+        <li class="stop t-eat" data-time="11:30" data-name="由布院・金鱗湖" data-map="https://www.google.com/maps/search/?api=1&amp;query=%E9%87%91%E9%B1%97%E6%B9%96">
+          <time>11:30</time>
+          <div>
+            <h4><span class="tico">🍜</span>由布院・金鱗湖 <a class="loc" href="https://www.google.com/maps/search/?api=1&amp;query=%E9%87%91%E9%B1%97%E6%B9%96">📍 地圖</a></h4>
+            <p class="desc">漫步溫泉小鎮，觀賞湖水倒映美景並在此用午餐</p>
+            
+            
+            <p class="meta">停留 2.5h</p>
+            
+            
+              <a class="go" href="https://www.google.com/maps/dir/?api=1&amp;destination=%E5%88%A5%E5%BA%9C%E3%83%AD%E3%83%BC%E3%83%97%E3%82%A6%E3%82%A7%E3%82%A4">→ 包車 → 別府空中纜車 <span>導航 ↗</span></a>
+              
+            
+          </div>
+        </li>
+      
+        <li class="stop t-see" data-time="15:30" data-name="別府空中纜車" data-map="https://www.google.com/maps/search/?api=1&amp;query=%E5%88%A5%E5%BA%9C%E3%83%AD%E3%83%BC%E3%83%97%E3%82%A6%E3%82%A7%E3%82%A4">
+          <time>15:30</time>
+          <div>
+            <h4><span class="tico">🏛</span>別府空中纜車 <a class="loc" href="https://www.google.com/maps/search/?api=1&amp;query=%E5%88%A5%E5%BA%9C%E3%83%AD%E3%83%BC%E3%83%97%E3%82%A6%E3%82%A7%E3%82%A4">📍 地圖</a></h4>
+            <p class="desc">10分鐘直達1300公尺山頂，飽覽別府灣全景；山頂風大溫差大，請幫長輩準備防風外套</p>
+            
+            
+            <p class="meta">停留 1.5h</p>
+            
+            
+              <a class="go" href="https://www.google.com/maps/dir/?api=1&amp;destination=%E6%9D%89%E4%B9%83%E4%BA%95%E3%83%9B%E3%83%86%E3%83%AB">→ 包車 → 飯店 <span>導航 ↗</span></a>
+              
+            
+          </div>
+        </li>
+      
+        <li class="stop t-stay" data-time="17:30" data-name="別府杉乃井ホテル Check-in" data-map="https://www.google.com/maps/search/?api=1&amp;query=%E6%9D%89%E4%B9%83%E4%BA%95%E3%83%9B%E3%83%86%E3%83%AB">
+          <time>17:30</time>
+          <div>
+            <h4><span class="tico">🏨</span><a class="name" href="https://suginoi.orixhotelsandresorts.com/">別府杉乃井ホテル Check-in ↗</a> <a class="loc" href="https://www.google.com/maps/search/?api=1&amp;query=%E6%9D%89%E4%B9%83%E4%BA%95%E3%83%9B%E3%83%86%E3%83%AB">📍 地圖</a></h4>
+            <p class="desc">設施完善、有無障礙空間，非常適合三代同堂；階梯式溫泉體驗</p>
+            
+            
+            
+          </div>
+        </li>
+      
+      </ol>
+    </details>
+  
+    <details class="day" id="day-4" data-date="2026-10-18">
+      <summary>
+        <div class="day-no">
+          <b>DAY 4</b>
+          <small>10月18日 · 週日</small>
+        </div>
+        <div>
+          <h3>別府地獄・太宰府</h3>
+          <p class="day-route">包車出發（Day 3） → 別府海地獄 → 地獄蒸體驗 → 太宰府天滿宮 → Reisen Villa Hakata Check-in（包棟，共2晚）</p>
+          <p class="day-weather">🌤 別府・福岡 15–23°C，日夜溫差大</p>
+        </div>
+        <i>＋</i>
+      </summary>
+      
+      <div class="day-tools">
+        <a class="route-btn" href="https://www.google.com/maps/dir/?api=1&amp;origin=%E6%9D%89%E4%B9%83%E4%BA%95%E3%83%9B%E3%83%86%E3%83%AB&amp;destination=Reisen%20Villa%20Hakata&amp;waypoints=%E6%B5%B7%E5%9C%B0%E7%8D%84%7C%E5%9C%B0%E7%8D%84%E8%92%B8%E3%81%97%E5%B7%A5%E6%88%BF%20%E9%89%84%E8%BC%AA%7C%E5%A4%AA%E5%AE%B0%E5%BA%9C%E5%A4%A9%E6%BA%80%E5%AE%AE" target="_blank" rel="noopener">🧭 本日路線一鍵導航</a>
+        
+      </div>
+      
+      <ol class="timeline">
+      
+        <li class="stop t-go" data-time="09:30" data-name="包車出發（Day 3）" data-map="https://www.google.com/maps/search/?api=1&amp;query=%E6%9D%89%E4%B9%83%E4%BA%95%E3%83%9B%E3%83%86%E3%83%AB">
+          <time>09:30</time>
+          <div>
+            <h4><span class="tico">🚃</span>包車出發（Day 3） <a class="loc" href="https://www.google.com/maps/search/?api=1&amp;query=%E6%9D%89%E4%B9%83%E4%BA%95%E3%83%9B%E3%83%86%E3%83%AB">📍 地圖</a></h4>
+            <p class="desc">展開別府與太宰府行程</p>
+            
+            
+            
+              <a class="go" href="https://www.google.com/maps/dir/?api=1&amp;destination=%E6%B5%B7%E5%9C%B0%E7%8D%84">→ 包車 → 別府海地獄 <span>導航 ↗</span></a>
+              
+            
+          </div>
+        </li>
+      
+        <li class="stop t-see" data-time="10:00" data-name="別府海地獄" data-map="https://www.google.com/maps/search/?api=1&amp;query=%E6%B5%B7%E5%9C%B0%E7%8D%84">
+          <time>10:00</time>
+          <div>
+            <h4><span class="tico">🏛</span>別府海地獄 <a class="loc" href="https://www.google.com/maps/search/?api=1&amp;query=%E6%B5%B7%E5%9C%B0%E7%8D%84">📍 地圖</a></h4>
+            <p class="desc">湛藍如海的溫泉景觀，步道規劃良好適合長輩行走</p>
+            
+            
+            <p class="meta">停留 1h</p>
+            
+            
+              <a class="go" href="https://www.google.com/maps/dir/?api=1&amp;destination=%E5%9C%B0%E7%8D%84%E8%92%B8%E3%81%97%E5%B7%A5%E6%88%BF%20%E9%89%84%E8%BC%AA">→ 包車 → 地獄蒸體驗 <span>導航 ↗</span></a>
+              
+            
+          </div>
+        </li>
+      
+        <li class="stop t-eat" data-time="11:15" data-name="地獄蒸體驗" data-map="https://www.google.com/maps/search/?api=1&amp;query=%E5%9C%B0%E7%8D%84%E8%92%B8%E3%81%97%E5%B7%A5%E6%88%BF%20%E9%89%84%E8%BC%AA">
+          <time>11:15</time>
+          <div>
+            <h4><span class="tico">🍜</span>地獄蒸體驗 <a class="loc" href="https://www.google.com/maps/search/?api=1&amp;query=%E5%9C%B0%E7%8D%84%E8%92%B8%E3%81%97%E5%B7%A5%E6%88%BF%20%E9%89%84%E8%BC%AA">📍 地圖</a></h4>
+            <p class="desc">利用地熱蒸熟新鮮食材，健康清淡非常適合長輩</p>
+            
+            
+            <p class="meta">停留 1.5h</p>
+            
+            
+              <a class="go" href="https://www.google.com/maps/dir/?api=1&amp;destination=%E5%A4%AA%E5%AE%B0%E5%BA%9C%E5%A4%A9%E6%BA%80%E5%AE%AE">→ 包車 → 太宰府 <span>導航 ↗</span></a>
+              
+            
+          </div>
+        </li>
+      
+        <li class="stop t-see" data-time="14:30" data-name="太宰府天滿宮" data-map="https://www.google.com/maps/search/?api=1&amp;query=%E5%A4%AA%E5%AE%B0%E5%BA%9C%E5%A4%A9%E6%BA%80%E5%AE%AE">
+          <time>14:30</time>
+          <div>
+            <h4><span class="tico">🏛</span>太宰府天滿宮 <a class="loc" href="https://www.google.com/maps/search/?api=1&amp;query=%E5%A4%AA%E5%AE%B0%E5%BA%9C%E5%A4%A9%E6%BA%80%E5%AE%AE">📍 地圖</a></h4>
+            <p class="desc">本殿已於2026年5月17日修復完工恢復參拜；原規劃的期間限定「浮かぶ森」臨時本殿已於2026年中拆除，此行看到的是正式本殿</p>
+            
+            
+            <p class="meta">停留 1.5h</p>
+            
+            
+              <a class="go" href="https://www.google.com/maps/dir/?api=1&amp;destination=Reisen%20Villa%20Hakata">→ 包車 → 福岡 <span>導航 ↗</span></a>
+              
+            
+          </div>
+        </li>
+      
+        <li class="stop t-stay" data-time="17:30" data-name="Reisen Villa Hakata Check-in（包棟，共2晚）" data-map="https://www.google.com/maps/search/?api=1&amp;query=Reisen%20Villa%20Hakata">
+          <time>17:30</time>
+          <div>
+            <h4><span class="tico">🏨</span><a class="name" href="https://www.airbnb.com/rooms/1396225852858346948">Reisen Villa Hakata Check-in（包棟，共2晚） ↗</a> <a class="loc" href="https://www.google.com/maps/search/?api=1&amp;query=Reisen%20Villa%20Hakata">📍 地圖</a></h4>
+            <p class="desc">整套別墅8張實床、3間衛浴，適合7人大家庭；入住10/18、10/19共2晚，10/20一早退房；請向房東再次確認是否有電梯，方便長輩搬運行李</p>
+            
+            
+            
+          </div>
+        </li>
+      
+      </ol>
+    </details>
+  
+    <details class="day" id="day-5" data-date="2026-10-19">
+      <summary>
+        <div class="day-no">
+          <b>DAY 5</b>
+          <small>10月19日 · 週一</small>
+        </div>
+        <div>
+          <h3>福岡市區慢遊</h3>
+          <p class="day-route">大濠公園散策 → 天神地區午餐 → 福岡市區購物 → 中洲屋台體驗</p>
+          <p class="day-weather">🌤 福岡市區 16–24°C，適合久走</p>
+        </div>
+        <i>＋</i>
+      </summary>
+      
+      <div class="day-tools">
+        <a class="route-btn" href="https://www.google.com/maps/dir/?api=1&amp;origin=%E5%A4%A7%E6%BF%A0%E5%85%AC%E5%9C%92&amp;destination=%E4%B8%AD%E6%B4%B2%E5%B1%8B%E5%8F%B0%E8%A1%97&amp;waypoints=%E5%A4%A9%E7%A5%9E%7C%E5%A4%A9%E7%A5%9E%E5%9C%B0%E4%B8%8B%E8%A1%97" target="_blank" rel="noopener">🧭 本日路線一鍵導航</a>
+        
+      </div>
+      
+      <ol class="timeline">
+      
+        <li class="stop t-see" data-time="10:00" data-name="大濠公園散策" data-map="https://www.google.com/maps/search/?api=1&amp;query=%E5%A4%A7%E6%BF%A0%E5%85%AC%E5%9C%92">
+          <time>10:00</time>
+          <div>
+            <h4><span class="tico">🏛</span>大濠公園散策 <a class="loc" href="https://www.google.com/maps/search/?api=1&amp;query=%E5%A4%A7%E6%BF%A0%E5%85%AC%E5%9C%92">📍 地圖</a></h4>
+            <p class="desc">享受福岡城市綠洲，在湖畔悠閒散步</p>
+            
+            
+            <p class="meta">停留 1.5h</p>
+            
+            
+              <a class="go" href="https://www.google.com/maps/dir/?api=1&amp;destination=%E5%A4%A9%E7%A5%9E">→ 步行／地鐵 → 天神 <span>導航 ↗</span></a>
+              
+            
+          </div>
+        </li>
+      
+        <li class="stop t-eat" data-time="12:00" data-name="天神地區午餐" data-map="https://www.google.com/maps/search/?api=1&amp;query=%E5%A4%A9%E7%A5%9E">
+          <time>12:00</time>
+          <div>
+            <h4><span class="tico">🍜</span>天神地區午餐 <a class="loc" href="https://www.google.com/maps/search/?api=1&amp;query=%E5%A4%A9%E7%A5%9E">📍 地圖</a></h4>
+            <p class="desc">可選擇鰻魚飯或在地平價燒肉</p>
+            
+            
+            <p class="meta">停留 1.5h</p>
+            
+            
+              <a class="go" href="https://www.google.com/maps/dir/?api=1&amp;destination=%E5%A4%A9%E7%A5%9E%E5%9C%B0%E4%B8%8B%E8%A1%97">→ 步行 → 天神地下街 <span>導航 ↗</span></a>
+              
+            
+          </div>
+        </li>
+      
+        <li class="stop t-shop" data-time="14:00" data-name="福岡市區購物" data-map="https://www.google.com/maps/search/?api=1&amp;query=%E5%A4%A9%E7%A5%9E%E5%9C%B0%E4%B8%8B%E8%A1%97">
+          <time>14:00</time>
+          <div>
+            <h4><span class="tico">🛍</span>福岡市區購物 <a class="loc" href="https://www.google.com/maps/search/?api=1&amp;query=%E5%A4%A9%E7%A5%9E%E5%9C%B0%E4%B8%8B%E8%A1%97">📍 地圖</a></h4>
+            <p class="desc">逛天神地下街或博多運河城，室內路線免曬太陽；回程班機是10/20 10:55早班機，隔天早上時間很趕，建議把明太子、長崎蛋糕等主要伴手禮今天先買齊</p>
+            
+            
+            <p class="meta">停留 3h</p>
+            
+            
+              <a class="go" href="https://www.google.com/maps/dir/?api=1&amp;destination=%E4%B8%AD%E6%B4%B2%E5%B1%8B%E5%8F%B0%E8%A1%97">→ 地鐵 → 中洲 <span>導航 ↗</span></a>
+              
+            
+          </div>
+        </li>
+      
+        <li class="stop t-eat" data-time="18:00" data-name="中洲屋台體驗" data-map="https://www.google.com/maps/search/?api=1&amp;query=%E4%B8%AD%E6%B4%B2%E5%B1%8B%E5%8F%B0%E8%A1%97">
+          <time>18:00</time>
+          <div>
+            <h4><span class="tico">🍜</span>中洲屋台體驗 <a class="loc" href="https://www.google.com/maps/search/?api=1&amp;query=%E4%B8%AD%E6%B4%B2%E5%B1%8B%E5%8F%B0%E8%A1%97">📍 地圖</a></h4>
+            <p class="desc">體驗道地深夜食堂氣氛；禮儀提醒：每人需點一杯飲料、屋台禁生食，長輩淺嚐即止不宜久坐</p>
+            
+            
+            <p class="meta">停留 1.5h</p>
+            
+            
+          </div>
+        </li>
+      
+      </ol>
+    </details>
+  
+    <details class="day" id="day-6" data-date="2026-10-20">
+      <summary>
+        <div class="day-no">
+          <b>DAY 6</b>
+          <small>10月20日 · 週二</small>
+        </div>
+        <div>
+          <h3>退房返程（早班機，時間很趕）</h3>
+          <p class="day-route">Reisen Villa Hakata 退房 → 博多車站早餐＋最後採買 → 前往福岡機場（IT241）</p>
+          <p class="day-weather">🌤 清晨 15°C 上下，早起微涼</p>
+        </div>
+        <i>＋</i>
+      </summary>
+      
+      <div class="day-tools">
+        <a class="route-btn" href="https://www.google.com/maps/dir/?api=1&amp;origin=Reisen%20Villa%20Hakata&amp;destination=%E7%A6%8F%E5%B2%A1%E7%A9%BA%E6%B8%AF%E5%9B%BD%E9%9A%9B%E7%B7%9A&amp;waypoints=%E5%8D%9A%E5%A4%9A%E9%A7%85" target="_blank" rel="noopener">🧭 本日路線一鍵導航</a>
+        
+      </div>
+      
+      <ol class="timeline">
+      
+        <li class="stop t-stay" data-time="07:00" data-name="Reisen Villa Hakata 退房" data-map="https://www.google.com/maps/search/?api=1&amp;query=Reisen%20Villa%20Hakata">
+          <time>07:00</time>
+          <div>
+            <h4><span class="tico">🏨</span>Reisen Villa Hakata 退房 <a class="loc" href="https://www.google.com/maps/search/?api=1&amp;query=Reisen%20Villa%20Hakata">📍 地圖</a></h4>
+            <p class="desc">回程IT241 10:55起飛，行李前一晚先收好，早起退房不拖時間</p>
+            
+            
+            
+              <a class="go" href="https://www.google.com/maps/dir/?api=1&amp;destination=%E5%8D%9A%E5%A4%9A%E9%A7%85">→ 步行 → 博多車站 <span>導航 ↗</span></a>
+              
+            
+          </div>
+        </li>
+      
+        <li class="stop t-shop" data-time="07:20" data-name="博多車站早餐＋最後採買" data-map="https://www.google.com/maps/search/?api=1&amp;query=%E5%8D%9A%E5%A4%9A%E9%A7%85">
+          <time>07:20</time>
+          <div>
+            <h4><span class="tico">🛍</span>博多車站早餐＋最後採買 <a class="loc" href="https://www.google.com/maps/search/?api=1&amp;query=%E5%8D%9A%E5%A4%9A%E9%A7%85">📍 地圖</a></h4>
+            <p class="desc">簡單早餐＋若有遺漏的伴手禮快速補買（主要伴手禮已在10/19買齊）；努努雞等含肉製品提醒：不可帶回台灣，需現場食用完畢</p>
+            
+            
+            <p class="meta">停留 40m</p>
+            
+            
+              <a class="go" href="https://www.google.com/maps/dir/?api=1&amp;destination=%E7%A6%8F%E5%B2%A1%E7%A9%BA%E6%B8%AF%E5%9B%BD%E9%9A%9B%E7%B7%9A">→ 計程車 → 福岡機場 <span>導航 ↗</span></a>
+              
+            
+          </div>
+        </li>
+      
+        <li class="stop t-go" data-time="08:10" data-name="前往福岡機場（IT241）" data-map="https://www.google.com/maps/search/?api=1&amp;query=%E7%A6%8F%E5%B2%A1%E7%A9%BA%E6%B8%AF%E5%9B%BD%E9%9A%9B%E7%B7%9A">
+          <time>08:10</time>
+          <div>
+            <h4><span class="tico">🚃</span>前往福岡機場（IT241） <a class="loc" href="https://www.google.com/maps/search/?api=1&amp;query=%E7%A6%8F%E5%B2%A1%E7%A9%BA%E6%B8%AF%E5%9B%BD%E9%9A%9B%E7%B7%9A">📍 地圖</a></h4>
+            <p class="desc">從博多搭計程車至機場約15分鐘；國際線建議起飛前2小時報到（約08:55前），IT241 10:55起飛、12:25抵達桃園</p>
+            
+            
+            
+          </div>
+        </li>
+      
+      </ol>
+    </details>
+  
+  </div>
+</section>
+
+
+<section class="section" id="bookings">
+  <div class="section-heading">
+    <h2>訂位總覽</h2>
+    <p>航班、住宿與餐廳的確認碼集中在這裡，報到時不用翻信箱。</p>
+  </div>
+  <div class="stay-list">
+  
+    <div class="stay">
+      <div class="stay-top">
+        <span>2026-10-15 · 14:25</span>
+        <em>航班</em>
+      </div>
+      <h3>IT720 桃園TPE → 福岡FUK（TigerSmart）</h3>
+      <p>Terminal 1出發，17:50抵達福岡</p>
+      
+      
+    </div>
+  
+    <div class="stay">
+      <div class="stay-top">
+        <span>2026-10-20 · 10:55</span>
+        <em>航班</em>
+      </div>
+      <h3>IT241 福岡FUK → 桃園TPE（TigerSmart）</h3>
+      <p>12:25抵達桃園Terminal 1；NT$27,172為2人份去程＋回程合計，即每人NT$13,586。此處金額已換算為7人總額（NT$13,586 x 7 = NT$95,102），實際票價如7人不同价請再更新</p>
+      
+      
+    </div>
+  
+    <div class="stay">
+      <div class="stay-top">
+        <span>2026-10-15</span>
+        <em>飯店</em>
+      </div>
+      <h3>博多東急REIホテル 1晚</h3>
+      <p>地鐵出口步行3分鐘；7人請確認房型</p>
+      
+      
+      <a class="stay-link" href="https://www.tokyuhotels.co.jp/en/hakata-r/index.html"><span>查看訂位資訊</span><span>↗</span></a>
+      
+    </div>
+  
+    <div class="stay">
+      <div class="stay-top">
+        <span>2026-10-16</span>
+        <em>飯店</em>
+      </div>
+      <h3>亀の井ホテル 阿蘇パークリゾート 1晚（一泊二食）</h3>
+      <p>含晚餐自助餐＋露天溫泉</p>
+      
+      
+      <a class="stay-link" href="https://kamenoi-hotels.com/en/asoparkresort/"><span>查看訂位資訊</span><span>↗</span></a>
+      
+    </div>
+  
+    <div class="stay">
+      <div class="stay-top">
+        <span>2026-10-17</span>
+        <em>飯店</em>
+      </div>
+      <h3>別府杉乃井ホテル 1晚</h3>
+      <p>有無障礙空間，適合三代同堂</p>
+      
+      
+      <a class="stay-link" href="https://suginoi.orixhotelsandresorts.com/"><span>查看訂位資訊</span><span>↗</span></a>
+      
+    </div>
+  
+    <div class="stay">
+      <div class="stay-top">
+        <span>2026-10-18</span>
+        <em>飯店</em>
+      </div>
+      <h3>Reisen Villa Hakata（包棟）2晚</h3>
+      <p>8張實床、3間衛浴、有廚房；電梯需向房東再確認</p>
+      
+      
+      <a class="stay-link" href="https://www.airbnb.com/rooms/1396225852858346948"><span>查看訂位資訊</span><span>↗</span></a>
+      
+    </div>
+  
+  </div>
+</section>
+
+
+
+<section class="section" id="emergency">
+  <div class="section-heading">
+    <h2>緊急資訊</h2>
+    <p>臨時需要時最難翻——先放這裡，手機點電話可直接撥號。</p>
+  </div>
+  <div class="emergency-grid">
+  
+    <div class="card">
+      <b>日本緊急電話</b>
+      <p>警察 110／消防・救護 119（手機可直撥）</p>
+      <a class="tel" href="tel:110">📞 110</a>
+    </div>
+  
+    <div class="card">
+      <b>外交部旅外急難救助專線</b>
+      <p>海外付費請撥；緊急可用（依當地撥號方式）</p>
+      <a class="tel" href="tel:800-0885-0885">📞 800-0885-0885</a>
+    </div>
+  
+    <div class="card">
+      <b>台北駐福岡辦事處</b>
+      <p>急難救助；出發前確認最新地址與電話</p>
+      
+    </div>
+  
+    <div class="card">
+      <b>包車公司／司機</b>
+      <p>待填：公司名稱與司機手機</p>
+      
+    </div>
+  
+    <div class="card">
+      <b>旅遊保險</b>
+      <p>待填：保單號與 24h 服務電話</p>
+      
+    </div>
+  
+  </div>
+</section>
+
+
+<section class="section" id="budget">
+  <div class="recommendation">
+    <p class="eyebrow">BUDGET</p>
+    <h3>花費總覽</h3>
+    
+    <div class="budget-total">
+      <span>預算</span>
+      <b>NT$350,000 ≈ ¥1,680,000</b>
+    </div>
+    <p class="budget-empty">花費尚未填入。待各項報價／確認金額後再逐筆補上，這裡會自動顯示合計、每人分攤與類別占比。</p>
+    
+  </div>
+</section>
+
+
+<section class="section" id="notes">
+  <div class="section-heading">
+    <h2>出發前備忘</h2>
+  </div>
+  <div class="check-grid">
+  
+    <div><span>01</span>包車報價請確認是否含高速公路過路費、停車費、司機餐費與小費</div>
+  
+    <div><span>02</span>7人建議預訂10人座（Hiace）車型，才能同時容納7位大人與7–9件28吋行李</div>
+  
+    <div><span>03</span>熱門餐廳（一蘭總本店、ShinShin拉麵等）尖峰時段排隊嚴重，建議避開用餐尖峰或改超商熟食</div>
+  
+    <div><span>04</span>建議下載 NAVITIME JAPAN（找洗手間、行李寄存）或 ロケスマ（周邊店家即時搜尋）</div>
+  
+    <div><span>05</span>10月中旬福岡市區約10–25度，但阿蘇山區與別府纜車山頂風大溫差大，務必準備防風外套或輕羽絨</div>
+  
+    <div><span>06</span>10月中旬為秋季旅遊旺季，阿蘇與別府溫泉飯店建議2–3個月前預訂</div>
+  
+    <div><span>07</span>待補充：抵達福岡的航班資訊、各飯店/包棟訂房確認碼、包車公司名稱與總費用、是否需中文司機、是否需兒童座椅</div>
+  
+  </div>
+</section>
+
+
+
+<section class="section" id="packing">
+  <div class="section-heading">
+    <h2>打包清單</h2>
+    <p>出發前一項一項勾，勾選狀態會記在這台裝置。</p>
+  </div>
+  <div class="packing">
+  
+    
+    <div class="pack-group">
+      <h3>證件文件</h3>
+      <ul class="pack-items">
+      
+        <li><label><input type="checkbox" data-pack="證件文件:1"><span>護照</span></label></li>
+      
+        <li><label><input type="checkbox" data-pack="證件文件:2"><span>登機證／機票</span></label></li>
+      
+        <li><label><input type="checkbox" data-pack="證件文件:3"><span>包車確認單</span></label></li>
+      
+        <li><label><input type="checkbox" data-pack="證件文件:4"><span>各飯店訂房確認碼</span></label></li>
+      
+        <li><label><input type="checkbox" data-pack="證件文件:5"><span>旅遊保險資料</span></label></li>
+      
+      </ul>
+    </div>
+    
+    <div class="pack-group">
+      <h3>衣物</h3>
+      <ul class="pack-items">
+      
+        <li><label><input type="checkbox" data-pack="衣物:1"><span>防風外套／輕羽絨（阿蘇・別府山頂）</span></label></li>
+      
+        <li><label><input type="checkbox" data-pack="衣物:2"><span>泡湯換洗衣物</span></label></li>
+      
+        <li><label><input type="checkbox" data-pack="衣物:3"><span>長輩保暖衣物</span></label></li>
+      
+      </ul>
+    </div>
+    
+    <div class="pack-group">
+      <h3>電子</h3>
+      <ul class="pack-items">
+      
+        <li><label><input type="checkbox" data-pack="電子:1"><span>行動電源</span></label></li>
+      
+        <li><label><input type="checkbox" data-pack="電子:2"><span>萬國轉接頭</span></label></li>
+      
+        <li><label><input type="checkbox" data-pack="電子:3"><span>網卡／漫遊</span></label></li>
+      
+      </ul>
+    </div>
+    
+    <div class="pack-group">
+      <h3>其他</h3>
+      <ul class="pack-items">
+      
+        <li><label><input type="checkbox" data-pack="其他:1"><span>常備藥</span></label></li>
+      
+        <li><label><input type="checkbox" data-pack="其他:2"><span>現金日幣</span></label></li>
+      
+        <li><label><input type="checkbox" data-pack="其他:3"><span>環保購物袋（伴手禮）</span></label></li>
+      
+      </ul>
+    </div>
+    
+  
+  </div>
+</section>
+
+</main>
+
+<footer class="footnote">
+  <span>九州六日五夜親子包車慢旅（阿蘇芒草・別府溫泉） · 2026.10.15 – 10.20</span>
+  <span>旅程手冊</span>
+</footer>
+
+<div class="now-bar" hidden>
+  <div class="now-inner">
+    <span class="lbl"></span>
+    <a class="now-go" href="#" target="_blank" rel="noopener" hidden>導航 ↗</a>
+    <button class="now-dismiss" type="button" aria-label="關閉今日模式">×</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  var strip = document.querySelector(".nav-links");
+  var links = Array.prototype.slice.call(document.querySelectorAll(".sticky-nav a"));
+  if (!strip || !links.length) return;
+  var byId = {};
+  links.forEach(function(a){ byId[a.hash.slice(1)] = a; });
+  var current = links[0];
+  current.classList.add("active");
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if (e.isIntersecting && byId[e.target.id] && byId[e.target.id] !== current) {
+        current.classList.remove("active");
+        current = byId[e.target.id];
+        current.classList.add("active");
+        // 只水平捲動導覽列本身，絕不觸碰頁面捲動
+        strip.scrollTo({
+          left: current.offsetLeft - (strip.clientWidth - current.offsetWidth) / 2,
+          behavior: reduce ? "auto" : "smooth"
+        });
+      }
+    });
+  }, {rootMargin:"-15% 0px -70% 0px"});
+  Object.keys(byId).forEach(function(id){
+    var el = document.getElementById(id);
+    if (el) obs.observe(el);
+  });
+
+  // 點導覽跳到某天時自動展開
+  function openHash(hash){
+    var el = hash && document.querySelector(hash);
+    if (el && el.tagName === "DETAILS") el.open = true;
+  }
+  links.forEach(function(a){
+    a.addEventListener("click", function(){ openHash(a.hash); });
+  });
+  window.addEventListener("hashchange", function(){ openHash(location.hash); });
+  openHash(location.hash);
+
+  // 全部展開／收合
+  var toggle = document.querySelector(".toggle-all");
+  var daysEls = Array.prototype.slice.call(document.querySelectorAll("details.day"));
+  if (toggle) toggle.addEventListener("click", function(){
+    var expand = daysEls.some(function(d){ return !d.open; });
+    daysEls.forEach(function(d){ d.open = expand; });
+    toggle.textContent = expand ? "全部收合" : "全部展開";
+  });
+
+  // 列印時自動展開全部
+  window.addEventListener("beforeprint", function(){
+    daysEls.forEach(function(d){ d.open = true; });
+  });
+
+  // ── 今日模式：依裝置時鐘標出今天、灰階已過行程、浮出「下一站」 ──
+  function todayMode(now){
+    var y = now.getFullYear();
+    var pad = function(n){ return String(n).padStart(2, "0"); };
+    var today = y + "-" + pad(now.getMonth() + 1) + "-" + pad(now.getDate());
+    var nowHM = pad(now.getHours()) + ":" + pad(now.getMinutes());
+    var dayEl = document.querySelector('details.day[data-date="' + today + '"]');
+    var bar = document.querySelector(".now-bar");
+    if (!dayEl || !bar) return;
+
+    dayEl.classList.add("today");
+    dayEl.open = true;
+    var dayNoEl = dayEl.querySelector(".day-no b");
+    if (dayNoEl && !dayNoEl.querySelector(".today-badge")) {
+      var badge = document.createElement("span");
+      badge.className = "today-badge";
+      badge.textContent = "今日";
+      dayNoEl.appendChild(badge);
+    }
+
+    var next = null;
+    Array.prototype.forEach.call(dayEl.querySelectorAll(".stop"), function(s){
+      var t = s.getAttribute("data-time");
+      if (t && t < nowHM) s.classList.add("past");
+      else if (!next && t) next = s;
+    });
+
+    var dayNo = (dayEl.id || "").replace("day-", "");
+    var lbl = bar.querySelector(".lbl");
+    var go = bar.querySelector(".now-go");
+    if (next) {
+      lbl.innerHTML = "<small>DAY " + dayNo + " · 進行中</small>下一站 " +
+        next.getAttribute("data-time") + " " + next.getAttribute("data-name");
+      var map = next.getAttribute("data-map");
+      if (map) { go.href = map; go.hidden = false; } else { go.hidden = true; }
+    } else {
+      lbl.innerHTML = "<small>DAY " + dayNo + "</small>今日行程已全部結束";
+      go.hidden = true;
+    }
+
+    var dismissKey = "nowbar-dismissed:" + location.pathname + ":" + today;
+    try { if (localStorage.getItem(dismissKey) === "1") return; } catch (e) {}
+    bar.hidden = false;
+    document.body.style.paddingBottom = bar.offsetHeight + "px";
+    bar.querySelector(".now-dismiss").addEventListener("click", function(){
+      bar.hidden = true;
+      document.body.style.paddingBottom = "";
+      Array.prototype.forEach.call(dayEl.querySelectorAll(".stop.past"), function(s){
+        s.classList.remove("past");
+      });
+      try { localStorage.setItem(dismissKey, "1"); } catch (e) {}
+    });
+  }
+  // 可用 ?today=2026-10-16 或 ?today=2026-10-16T14:30 模擬日期，方便預覽今日模式
+  var override = new URLSearchParams(location.search).get("today");
+  if (override && /^\d{4}-\d{2}-\d{2}/.test(override)) {
+    todayMode(new Date(override.length === 10 ? override + "T12:00:00" : override));
+  } else {
+    todayMode(new Date());
+  }
+
+  // 深色 / 大字 切換（偏好記在 localStorage；亮色與一般字為預設）
+  var root = document.documentElement;
+  var themeBtn = document.querySelector('[data-toggle="theme"]');
+  var sizeBtn = document.querySelector('[data-toggle="size"]');
+  function syncTools(){
+    if (themeBtn){
+      var dark = root.getAttribute("data-theme") === "dark";
+      themeBtn.setAttribute("aria-pressed", dark ? "true" : "false");
+      themeBtn.textContent = dark ? "☀️" : "🌙";
+      themeBtn.setAttribute("aria-label", dark ? "切換淺色模式" : "切換深色模式");
+    }
+    if (sizeBtn){
+      var large = root.getAttribute("data-theme-size") === "large";
+      sizeBtn.setAttribute("aria-pressed", large ? "true" : "false");
+    }
+  }
+  syncTools();
+  if (themeBtn) themeBtn.addEventListener("click", function(){
+    var next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+    try { localStorage.setItem("theme", next); } catch (e) {}
+    syncTools();
+  });
+  if (sizeBtn) sizeBtn.addEventListener("click", function(){
+    var large = root.getAttribute("data-theme-size") === "large";
+    if (large){ root.removeAttribute("data-theme-size"); }
+    else { root.setAttribute("data-theme-size", "large"); }
+    try { localStorage.setItem("textsize", large ? "normal" : "large"); } catch (e) {}
+    syncTools();
+  });
+  var editBtn = document.querySelector('[data-toggle="edit"]');
+  if (editBtn) editBtn.addEventListener("click", function(){
+    window.open(location.pathname + "?edit=1", "_blank");
+  });
+
+  // 所有外部連結一律另開分頁（# 頁內跳轉維持原分頁）
+  Array.prototype.forEach.call(document.querySelectorAll("a[href]"), function(a){
+    var h = a.getAttribute("href") || "";
+    if (h && h.charAt(0) !== "#") { a.target = "_blank"; a.rel = "noopener"; }
+  });
+
+  // 打包清單勾選狀態存 localStorage（依本頁路徑分隔）
+  var packBoxes = document.querySelectorAll("input[data-pack]");
+  packBoxes.forEach(function(box){
+    var key = "pack:" + location.pathname + ":" + box.getAttribute("data-pack");
+    try { box.checked = localStorage.getItem(key) === "1"; } catch (e) {}
+    box.addEventListener("change", function(){
+      try { localStorage.setItem(key, box.checked ? "1" : "0"); } catch (e) {}
+    });
+  });
+})();
+</script>
+
+<script>
+/* ── 頁內編輯器：?edit=1 顯示表單，自動存草稿到 localStorage，可匯出 trip.json ── */
+(function(){
+  var srcEl = document.getElementById("trip-src");
+  if (!srcEl) return;
+  var baked;
+  try { baked = JSON.parse(srcEl.textContent); } catch (e) { return; }
+  var draftKey = "draft:" + location.pathname;
+  var editing = new URLSearchParams(location.search).get("edit") === "1";
+
+  function loadDraft(){ try { var d = localStorage.getItem(draftKey); return d ? JSON.parse(d) : null; } catch (e) { return null; } }
+
+  // 手冊模式：偵測未匯出的本機草稿 → 橫幅提醒
+  if (!editing) {
+    if (!loadDraft()) return;
+    var main = document.querySelector("main");
+    if (!main) return;
+    var bn = document.createElement("div");
+    bn.className = "draft-banner";
+    var sp = document.createElement("span");
+    sp.textContent = "📝 偵測到本機編輯草稿（尚未匯出成 trip.json）";
+    var open = document.createElement("a");
+    open.className = "ed-btn"; open.href = location.pathname + "?edit=1"; open.target = "_blank"; open.rel = "noopener";
+    open.textContent = "開啟編輯器";
+    var disc = document.createElement("button");
+    disc.className = "ed-btn"; disc.textContent = "捨棄草稿";
+    disc.addEventListener("click", function(){
+      if (confirm("捨棄本機草稿？此手冊顯示的內容不受影響。")) {
+        try { localStorage.removeItem(draftKey); } catch (e) {}
+        bn.remove();
+      }
+    });
+    bn.appendChild(sp); bn.appendChild(open); bn.appendChild(disc);
+    main.insertBefore(bn, main.firstChild);
+    return;
+  }
+
+  // ── 編輯模式 ──
+  document.body.classList.add("editing");
+  document.title = "編輯｜" + document.title;
+  var data = loadDraft() || JSON.parse(JSON.stringify(baked));
+  var host = document.getElementById("editor");
+  host.hidden = false;
+  var saveEl, saveTimer = null;
+
+  function save(){
+    try {
+      localStorage.setItem(draftKey, JSON.stringify(data));
+      if (saveEl) saveEl.textContent = "已存草稿 " + new Date().toLocaleTimeString();
+    } catch (e) { if (saveEl) saveEl.textContent = "存檔失敗（瀏覽器空間不足？）"; }
+  }
+  function touch(){ clearTimeout(saveTimer); saveTimer = setTimeout(save, 400); }
+
+  function field(obj, key, label, opts){
+    opts = opts || {};
+    var wrap = document.createElement("div");
+    wrap.className = "ed-field" + (opts.full ? " full" : "");
+    var l = document.createElement("label"); l.textContent = label; wrap.appendChild(l);
+    var inp;
+    if (opts.type === "textarea") { inp = document.createElement("textarea"); }
+    else if (opts.type === "select") {
+      inp = document.createElement("select");
+      (opts.opts || []).forEach(function(o){
+        var op = document.createElement("option"); op.value = o; op.textContent = o || "（無）"; inp.appendChild(op);
+      });
+    } else { inp = document.createElement("input"); inp.type = opts.type || "text"; }
+    var v = obj[key];
+    inp.value = (v === undefined || v === null) ? "" : v;
+    inp.addEventListener(opts.type === "select" ? "change" : "input", function(){
+      var val = inp.value;
+      if (opts.type === "number") { obj[key] = val === "" ? 0 : Number(val); }
+      else if (val === "") { delete obj[key]; }
+      else { obj[key] = val; }
+      touch();
+    });
+    wrap.appendChild(inp); return wrap;
+  }
+  function grid(){ var g = document.createElement("div"); g.className = "ed-grid"; return g; }
+
+  function listEditor(arr, buildRow, addLabel, makeNew){
+    var box = document.createElement("div");
+    function redraw(){
+      box.innerHTML = "";
+      arr.forEach(function(item, i){
+        var row = document.createElement("div"); row.className = "ed-row";
+        var head = document.createElement("div"); head.className = "ed-rowhead";
+        var b = document.createElement("b"); b.textContent = "# " + (i + 1); head.appendChild(b);
+        var del = document.createElement("button"); del.className = "ed-del"; del.type = "button"; del.textContent = "刪除";
+        del.addEventListener("click", function(){ arr.splice(i, 1); touch(); redraw(); });
+        head.appendChild(del); row.appendChild(head);
+        buildRow(item, row); box.appendChild(row);
+      });
+      var add = document.createElement("button"); add.className = "ed-add"; add.type = "button"; add.textContent = addLabel;
+      add.addEventListener("click", function(){ arr.push(makeNew()); touch(); redraw(); });
+      box.appendChild(add);
+    }
+    redraw(); return box;
+  }
+
+  function stringListEditor(arr){
+    var box = document.createElement("div");
+    function redraw(){
+      box.innerHTML = "";
+      arr.forEach(function(s, i){
+        var row = document.createElement("div"); row.className = "ed-strrow";
+        var inp = document.createElement("textarea"); inp.value = s;
+        inp.addEventListener("input", function(){ arr[i] = inp.value; touch(); });
+        var del = document.createElement("button"); del.className = "ed-del"; del.type = "button"; del.textContent = "刪除";
+        del.addEventListener("click", function(){ arr.splice(i, 1); touch(); redraw(); });
+        row.appendChild(inp); row.appendChild(del); box.appendChild(row);
+      });
+      var add = document.createElement("button"); add.className = "ed-add"; add.type = "button"; add.textContent = "＋ 新增一項";
+      add.addEventListener("click", function(){ arr.push(""); touch(); redraw(); });
+      box.appendChild(add);
+    }
+    redraw(); return box;
+  }
+
+  function section(title, open, build){
+    var det = document.createElement("details"); det.className = "ed-sec"; det.open = !!open;
+    var sum = document.createElement("summary"); sum.textContent = title; det.appendChild(sum);
+    var body = document.createElement("div"); body.className = "ed-body"; build(body); det.appendChild(body);
+    host.appendChild(det);
+  }
+
+  function cleanExport(){
+    var d = JSON.parse(JSON.stringify(data));
+    var t = d.trip || {};
+    if (t.fx && !(Number(t.fx.rate) > 0)) delete t.fx;
+    ["emergency", "packing"].forEach(function(k){ if (Array.isArray(t[k]) && !t[k].length) delete t[k]; });
+    ["highlights", "alerts", "notes", "bookings"].forEach(function(k){ if (Array.isArray(d[k]) && !d[k].length) delete d[k]; });
+    return d;
+  }
+
+  // 標題 + 說明 + 工具列
+  var title = document.createElement("h1"); title.className = "ed-title"; title.textContent = "編輯行程資料";
+  var sub = document.createElement("p"); sub.className = "ed-sub";
+  sub.textContent = "邊改邊自動存到這台裝置。改好按「匯出 trip.json」下載，取代旅程資料夾內的 trip.json 後重跑 python render.py，手冊就會套用。";
+  host.appendChild(title); host.appendChild(sub);
+
+  var bar = document.createElement("div"); bar.className = "ed-bar";
+  var exportBtn = document.createElement("button"); exportBtn.type = "button"; exportBtn.className = "ed-btn primary"; exportBtn.textContent = "⬇ 匯出 trip.json";
+  var resetBtn = document.createElement("button"); resetBtn.type = "button"; resetBtn.className = "ed-btn"; resetBtn.textContent = "還原草稿";
+  var backBtn = document.createElement("button"); backBtn.type = "button"; backBtn.className = "ed-btn"; backBtn.textContent = "← 回到手冊";
+  saveEl = document.createElement("span"); saveEl.className = "ed-save";
+  bar.appendChild(exportBtn); bar.appendChild(resetBtn); bar.appendChild(backBtn);
+  var spacer = document.createElement("span"); spacer.className = "spacer"; bar.appendChild(spacer);
+  bar.appendChild(saveEl);
+  host.appendChild(bar);
+
+  exportBtn.addEventListener("click", function(){
+    save();
+    var blob = new Blob([JSON.stringify(cleanExport(), null, 2) + "\n"], {type: "application/json"});
+    var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "trip.json";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); }, 1000);
+  });
+  resetBtn.addEventListener("click", function(){
+    if (confirm("還原成手冊目前的原始資料，並清除本機草稿？")) {
+      try { localStorage.removeItem(draftKey); } catch (e) {}
+      location.reload();
+    }
+  });
+  backBtn.addEventListener("click", function(){ location.href = location.pathname; });
+
+  var ITEM_TYPES = ["景點", "餐廳", "交通", "住宿", "購物"];
+  var STATUS = ["", "confirmed", "pending"];
+
+  // 旅程 meta
+  section("旅程", true, function(body){
+    var t = data.trip = data.trip || {};
+    var g = grid();
+    g.appendChild(field(t, "title", "標題", {full: true}));
+    g.appendChild(field(t, "destination", "目的地", {full: true}));
+    g.appendChild(field(t, "start_date", "開始日期", {type: "date"}));
+    g.appendChild(field(t, "end_date", "結束日期", {type: "date"}));
+    g.appendChild(field(t, "travelers", "人數", {type: "number"}));
+    g.appendChild(field(t, "currency", "幣別（如 NT$／¥）"));
+    g.appendChild(field(t, "budget", "總預算", {type: "number"}));
+    body.appendChild(g);
+    var fxTitle = document.createElement("div"); fxTitle.className = "ed-daytitle"; fxTitle.textContent = "雙幣別換算（選填）"; body.appendChild(fxTitle);
+    t.fx = t.fx || {};
+    var fg = grid();
+    fg.appendChild(field(t.fx, "currency", "換算幣別"));
+    fg.appendChild(field(t.fx, "rate", "匯率（金額 × 此值）", {type: "number"}));
+    body.appendChild(fg);
+  });
+
+  // 每日行程
+  section("每日行程", false, function(body){
+    data.days = data.days || [];
+    body.appendChild(listEditor(data.days, function(day, row){
+      var g = grid();
+      g.appendChild(field(day, "date", "日期", {type: "date"}));
+      g.appendChild(field(day, "theme", "主題"));
+      g.appendChild(field(day, "weather", "天氣／穿著", {full: true}));
+      row.appendChild(g);
+      var lbl = document.createElement("div"); lbl.className = "ed-daytitle"; lbl.textContent = "行程項目（請依時間排序）"; row.appendChild(lbl);
+      day.items = day.items || [];
+      row.appendChild(listEditor(day.items, function(item, irow){
+        var ig = grid();
+        ig.appendChild(field(item, "time", "時間", {type: "time"}));
+        ig.appendChild(field(item, "type", "類型", {type: "select", opts: ITEM_TYPES}));
+        ig.appendChild(field(item, "name", "名稱", {full: true}));
+        ig.appendChild(field(item, "note", "備註", {type: "textarea", full: true}));
+        ig.appendChild(field(item, "duration", "停留（如 1.5h）"));
+        ig.appendChild(field(item, "cost", "費用", {type: "number"}));
+        ig.appendChild(field(item, "map_query", "地圖搜尋字串"));
+        ig.appendChild(field(item, "next_transit", "到下一站的交通"));
+        ig.appendChild(field(item, "url", "連結", {full: true}));
+        ig.appendChild(field(item, "status", "狀態", {type: "select", opts: STATUS}));
+        irow.appendChild(ig);
+      }, "＋ 新增行程項目", function(){ return {time: "09:00", name: "新項目", type: "景點"}; }));
+    }, "＋ 新增一天", function(){ return {date: (data.trip && data.trip.start_date) || "", theme: "", items: []}; }));
+  });
+
+  // 訂位
+  section("訂位", false, function(body){
+    data.bookings = data.bookings || [];
+    body.appendChild(listEditor(data.bookings, function(b, row){
+      var g = grid();
+      g.appendChild(field(b, "type", "類型（航班／飯店…）"));
+      g.appendChild(field(b, "name", "名稱"));
+      g.appendChild(field(b, "date", "日期", {type: "date"}));
+      g.appendChild(field(b, "time", "時間", {type: "time"}));
+      g.appendChild(field(b, "code", "確認碼"));
+      g.appendChild(field(b, "cost", "費用", {type: "number"}));
+      g.appendChild(field(b, "note", "備註", {type: "textarea", full: true}));
+      g.appendChild(field(b, "url", "連結", {full: true}));
+      g.appendChild(field(b, "status", "狀態", {type: "select", opts: STATUS}));
+      row.appendChild(g);
+    }, "＋ 新增訂位", function(){ return {type: "飯店", name: ""}; }));
+  });
+
+  // 緊急資訊
+  section("緊急資訊", false, function(body){
+    var t = data.trip = data.trip || {};
+    t.emergency = t.emergency || [];
+    body.appendChild(listEditor(t.emergency, function(e, row){
+      var g = grid();
+      g.appendChild(field(e, "label", "名稱", {full: true}));
+      g.appendChild(field(e, "value", "說明／地址"));
+      g.appendChild(field(e, "tel", "電話（可一鍵撥號）"));
+      row.appendChild(g);
+    }, "＋ 新增緊急聯絡", function(){ return {label: "", value: "", tel: ""}; }));
+  });
+
+  // 打包清單
+  section("打包清單", false, function(body){
+    var t = data.trip = data.trip || {};
+    var pk = t.packing;
+    if (pk && pk.length && typeof pk[0] === "string") {
+      body.appendChild(stringListEditor(pk));
+    } else {
+      t.packing = pk || [];
+      body.appendChild(listEditor(t.packing, function(grp, row){
+        row.appendChild(field(grp, "group", "分組名稱"));
+        grp.items = grp.items || [];
+        var lbl = document.createElement("div"); lbl.className = "ed-daytitle"; lbl.textContent = "項目"; row.appendChild(lbl);
+        row.appendChild(stringListEditor(grp.items));
+      }, "＋ 新增分組", function(){ return {group: "新分組", items: []}; }));
+    }
+  });
+
+  // 重點總覽
+  section("重點總覽", false, function(body){
+    data.highlights = data.highlights || [];
+    body.appendChild(listEditor(data.highlights, function(h, row){
+      row.appendChild(field(h, "title", "標題", {full: true}));
+      row.appendChild(field(h, "text", "說明", {type: "textarea", full: true}));
+    }, "＋ 新增重點", function(){ return {title: "", text: ""}; }));
+  });
+
+  // 提醒
+  section("提醒（該注意的意外資訊）", false, function(body){
+    data.alerts = data.alerts || [];
+    body.appendChild(stringListEditor(data.alerts));
+  });
+
+  // 備忘
+  section("出發前備忘", false, function(body){
+    data.notes = data.notes || [];
+    body.appendChild(stringListEditor(data.notes));
+  });
+})();
+</script>
+
+<script>
+/* PWA：僅在 http/https 下註冊 service worker；file:// 單檔開啟時略過，不影響離線單檔用法 */
+if ("serviceWorker" in navigator && location.protocol.indexOf("http") === 0) {
+  window.addEventListener("load", function(){
+    navigator.serviceWorker.register("sw.js").catch(function(){});
+  });
+}
+</script>
+</body>
+</html>
