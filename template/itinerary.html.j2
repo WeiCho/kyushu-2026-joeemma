@@ -1,0 +1,1308 @@
+{%- macro money(v) -%}{{ trip.currency }}{{ "{:,.0f}".format(v) }}{%- endmacro -%}
+{%- set TYPE_META = {
+  "景點": {"icon": "🏛", "cls": "t-see"},
+  "餐廳": {"icon": "🍜", "cls": "t-eat"},
+  "交通": {"icon": "🚃", "cls": "t-go"},
+  "住宿": {"icon": "🏨", "cls": "t-stay"},
+  "購物": {"icon": "🛍", "cls": "t-shop"},
+} -%}
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ trip.title }}｜旅程手冊</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#f7f3ea" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#191d1a" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="{{ trip.hero_word or trip.title }}">
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<script>
+/* 早期套用主題與字級偏好，避免載入閃爍。亮色為預設；深色/大字為選用 */
+(function(){try{var d=document.documentElement;
+  var t=localStorage.getItem("theme")||(window.matchMedia&&matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light");
+  d.setAttribute("data-theme",t);
+  if(localStorage.getItem("textsize")==="large")d.setAttribute("data-theme-size","large");
+}catch(e){document.documentElement.setAttribute("data-theme","light");}})();
+</script>
+<style>
+:root{
+  --ink:#24342d;        /* 墨綠 */
+  --pine:#315b49;       /* 松綠 */
+  --sage:#dfe9dc;       /* 鼠尾草 */
+  --paper:#f7f3ea;      /* 紙 */
+  --warm:#d86736;       /* 暖橘 */
+  --line:#d8d6c9;       /* 分隔線 */
+  --card:#fffdf8;       /* 卡片白 */
+  --muted:#5b6b62;      /* 次要字 */
+  --focus:#b64b24;
+  --serif:"Noto Serif TC",Georgia,"Times New Roman",serif;
+  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+}
+
+/* ── 深色模式（選用；亮色仍為預設與識別，仍是編輯風而非 App 風）── */
+:root[data-theme="dark"]{
+  --ink:#ece7db; --pine:#8bb89c; --sage:#2a332d; --paper:#191d1a;
+  --warm:#f0885c; --line:#38403a; --card:#20261f; --muted:#a7b3a9; --focus:#f0885c;
+}
+:root[data-theme="dark"] .hero{
+  background:
+    radial-gradient(circle at 82% 22%,#ffffff14 0 10%,#0000 10.5%),
+    linear-gradient(125deg,#20302a 0 48%,#243a30 48% 66%,#3a2a22 66% 100%);
+}
+:root[data-theme="dark"] .hero:after{color:#ffffff12}
+:root[data-theme="dark"] .hero-pills span{background:#ffffff14;border-color:#ffffff2e}
+:root[data-theme="dark"] .sticky-nav{background:#191d1ae6}
+:root[data-theme="dark"] .decision-grid{background:#ffffff08}
+:root[data-theme="dark"] .alert-grid>div{background:#2e241c;border-color:#5a4632;color:var(--ink)}
+:root[data-theme="dark"] .pending-banner details{background:#2e241c;border-color:#5a4632}
+:root[data-theme="dark"] .pending-banner summary{color:#f0a578}
+:root[data-theme="dark"] .pending-banner a{color:var(--warm)}
+:root[data-theme="dark"] .route-btn{background:#20261f}
+:root[data-theme="dark"] .stay-link{background:#2f5544}
+:root[data-theme="dark"] .recommendation,
+:root[data-theme="dark"] .now-bar{background:#1f2b25}
+:root[data-theme="dark"] .now-go{color:#1f2b25}
+:root[data-theme="dark"] .tico{filter:saturate(.85) brightness(.92)}
+
+/* ── 長輩模式（放大關鍵閱讀文字 + 更高對比）── */
+:root[data-theme-size="large"]{--muted:#3f4a43}
+:root[data-theme="dark"][data-theme-size="large"]{--muted:#c6cfc7}
+[data-theme-size="large"] body{font-size:18px}
+[data-theme-size="large"] .lead{font-size:19px}
+[data-theme-size="large"] .sticky-nav a{font-size:16px}
+[data-theme-size="large"] .stop time{font-size:16px}
+[data-theme-size="large"] .stop h4{font-size:19px}
+[data-theme-size="large"] .stop .desc{font-size:16px}
+[data-theme-size="large"] .stop .meta{font-size:15px}
+[data-theme-size="large"] .day-route,
+[data-theme-size="large"] .day-weather{font-size:15px}
+[data-theme-size="large"] .decision-grid p{font-size:16px}
+[data-theme-size="large"] .check-grid>div,
+[data-theme-size="large"] .alert-grid>div,
+[data-theme-size="large"] .emergency-grid p,
+[data-theme-size="large"] .stay p,
+[data-theme-size="large"] .pending-banner li{font-size:16px}
+[data-theme-size="large"] .emergency-grid a.tel{font-size:17px}
+[data-theme-size="large"] .pack-items label{font-size:17px}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:4.5rem}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.65}
+a{color:inherit}
+a:focus-visible{outline:3px solid var(--focus);outline-offset:4px;border-radius:8px}
+
+/* ── Hero ── */
+.hero{
+  position:relative;overflow:hidden;display:grid;place-items:center;
+  min-height:min(78vh,560px);padding:64px 24px;
+  background:
+    radial-gradient(circle at 82% 22%,#ffffff73 0 10%,#0000 10.5%),
+    linear-gradient(125deg,#dce8d8 0 48%,#b9d0bd 48% 66%,#ecb68f 66% 100%);
+}
+.hero:after{
+  content:"{{ trip.hero_word }}";
+  position:absolute;bottom:-.28em;right:-.06em;
+  color:#ffffff42;font-weight:900;font-family:var(--sans);
+  font-size:clamp(120px,34vw,240px);letter-spacing:-.08em;line-height:1;
+  pointer-events:none;
+}
+.hero-inner{position:relative;z-index:1;width:min(1120px,100%)}
+.eyebrow{margin:0 0 14px;color:var(--pine);font-size:12px;font-weight:800;letter-spacing:.18em}
+h1{
+  margin:0;font-family:var(--serif);font-weight:700;
+  font-size:clamp(46px,11vw,96px);line-height:1.04;letter-spacing:-.02em;
+  text-wrap:balance;
+}
+.lead{margin:26px 0 18px;font-size:17px;max-width:34em}
+.hero-pills{display:flex;flex-wrap:wrap;gap:8px}
+.hero-pills span{
+  background:#ffffffb3;border:1px solid #24342d29;border-radius:999px;
+  padding:8px 13px;font-size:13px;font-variant-numeric:tabular-nums;
+}
+
+/* ── Sticky nav ── */
+.sticky-nav{
+  position:sticky;top:0;z-index:10;
+  display:flex;align-items:stretch;gap:0;padding:0 14px;
+  background:#f7f3eaf0;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line);
+}
+.nav-links{
+  position:relative;flex:1;min-width:0;
+  display:flex;justify-content:center;gap:26px;
+  overflow-x:auto;scrollbar-width:none;
+}
+.nav-links::-webkit-scrollbar{display:none}
+.sticky-nav a{
+  display:flex;align-items:center;min-height:48px;white-space:nowrap;
+  font-size:14px;font-weight:700;text-decoration:none;color:var(--muted);
+  border-bottom:3px solid transparent;margin-bottom:-1px;
+}
+.sticky-nav a.active{color:var(--ink);border-bottom-color:var(--warm)}
+.nav-tools{
+  display:flex;align-items:center;gap:2px;flex:0 0 auto;
+  padding-left:8px;margin-left:6px;border-left:1px solid var(--line);
+}
+.nav-tool{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:40px;min-height:44px;padding:0 6px;
+  background:none;border:0;border-radius:10px;cursor:pointer;
+  color:var(--muted);font:inherit;font-size:15px;font-weight:800;line-height:1;
+}
+.nav-tool:hover{background:var(--sage);color:var(--ink)}
+.nav-tool[aria-pressed="true"]{color:var(--warm)}
+
+/* ── Sections ── */
+.section{width:min(920px,100% - 40px);margin:0 auto;padding:72px 0 0}
+.section-heading{margin-bottom:34px}
+.section-heading h2{
+  margin:0 0 10px;font-family:var(--serif);font-size:clamp(30px,5vw,46px);
+  line-height:1.12;letter-spacing:-.01em;
+}
+.section-heading p{margin:0;color:var(--muted);line-height:1.8}
+
+/* ── 總覽 ── */
+.decision-grid{display:grid;grid-template-columns:repeat(2,1fr);border:1px solid var(--line);background:#ffffff57}
+.decision-grid article{padding:26px;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+.decision-grid article:nth-child(2n){border-right:0}
+.decision-grid article:nth-last-child(-n+2):nth-child(odd),
+.decision-grid article:last-child{border-bottom:0}
+.decision-grid b{color:var(--warm);font-size:13px;letter-spacing:.08em}
+.decision-grid h3{margin:26px 0 8px;font-size:18px;line-height:1.4}
+.decision-grid p{margin:0;color:var(--muted);font-size:14px;line-height:1.75}
+
+/* ── Day 卡片（可展開）── */
+.days{display:grid;gap:26px}
+.day{
+  background:var(--card);border:1px solid var(--line);border-radius:22px;
+  overflow:hidden;box-shadow:0 16px 35px #2d3e340f;
+}
+.day>summary{
+  background:var(--sage);display:grid;grid-template-columns:120px 1fr 32px;
+  gap:22px;padding:26px 30px;cursor:pointer;list-style:none;align-items:start;
+}
+.day>summary::-webkit-details-marker{display:none}
+.day>summary i{
+  font-style:normal;font-size:26px;line-height:1;color:var(--pine);
+  justify-self:end;transition:transform .2s;
+}
+.day[open]>summary i{transform:rotate(45deg)}
+.toggle-all{
+  background:none;border:1px solid var(--line);border-radius:999px;
+  padding:9px 16px;font:inherit;font-size:13px;font-weight:700;color:var(--pine);
+  cursor:pointer;
+}
+.toggle-all:hover{background:var(--sage)}
+.heading-row{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin-bottom:34px}
+.heading-row .section-heading{margin-bottom:0}
+.day-no{display:flex;flex-direction:column;gap:4px}
+.day-no b{font-size:13px;font-weight:900;letter-spacing:.12em}
+.day-no small{color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums}
+.day>header h3{margin:0 0 6px;font-family:var(--serif);font-size:24px;line-height:1.3}
+.day-route{
+  margin:0;color:var(--muted);font-size:13.5px;line-height:1.6;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+.timeline{list-style:none;margin:0;padding:16px 30px 22px}
+.stop{
+  display:grid;grid-template-columns:76px 1fr;gap:20px;
+  padding:16px 0;border-bottom:1px dashed var(--line);position:relative;
+}
+.stop:last-child{border-bottom:0}
+.stop time{color:var(--warm);font-weight:800;font-variant-numeric:tabular-nums;padding-top:1px}
+.stop h4{margin:0 0 4px;font-size:16px;line-height:1.45}
+.stop h4 a.name{color:var(--pine);text-decoration:underline;text-underline-offset:3px}
+.loc{
+  display:inline-block;padding:.3rem .35rem;margin:-.3rem 0;
+  font-size:13px;font-weight:400;text-decoration:none;color:var(--pine);
+}
+.loc:hover{text-decoration:underline}
+.stop .desc{margin:0;color:var(--muted);font-size:14px;line-height:1.7}
+.stop .meta{
+  margin:6px 0 0;color:var(--muted);font-size:13px;
+  font-variant-numeric:tabular-nums;
+}
+.stop .meta b{color:var(--ink);letter-spacing:.03em}
+.go{
+  display:inline-flex;align-items:center;gap:6px;min-height:44px;
+  margin:2px 0 -10px;color:var(--warm);font-size:13.5px;font-weight:700;
+  text-decoration:none;
+}
+.go:hover{text-decoration:underline}
+.go span{font-weight:400}
+
+/* ── 訂位卡片 ── */
+.stay-list{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.stay{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:26px}
+.stay-top{display:flex;justify-content:space-between;align-items:center;gap:14px}
+.stay-top>span{color:var(--muted);font-size:13px;font-weight:800}
+.stay em{
+  font-style:normal;font-weight:800;font-size:12px;
+  background:var(--sage);color:var(--pine);border-radius:999px;padding:6px 10px;
+  white-space:nowrap;
+}
+.stay h3{margin:18px 0 10px;font-family:var(--serif);font-size:22px;line-height:1.3}
+.stay p{margin:0;color:var(--muted);font-size:14px;line-height:1.7}
+.stay .code{
+  margin-top:14px;padding-top:14px;border-top:1px dashed var(--line);
+  font-size:13px;color:var(--muted);
+}
+.stay .code b{
+  display:block;color:var(--ink);font-size:19px;font-weight:800;
+  letter-spacing:.05em;font-variant-numeric:tabular-nums;
+}
+.stay-link{
+  display:flex;justify-content:space-between;align-items:center;
+  min-height:48px;margin-top:16px;padding:12px 14px;
+  background:var(--pine);color:#fff;border-radius:12px;
+  font-size:13px;font-weight:800;text-decoration:none;transition:opacity .2s;
+}
+.stay-link:hover{opacity:.88}
+
+/* ── 預算（深綠大卡）── */
+.recommendation{
+  background:var(--pine);color:#fff;border-radius:20px;padding:34px;
+}
+.recommendation .eyebrow{color:#c8ddcf}
+.recommendation h3{margin:0 0 20px;font-family:var(--serif);font-size:28px}
+.pick-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  border-top:1px solid #ffffff38;border-bottom:1px solid #ffffff38;
+}
+.pick-grid>div{border-right:1px solid #ffffff38;padding:20px}
+.pick-grid>div:nth-child(3n){border-right:0}
+.pick-grid span{
+  display:block;color:#bcd8c6;font-size:12px;font-weight:900;
+  letter-spacing:.12em;margin-bottom:8px;
+}
+.pick-grid b{display:block;font-family:var(--serif);font-size:20px;font-variant-numeric:tabular-nums}
+.budget-total{
+  display:flex;justify-content:space-between;align-items:baseline;gap:16px;
+  margin-top:20px;font-size:15px;
+}
+.budget-total b{font-family:var(--serif);font-size:26px;font-variant-numeric:tabular-nums}
+.budget-total .over-tag{color:#ffd9c4;font-weight:800}
+.pick-note{margin:14px 0 0;color:#e5eee8;font-size:14px;line-height:1.75}
+
+/* ── 備忘 ── */
+.check-grid{border-top:1px solid var(--line)}
+.check-grid>div{
+  display:flex;gap:14px;align-items:baseline;
+  border-bottom:1px solid var(--line);padding:18px 6px;font-weight:600;
+}
+.check-grid span{
+  flex:0 0 38px;color:var(--warm);font-size:12px;font-weight:900;
+  font-variant-numeric:tabular-nums;letter-spacing:.08em;
+}
+
+/* ── 提醒（你可能不知道、但該知道的事）── */
+.alerts-section[open]{padding-bottom:0}
+.alerts-summary{
+  list-style:none;cursor:pointer;
+  display:flex;justify-content:space-between;align-items:flex-start;gap:16px;
+}
+.alerts-summary::-webkit-details-marker{display:none}
+.alerts-summary .section-heading{margin-bottom:0}
+.alerts-toggle{
+  flex:0 0 auto;font-style:normal;font-size:26px;line-height:1;color:var(--pine);
+  padding-top:6px;transition:transform .2s;
+}
+.alerts-section[open] .alerts-toggle{transform:rotate(45deg)}
+.alerts-section[open] .alerts-body{margin-top:28px}
+.alert-grid{display:grid;gap:14px}
+.alert-grid>div{
+  display:flex;gap:14px;align-items:flex-start;
+  background:#fbeee4;border:1px solid #e8c7a8;border-radius:14px;
+  padding:18px 20px;font-weight:600;line-height:1.7;
+}
+.alert-grid span{
+  flex:0 0 auto;font-size:18px;line-height:1.5;
+}
+
+/* ── 每日天氣（Day 卡標頭）── */
+.day-weather{margin:8px 0 0;color:var(--muted);font-size:13px}
+
+/* ── 待確認橫幅 ── */
+.pending-banner{width:min(920px,100% - 40px);margin:28px auto 0}
+.pending-banner details{
+  background:#fbeee4;border:1px solid #e8c7a8;border-radius:14px;overflow:hidden;
+}
+.pending-banner summary{
+  list-style:none;cursor:pointer;padding:14px 18px;font-weight:800;color:#a8511f;
+  display:flex;align-items:center;gap:8px;
+}
+.pending-banner summary::-webkit-details-marker{display:none}
+.pending-banner ul{margin:0;padding:0 18px 16px;list-style:none;display:grid;gap:8px}
+.pending-banner li{font-size:14px;line-height:1.6;color:#5b6b62}
+.pending-banner a{color:#a8511f;font-weight:700}
+
+/* ── 類型圖示晶片（glanceability）── */
+.tico{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:22px;height:22px;border-radius:7px;font-size:13px;margin-right:7px;
+  vertical-align:-5px;background:var(--sage);
+}
+.t-see  .tico{background:#dce8d8}
+.t-eat  .tico{background:#f6ddc9}
+.t-go   .tico{background:#d9e4e6}
+.t-stay .tico{background:#e7dcd2}
+.t-shop .tico{background:#eed9da}
+
+/* ── 本日路線按鈕 ── */
+.day-tools{padding:16px 30px 0}
+.route-btn{
+  display:inline-flex;align-items:center;gap:6px;min-height:44px;
+  padding:9px 16px;border:1px solid var(--line);border-radius:999px;
+  color:var(--pine);font-size:13.5px;font-weight:700;text-decoration:none;background:#fff;
+}
+.route-btn:hover{background:var(--sage)}
+.route-cap{margin-left:8px;color:var(--muted);font-size:12px}
+
+/* ── 今日模式 ── */
+.day.today{box-shadow:0 0 0 2px var(--warm),0 16px 35px #2d3e340f}
+.today-badge{
+  display:inline-block;margin-left:8px;padding:2px 9px;border-radius:999px;
+  background:var(--warm);color:#fff;font-size:11px;font-weight:900;letter-spacing:.06em;
+  vertical-align:2px;
+}
+.stop.past{opacity:.42}
+.now-bar{
+  position:fixed;left:0;right:0;bottom:0;z-index:20;
+  background:var(--pine);color:#fff;
+  box-shadow:0 -8px 24px #2d3e3426;
+}
+.now-inner{
+  width:min(920px,100% - 32px);margin:0 auto;
+  display:flex;align-items:center;gap:14px;min-height:58px;padding:10px 0;
+}
+.now-inner .lbl{flex:1;font-size:14px;font-weight:700;line-height:1.4}
+.now-inner .lbl small{display:block;color:#bcd8c6;font-size:12px;font-weight:600;letter-spacing:.04em}
+.now-go{
+  display:inline-flex;align-items:center;min-height:44px;padding:9px 15px;
+  background:#fff;color:var(--pine);border-radius:999px;font-size:13px;font-weight:800;
+  text-decoration:none;white-space:nowrap;
+}
+.now-dismiss{
+  background:none;border:0;color:#bcd8c6;font-size:22px;line-height:1;cursor:pointer;padding:6px;
+}
+
+/* ── 每人分攤 & 類別占比 ── */
+.per-person{
+  display:flex;justify-content:space-between;align-items:baseline;gap:16px;
+  margin-top:18px;font-size:15px;
+}
+.per-person b{font-family:var(--serif);font-size:22px;font-variant-numeric:tabular-nums}
+.cat-bars{margin-top:18px;display:grid;gap:11px}
+.cat-row{display:grid;grid-template-columns:56px 1fr auto;gap:12px;align-items:center;font-size:13px}
+.cat-row .bar{height:9px;border-radius:999px;background:#ffffff2e;overflow:hidden}
+.cat-row .bar>i{display:block;height:100%;background:#bcd8c6;border-radius:999px}
+.cat-row .amt{font-variant-numeric:tabular-nums;color:#e5eee8}
+
+/* ── 花費未填狀態 ── */
+.budget-empty{margin:14px 0 0;color:#e5eee8;font-size:14px;line-height:1.75}
+
+/* ── 緊急資訊卡 ── */
+.emergency-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.emergency-grid .card{
+  background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px 22px;
+}
+.emergency-grid b{display:block;font-size:14px;color:var(--pine);margin-bottom:6px}
+.emergency-grid p{margin:0;color:var(--muted);font-size:14px;line-height:1.7}
+.emergency-grid a.tel{
+  display:inline-flex;align-items:center;gap:6px;min-height:44px;margin-top:8px;
+  color:var(--warm);font-weight:800;font-size:15px;text-decoration:none;
+  font-variant-numeric:tabular-nums;
+}
+.emergency-grid a.tel:hover{text-decoration:underline}
+
+/* ── 打包清單 ── */
+.packing{display:grid;gap:22px}
+.pack-group>h3{margin:0 0 12px;font-family:var(--serif);font-size:18px}
+.pack-items{list-style:none;margin:0;padding:0}
+.pack-items li{border-bottom:1px solid var(--line)}
+.pack-items label{display:flex;gap:12px;align-items:baseline;padding:13px 6px;cursor:pointer}
+.pack-items input{width:18px;height:18px;accent-color:var(--pine);flex:0 0 auto}
+.pack-items input:checked + span{color:var(--muted);text-decoration:line-through}
+
+/* ── 頁內編輯器（?edit=1）── */
+body.editing>*{display:none !important}
+body.editing>#editor{display:block !important}
+.editor{width:min(920px,100% - 40px);margin:0 auto;padding:28px 0 90px}
+.ed-title{font-family:var(--serif);font-size:clamp(28px,5vw,40px);margin:0 0 6px}
+.ed-sub{color:var(--muted);margin:0 0 18px;line-height:1.7;max-width:60ch}
+.ed-bar{
+  position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;gap:10px;align-items:center;
+  padding:12px 0;margin-bottom:8px;background:var(--paper);border-bottom:1px solid var(--line);
+}
+.ed-bar .spacer{flex:1}
+.ed-btn{
+  display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:10px 16px;
+  border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);
+  font:inherit;font-weight:700;font-size:14px;cursor:pointer;text-decoration:none;
+}
+.ed-btn.primary{background:var(--pine);color:#fff;border-color:var(--pine)}
+.ed-btn:hover{opacity:.9}
+.ed-save{color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums}
+.ed-sec{border:1px solid var(--line);border-radius:16px;background:var(--card);margin:16px 0;overflow:hidden}
+.ed-sec>summary{cursor:pointer;list-style:none;padding:15px 20px;font-weight:800;font-size:16px;background:var(--sage)}
+.ed-sec>summary::-webkit-details-marker{display:none}
+.ed-body{padding:16px 20px}
+.ed-field{display:grid;gap:5px;margin-bottom:14px}
+.ed-field label{font-size:13px;font-weight:700;color:var(--muted)}
+.ed-field input,.ed-field select,.ed-field textarea{
+  font:inherit;font-size:14px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;
+  background:var(--paper);color:var(--ink);width:100%;
+}
+.ed-field textarea{min-height:60px;resize:vertical}
+.ed-row{border:1px dashed var(--line);border-radius:12px;padding:14px;margin-bottom:12px}
+.ed-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.ed-grid .full{grid-column:1/-1}
+.ed-rowhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.ed-rowhead b{font-size:13px;color:var(--muted)}
+.ed-del{
+  background:none;border:1px solid var(--line);border-radius:8px;color:var(--warm);
+  font:inherit;font-size:12px;font-weight:700;padding:8px 12px;cursor:pointer;min-height:36px;
+}
+.ed-add{
+  background:none;border:1px dashed var(--line);border-radius:10px;color:var(--pine);
+  font:inherit;font-weight:700;font-size:13px;padding:11px 14px;cursor:pointer;width:100%;min-height:44px;
+}
+.ed-daytitle{font-family:var(--serif);font-size:17px;margin:4px 0 10px}
+.ed-strrow{display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:8px}
+.ed-strrow textarea{font:inherit;font-size:14px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--paper);color:var(--ink);min-height:46px;resize:vertical}
+.draft-banner{
+  width:min(920px,100% - 40px);margin:22px auto 0;background:#eef4ee;border:1px solid var(--line);
+  border-radius:14px;padding:14px 18px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;
+}
+.draft-banner span{flex:1;font-weight:700;font-size:14px;min-width:60%}
+:root[data-theme="dark"] .draft-banner{background:#20261f}
+@media (width<=560px){.ed-grid{grid-template-columns:1fr}}
+
+.footnote{
+  width:min(920px,100% - 40px);margin:0 auto;padding:56px 0 48px;
+  color:var(--muted);font-size:12px;line-height:1.7;
+  display:flex;justify-content:space-between;gap:16px;
+}
+
+/* ── RWD ── */
+@media (width<=800px){
+  .nav-links{justify-content:flex-start;gap:20px}
+  .section{padding-top:56px}
+  .day>summary{grid-template-columns:1fr 28px;gap:8px 12px}
+  .day>summary>.day-no{grid-column:1}
+  .day>summary>i{grid-column:2;grid-row:1}
+  .day>summary>div:nth-child(2){grid-column:1/-1}
+  .day-no{flex-direction:row;align-items:baseline;gap:10px}
+  .decision-grid{grid-template-columns:1fr}
+  .decision-grid article{border-right:0}
+  .decision-grid article:nth-last-child(-n+2):nth-child(odd){border-bottom:1px solid var(--line)}
+  .decision-grid h3{margin-top:16px}
+  .heading-row{flex-direction:column;align-items:flex-start}
+  .stay-list{grid-template-columns:1fr}
+  .emergency-grid{grid-template-columns:1fr}
+  .pick-grid{grid-template-columns:1fr}
+  .pick-grid>div{border-right:0;border-bottom:1px solid #ffffff38;padding:16px 0}
+  .pick-grid>div:last-child{border-bottom:0}
+}
+@media (width<=520px){
+  .hero{padding:52px 20px;min-height:440px}
+  .day>summary,.timeline{padding-left:20px;padding-right:20px}
+  .stop{grid-template-columns:56px 1fr;gap:12px}
+  .recommendation{padding:24px}
+}
+
+/* ── 列印 ── */
+@media print{
+  /* 列印一律回到亮色 token，避免深色文字消失在白紙上 */
+  :root[data-theme]{
+    --ink:#24342d;--pine:#315b49;--sage:#dfe9dc;--paper:#f7f3ea;
+    --warm:#d86736;--line:#d8d6c9;--card:#fffdf8;--muted:#5b6b62;
+  }
+  .sticky-nav,.now-bar,.pending-banner,.day-tools{display:none}
+  .stop.past{opacity:1}
+  .day.today>summary{box-shadow:none}
+  .hero{min-height:0;padding:28px 0;background:#fff}
+  .hero:after{display:none}
+  .day{break-inside:avoid;box-shadow:none}
+  .day>summary i,.toggle-all{display:none}
+  .stay-link{display:none}
+  .recommendation{background:#fff;color:var(--ink);border:1px solid var(--line)}
+  .pick-grid,.pick-grid>div,.budget-total{border-color:var(--line)}
+  a{text-decoration:none;color:inherit}
+  .loc,.go{display:none}
+  body{background:#fff}
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<script id="trip-src" type="application/json">{{ data_json | safe }}</script>
+<div class="editor" id="editor" hidden></div>
+
+<header class="hero">
+  <div class="hero-inner">
+    <p class="eyebrow">{{ trip.destination }} · {{ trip.range_label }}</p>
+    <h1>{{ trip.title }}</h1>
+    <p class="lead">{{ trip.num_days }} 天 {{ trip.travelers }} 人的旅程手冊——每天去哪、怎麼去、訂位碼與預算，都在這一頁。</p>
+    <div class="hero-pills">
+      <span>{{ trip.range_label }}</span>
+      <span>{{ trip.num_days }} 天</span>
+      <span>{{ trip.travelers }} 人</span>
+      <span>預算 {{ money(trip.budget) }}</span>
+    </div>
+  </div>
+</header>
+
+<nav class="sticky-nav" aria-label="快速跳轉">
+  <div class="nav-links">
+    {% if highlights %}<a href="#overview">總覽</a>{% endif %}
+    {%- if alerts %}<a href="#alerts">提醒</a>{% endif %}
+    <a href="#itinerary">行程</a>
+    {%- if bookings %}<a href="#bookings">訂位</a>{% endif %}
+    {%- if trip.emergency %}<a href="#emergency">緊急</a>{% endif %}
+    <a href="#budget">花費</a>
+    {%- if notes %}<a href="#notes">備忘</a>{% endif %}
+    {%- if trip.packing %}<a href="#packing">打包</a>{% endif %}
+  </div>
+  <div class="nav-tools">
+    <button class="nav-tool" type="button" data-toggle="edit" aria-label="編輯行程資料">✎</button>
+    <button class="nav-tool" type="button" data-toggle="theme" aria-pressed="false" aria-label="切換深色模式">🌙</button>
+    <button class="nav-tool" type="button" data-toggle="size" aria-pressed="false" aria-label="切換大字模式">A⁺</button>
+  </div>
+</nav>
+
+<main>
+{% if pending %}
+<div class="pending-banner">
+  <details>
+    <summary>⚠️ 還有 {{ pending | length }} 項待確認</summary>
+    <ul>
+    {% for p in pending %}
+      <li><a href="#{{ p.anchor }}">{{ p.where }}</a> — {{ p.reason }}</li>
+    {% endfor %}
+    </ul>
+  </details>
+</div>
+{% endif %}
+
+{% if highlights %}
+<section class="section" id="overview">
+  <div class="section-heading">
+    <h2>總覽</h2>
+    <p>先看結論——這趟旅程的重點整理。</p>
+  </div>
+  <div class="decision-grid">
+  {% for h in highlights %}
+    <article>
+      <b>{{ "%02d" | format(loop.index) }}</b>
+      <h3>{{ h.title }}</h3>
+      {% if h.text %}<p>{{ h.text }}</p>{% endif %}
+    </article>
+  {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if alerts %}
+<details class="section alerts-section" id="alerts" open>
+  <summary class="alerts-summary">
+    <div class="section-heading">
+      <h2>你可能不知道、但該知道的事</h2>
+      <p>查證後發現的意外資訊——設施異動、季節限定已結束、當地潛規則等，特別留意。（共 {{ alerts | length }} 則，可收合）</p>
+    </div>
+    <span class="alerts-toggle" aria-hidden="true">＋</span>
+  </summary>
+  <div class="alerts-body">
+    <div class="alert-grid">
+    {% for a in alerts %}
+      <div><span>⚠️</span>{{ a }}</div>
+    {% endfor %}
+    </div>
+  </div>
+</details>
+{% endif %}
+
+<section class="section" id="itinerary">
+  <div class="heading-row">
+    <div class="section-heading">
+      <h2>每日動線</h2>
+      <p>點開每一天看細節；點「導航」直接開 Google Maps。</p>
+    </div>
+    <button class="toggle-all" type="button">全部展開</button>
+  </div>
+  <div class="days">
+  {% for day in days %}
+    <details class="day" id="day-{{ day.day_no }}" data-date="{{ day.date }}">
+      <summary>
+        <div class="day-no">
+          <b>DAY {{ day.day_no }}</b>
+          <small>{{ day.date_label }} · {{ day.weekday }}</small>
+        </div>
+        <div>
+          <h3>{{ day.theme or "自由安排" }}</h3>
+          <p class="day-route">{{ day["items"] | map(attribute="name") | join(" → ") }}</p>
+          {% if day.weather %}<p class="day-weather">🌤 {{ day.weather }}</p>{% endif %}
+        </div>
+        <i>＋</i>
+      </summary>
+      {% if day.route_url %}
+      <div class="day-tools">
+        <a class="route-btn" href="{{ day.route_url }}" target="_blank" rel="noopener">🧭 本日路線一鍵導航</a>
+        {% if day.route_capped %}<span class="route-cap">點位較多，僅串接前段</span>{% endif %}
+      </div>
+      {% endif %}
+      <ol class="timeline">
+      {% for item in day["items"] %}
+        <li class="stop {{ TYPE_META[item.type].cls if item.type in TYPE_META else '' }}" data-time="{{ item.time }}" data-name="{{ item.name }}"{% if item.map_url %} data-map="{{ item.map_url }}"{% endif %}>
+          <time>{{ item.time }}</time>
+          <div>
+            <h4><span class="tico">{{ TYPE_META[item.type].icon if item.type in TYPE_META else '📍' }}</span>{% if item.url %}<a class="name" href="{{ item.url }}">{{ item.name }} ↗</a>{% else %}{{ item.name }}{% endif %}{% if item.map_url %} <a class="loc" href="{{ item.map_url }}">📍 地圖</a>{% endif %}</h4>
+            {% if item.note %}<p class="desc">{{ item.note }}</p>{% endif %}
+            {% set meta = [] %}
+            {%- if item.duration %}{% set _ = meta.append("停留 " ~ item.duration) %}{% endif %}
+            {%- if item.cost %}{% set _ = meta.append(money(item.cost)) %}{% endif %}
+            {%- if item.booking and item.booking.hours %}{% set _ = meta.append("營業 " ~ item.booking.hours) %}{% endif %}
+            {% if meta or (item.booking and item.booking.code) %}
+            <p class="meta">{{ meta | join(" · ") }}{% if item.booking and item.booking.code %}{% if meta %} · {% endif %}確認碼 <b>{{ item.booking.code }}</b>{% endif %}</p>
+            {% endif %}
+            {% if item.next_transit %}
+              {% if item.transit_url %}<a class="go" href="{{ item.transit_url }}">→ {{ item.next_transit }} <span>導航 ↗</span></a>
+              {% else %}<span class="go">→ {{ item.next_transit }}</span>{% endif %}
+            {% endif %}
+          </div>
+        </li>
+      {% endfor %}
+      </ol>
+    </details>
+  {% endfor %}
+  </div>
+</section>
+
+{% if bookings %}
+<section class="section" id="bookings">
+  <div class="section-heading">
+    <h2>訂位總覽</h2>
+    <p>航班、住宿與餐廳的確認碼集中在這裡，報到時不用翻信箱。</p>
+  </div>
+  <div class="stay-list">
+  {% for b in bookings %}
+    <div class="stay">
+      <div class="stay-top">
+        <span>{% if b.date %}{{ b.date }}{% if b.time %} · {{ b.time }}{% endif %}{% endif %}</span>
+        <em>{{ b.type }}</em>
+      </div>
+      <h3>{{ b.name }}</h3>
+      {% if b.note %}<p>{{ b.note }}</p>{% endif %}
+      {% if b.code %}
+      <div class="code">確認碼<b>{{ b.code }}</b></div>
+      {% endif %}
+      {% if b.url %}
+      <a class="stay-link" href="{{ b.url }}"><span>查看訂位資訊</span><span>↗</span></a>
+      {% endif %}
+    </div>
+  {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if trip.emergency %}
+<section class="section" id="emergency">
+  <div class="section-heading">
+    <h2>緊急資訊</h2>
+    <p>臨時需要時最難翻——先放這裡，手機點電話可直接撥號。</p>
+  </div>
+  <div class="emergency-grid">
+  {% for e in trip.emergency %}
+    <div class="card">
+      <b>{{ e.label }}</b>
+      {% if e.value %}<p>{{ e.value }}</p>{% endif %}
+      {% if e.tel %}<a class="tel" href="tel:{{ e.tel }}">📞 {{ e.tel }}</a>{% endif %}
+    </div>
+  {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<section class="section" id="budget">
+  <div class="recommendation">
+    <p class="eyebrow">BUDGET</p>
+    <h3>花費總覽</h3>
+    {% if totals.has_costs %}
+    <div class="pick-grid">
+    {% for day in days %}
+      <div>
+        <span>DAY {{ day.day_no }}{% if day.theme %} · {{ day.theme }}{% endif %}</span>
+        <b>{{ money(day.subtotal) }}</b>
+      </div>
+    {% endfor %}
+    {% set booking_cost = bookings | sum(attribute="cost") %}
+    {% if booking_cost %}
+      <div>
+        <span>訂位（機票、飯店…）</span>
+        <b>{{ money(booking_cost) }}</b>
+      </div>
+    {% endif %}
+    </div>
+    <div class="budget-total">
+      <span>已排入合計{% if totals.over %} <span class="over-tag">超出預算 {{ money(totals.spent - totals.budget) }}</span>{% endif %}</span>
+      <b>{{ money(totals.spent) }}{{ fx_alt(totals.spent) }} / {{ money(totals.budget) }}</b>
+    </div>
+    <div class="per-person">
+      <span>每人分攤（{{ trip.travelers }} 人）</span>
+      <b>{{ money(totals.per_person) }}{{ fx_alt(totals.per_person) }}</b>
+    </div>
+    {% if totals.by_category %}
+    <div class="cat-bars">
+    {% for c in totals.by_category %}
+      <div class="cat-row">
+        <span>{{ c.label }}</span>
+        <span class="bar"><i style="width:{{ (c.amount / totals.spent * 100) | round(1) }}%"></i></span>
+        <span class="amt">{{ money(c.amount) }}</span>
+      </div>
+    {% endfor %}
+    </div>
+    {% endif %}
+    {% if totals.over %}
+    <p class="pick-note">已超出預算，出發前再檢視一次大項花費。</p>
+    {% else %}
+    <p class="pick-note">預算尚有 {{ money(totals.budget - totals.spent) }} 餘裕。</p>
+    {% endif %}
+    {% else %}
+    <div class="budget-total">
+      <span>預算</span>
+      <b>{{ money(totals.budget) }}{{ fx_alt(totals.budget) }}</b>
+    </div>
+    <p class="budget-empty">花費尚未填入。待各項報價／確認金額後再逐筆補上，這裡會自動顯示合計、每人分攤與類別占比。</p>
+    {% endif %}
+  </div>
+</section>
+
+{% if notes %}
+<section class="section" id="notes">
+  <div class="section-heading">
+    <h2>出發前備忘</h2>
+  </div>
+  <div class="check-grid">
+  {% for n in notes %}
+    <div><span>{{ "%02d" | format(loop.index) }}</span>{{ n }}</div>
+  {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if trip.packing %}
+<section class="section" id="packing">
+  <div class="section-heading">
+    <h2>打包清單</h2>
+    <p>出發前一項一項勾，勾選狀態會記在這台裝置。</p>
+  </div>
+  <div class="packing">
+  {% if trip.packing[0] is string %}
+    <div class="pack-group">
+      <ul class="pack-items">
+      {% for it in trip.packing %}
+        <li><label><input type="checkbox" data-pack="flat:{{ loop.index }}"><span>{{ it }}</span></label></li>
+      {% endfor %}
+      </ul>
+    </div>
+  {% else %}
+    {% for group in trip.packing %}
+    <div class="pack-group">
+      {% if group.group %}<h3>{{ group.group }}</h3>{% endif %}
+      <ul class="pack-items">
+      {% for it in group["items"] %}
+        <li><label><input type="checkbox" data-pack="{{ group.group }}:{{ loop.index }}"><span>{{ it }}</span></label></li>
+      {% endfor %}
+      </ul>
+    </div>
+    {% endfor %}
+  {% endif %}
+  </div>
+</section>
+{% endif %}
+</main>
+
+<footer class="footnote">
+  <span>{{ trip.title }} · {{ trip.range_label }}</span>
+  <span>旅程手冊</span>
+</footer>
+
+<div class="now-bar" hidden>
+  <div class="now-inner">
+    <span class="lbl"></span>
+    <a class="now-go" href="#" target="_blank" rel="noopener" hidden>導航 ↗</a>
+    <button class="now-dismiss" type="button" aria-label="關閉今日模式">×</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  var strip = document.querySelector(".nav-links");
+  var links = Array.prototype.slice.call(document.querySelectorAll(".sticky-nav a"));
+  if (!strip || !links.length) return;
+  var byId = {};
+  links.forEach(function(a){ byId[a.hash.slice(1)] = a; });
+  var current = links[0];
+  current.classList.add("active");
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var obs = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if (e.isIntersecting && byId[e.target.id] && byId[e.target.id] !== current) {
+        current.classList.remove("active");
+        current = byId[e.target.id];
+        current.classList.add("active");
+        // 只水平捲動導覽列本身，絕不觸碰頁面捲動
+        strip.scrollTo({
+          left: current.offsetLeft - (strip.clientWidth - current.offsetWidth) / 2,
+          behavior: reduce ? "auto" : "smooth"
+        });
+      }
+    });
+  }, {rootMargin:"-15% 0px -70% 0px"});
+  Object.keys(byId).forEach(function(id){
+    var el = document.getElementById(id);
+    if (el) obs.observe(el);
+  });
+
+  // 點導覽跳到某天時自動展開
+  function openHash(hash){
+    var el = hash && document.querySelector(hash);
+    if (el && el.tagName === "DETAILS") el.open = true;
+  }
+  links.forEach(function(a){
+    a.addEventListener("click", function(){ openHash(a.hash); });
+  });
+  window.addEventListener("hashchange", function(){ openHash(location.hash); });
+  openHash(location.hash);
+
+  // 全部展開／收合
+  var toggle = document.querySelector(".toggle-all");
+  var daysEls = Array.prototype.slice.call(document.querySelectorAll("details.day"));
+  if (toggle) toggle.addEventListener("click", function(){
+    var expand = daysEls.some(function(d){ return !d.open; });
+    daysEls.forEach(function(d){ d.open = expand; });
+    toggle.textContent = expand ? "全部收合" : "全部展開";
+  });
+
+  // 列印時自動展開全部（含提醒區）
+  window.addEventListener("beforeprint", function(){
+    daysEls.forEach(function(d){ d.open = true; });
+    var al = document.getElementById("alerts");
+    if (al && al.tagName === "DETAILS") al.open = true;
+  });
+
+  // ── 今日模式：依裝置時鐘標出今天、灰階已過行程、浮出「下一站」 ──
+  function todayMode(now){
+    var y = now.getFullYear();
+    var pad = function(n){ return String(n).padStart(2, "0"); };
+    var today = y + "-" + pad(now.getMonth() + 1) + "-" + pad(now.getDate());
+    var nowHM = pad(now.getHours()) + ":" + pad(now.getMinutes());
+    var dayEl = document.querySelector('details.day[data-date="' + today + '"]');
+    var bar = document.querySelector(".now-bar");
+    if (!dayEl || !bar) return;
+
+    dayEl.classList.add("today");
+    dayEl.open = true;
+    var dayNoEl = dayEl.querySelector(".day-no b");
+    if (dayNoEl && !dayNoEl.querySelector(".today-badge")) {
+      var badge = document.createElement("span");
+      badge.className = "today-badge";
+      badge.textContent = "今日";
+      dayNoEl.appendChild(badge);
+    }
+
+    var next = null;
+    Array.prototype.forEach.call(dayEl.querySelectorAll(".stop"), function(s){
+      var t = s.getAttribute("data-time");
+      if (t && t < nowHM) s.classList.add("past");
+      else if (!next && t) next = s;
+    });
+
+    var dayNo = (dayEl.id || "").replace("day-", "");
+    var lbl = bar.querySelector(".lbl");
+    var go = bar.querySelector(".now-go");
+    if (next) {
+      lbl.innerHTML = "<small>DAY " + dayNo + " · 進行中</small>下一站 " +
+        next.getAttribute("data-time") + " " + next.getAttribute("data-name");
+      var map = next.getAttribute("data-map");
+      if (map) { go.href = map; go.hidden = false; } else { go.hidden = true; }
+    } else {
+      lbl.innerHTML = "<small>DAY " + dayNo + "</small>今日行程已全部結束";
+      go.hidden = true;
+    }
+
+    var dismissKey = "nowbar-dismissed:" + location.pathname + ":" + today;
+    try { if (localStorage.getItem(dismissKey) === "1") return; } catch (e) {}
+    bar.hidden = false;
+    document.body.style.paddingBottom = bar.offsetHeight + "px";
+    bar.querySelector(".now-dismiss").addEventListener("click", function(){
+      bar.hidden = true;
+      document.body.style.paddingBottom = "";
+      Array.prototype.forEach.call(dayEl.querySelectorAll(".stop.past"), function(s){
+        s.classList.remove("past");
+      });
+      try { localStorage.setItem(dismissKey, "1"); } catch (e) {}
+    });
+  }
+  // 可用 ?today=2026-10-16 或 ?today=2026-10-16T14:30 模擬日期，方便預覽今日模式
+  var override = new URLSearchParams(location.search).get("today");
+  if (override && /^\d{4}-\d{2}-\d{2}/.test(override)) {
+    todayMode(new Date(override.length === 10 ? override + "T12:00:00" : override));
+  } else {
+    todayMode(new Date());
+  }
+
+  // 深色 / 大字 切換（偏好記在 localStorage；亮色與一般字為預設）
+  var root = document.documentElement;
+  var themeBtn = document.querySelector('[data-toggle="theme"]');
+  var sizeBtn = document.querySelector('[data-toggle="size"]');
+  function syncTools(){
+    if (themeBtn){
+      var dark = root.getAttribute("data-theme") === "dark";
+      themeBtn.setAttribute("aria-pressed", dark ? "true" : "false");
+      themeBtn.textContent = dark ? "☀️" : "🌙";
+      themeBtn.setAttribute("aria-label", dark ? "切換淺色模式" : "切換深色模式");
+    }
+    if (sizeBtn){
+      var large = root.getAttribute("data-theme-size") === "large";
+      sizeBtn.setAttribute("aria-pressed", large ? "true" : "false");
+    }
+  }
+  syncTools();
+  if (themeBtn) themeBtn.addEventListener("click", function(){
+    var next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+    try { localStorage.setItem("theme", next); } catch (e) {}
+    syncTools();
+  });
+  if (sizeBtn) sizeBtn.addEventListener("click", function(){
+    var large = root.getAttribute("data-theme-size") === "large";
+    if (large){ root.removeAttribute("data-theme-size"); }
+    else { root.setAttribute("data-theme-size", "large"); }
+    try { localStorage.setItem("textsize", large ? "normal" : "large"); } catch (e) {}
+    syncTools();
+  });
+  var editBtn = document.querySelector('[data-toggle="edit"]');
+  if (editBtn) editBtn.addEventListener("click", function(){
+    window.open(location.pathname + "?edit=1", "_blank");
+  });
+
+  // 所有外部連結一律另開分頁（# 頁內跳轉維持原分頁）
+  Array.prototype.forEach.call(document.querySelectorAll("a[href]"), function(a){
+    var h = a.getAttribute("href") || "";
+    if (h && h.charAt(0) !== "#") { a.target = "_blank"; a.rel = "noopener"; }
+  });
+
+  // 打包清單勾選狀態存 localStorage（依本頁路徑分隔）
+  var packBoxes = document.querySelectorAll("input[data-pack]");
+  packBoxes.forEach(function(box){
+    var key = "pack:" + location.pathname + ":" + box.getAttribute("data-pack");
+    try { box.checked = localStorage.getItem(key) === "1"; } catch (e) {}
+    box.addEventListener("change", function(){
+      try { localStorage.setItem(key, box.checked ? "1" : "0"); } catch (e) {}
+    });
+  });
+})();
+</script>
+
+<script>
+/* ── 頁內編輯器：?edit=1 顯示表單，自動存草稿到 localStorage，可匯出 trip.json ── */
+(function(){
+  var srcEl = document.getElementById("trip-src");
+  if (!srcEl) return;
+  var baked;
+  try { baked = JSON.parse(srcEl.textContent); } catch (e) { return; }
+  var draftKey = "draft:" + location.pathname;
+  var editing = new URLSearchParams(location.search).get("edit") === "1";
+
+  function loadDraft(){ try { var d = localStorage.getItem(draftKey); return d ? JSON.parse(d) : null; } catch (e) { return null; } }
+
+  // 手冊模式：偵測未匯出的本機草稿 → 橫幅提醒
+  if (!editing) {
+    if (!loadDraft()) return;
+    var main = document.querySelector("main");
+    if (!main) return;
+    var bn = document.createElement("div");
+    bn.className = "draft-banner";
+    var sp = document.createElement("span");
+    sp.textContent = "📝 偵測到本機編輯草稿（尚未匯出成 trip.json）";
+    var open = document.createElement("a");
+    open.className = "ed-btn"; open.href = location.pathname + "?edit=1"; open.target = "_blank"; open.rel = "noopener";
+    open.textContent = "開啟編輯器";
+    var disc = document.createElement("button");
+    disc.className = "ed-btn"; disc.textContent = "捨棄草稿";
+    disc.addEventListener("click", function(){
+      if (confirm("捨棄本機草稿？此手冊顯示的內容不受影響。")) {
+        try { localStorage.removeItem(draftKey); } catch (e) {}
+        bn.remove();
+      }
+    });
+    bn.appendChild(sp); bn.appendChild(open); bn.appendChild(disc);
+    main.insertBefore(bn, main.firstChild);
+    return;
+  }
+
+  // ── 編輯模式 ──
+  document.body.classList.add("editing");
+  document.title = "編輯｜" + document.title;
+  var data = loadDraft() || JSON.parse(JSON.stringify(baked));
+  var host = document.getElementById("editor");
+  host.hidden = false;
+  var saveEl, saveTimer = null;
+
+  function save(){
+    try {
+      localStorage.setItem(draftKey, JSON.stringify(data));
+      if (saveEl) saveEl.textContent = "已存草稿 " + new Date().toLocaleTimeString();
+    } catch (e) { if (saveEl) saveEl.textContent = "存檔失敗（瀏覽器空間不足？）"; }
+  }
+  function touch(){ clearTimeout(saveTimer); saveTimer = setTimeout(save, 400); }
+
+  function field(obj, key, label, opts){
+    opts = opts || {};
+    var wrap = document.createElement("div");
+    wrap.className = "ed-field" + (opts.full ? " full" : "");
+    var l = document.createElement("label"); l.textContent = label; wrap.appendChild(l);
+    var inp;
+    if (opts.type === "textarea") { inp = document.createElement("textarea"); }
+    else if (opts.type === "select") {
+      inp = document.createElement("select");
+      (opts.opts || []).forEach(function(o){
+        var op = document.createElement("option"); op.value = o; op.textContent = o || "（無）"; inp.appendChild(op);
+      });
+    } else { inp = document.createElement("input"); inp.type = opts.type || "text"; }
+    var v = obj[key];
+    inp.value = (v === undefined || v === null) ? "" : v;
+    inp.addEventListener(opts.type === "select" ? "change" : "input", function(){
+      var val = inp.value;
+      if (opts.type === "number") { obj[key] = val === "" ? 0 : Number(val); }
+      else if (val === "") { delete obj[key]; }
+      else { obj[key] = val; }
+      touch();
+    });
+    wrap.appendChild(inp); return wrap;
+  }
+  function grid(){ var g = document.createElement("div"); g.className = "ed-grid"; return g; }
+
+  function listEditor(arr, buildRow, addLabel, makeNew){
+    var box = document.createElement("div");
+    function redraw(){
+      box.innerHTML = "";
+      arr.forEach(function(item, i){
+        var row = document.createElement("div"); row.className = "ed-row";
+        var head = document.createElement("div"); head.className = "ed-rowhead";
+        var b = document.createElement("b"); b.textContent = "# " + (i + 1); head.appendChild(b);
+        var del = document.createElement("button"); del.className = "ed-del"; del.type = "button"; del.textContent = "刪除";
+        del.addEventListener("click", function(){ arr.splice(i, 1); touch(); redraw(); });
+        head.appendChild(del); row.appendChild(head);
+        buildRow(item, row); box.appendChild(row);
+      });
+      var add = document.createElement("button"); add.className = "ed-add"; add.type = "button"; add.textContent = addLabel;
+      add.addEventListener("click", function(){ arr.push(makeNew()); touch(); redraw(); });
+      box.appendChild(add);
+    }
+    redraw(); return box;
+  }
+
+  function stringListEditor(arr){
+    var box = document.createElement("div");
+    function redraw(){
+      box.innerHTML = "";
+      arr.forEach(function(s, i){
+        var row = document.createElement("div"); row.className = "ed-strrow";
+        var inp = document.createElement("textarea"); inp.value = s;
+        inp.addEventListener("input", function(){ arr[i] = inp.value; touch(); });
+        var del = document.createElement("button"); del.className = "ed-del"; del.type = "button"; del.textContent = "刪除";
+        del.addEventListener("click", function(){ arr.splice(i, 1); touch(); redraw(); });
+        row.appendChild(inp); row.appendChild(del); box.appendChild(row);
+      });
+      var add = document.createElement("button"); add.className = "ed-add"; add.type = "button"; add.textContent = "＋ 新增一項";
+      add.addEventListener("click", function(){ arr.push(""); touch(); redraw(); });
+      box.appendChild(add);
+    }
+    redraw(); return box;
+  }
+
+  function section(title, open, build){
+    var det = document.createElement("details"); det.className = "ed-sec"; det.open = !!open;
+    var sum = document.createElement("summary"); sum.textContent = title; det.appendChild(sum);
+    var body = document.createElement("div"); body.className = "ed-body"; build(body); det.appendChild(body);
+    host.appendChild(det);
+  }
+
+  function cleanExport(){
+    var d = JSON.parse(JSON.stringify(data));
+    var t = d.trip || {};
+    if (t.fx && !(Number(t.fx.rate) > 0)) delete t.fx;
+    ["emergency", "packing"].forEach(function(k){ if (Array.isArray(t[k]) && !t[k].length) delete t[k]; });
+    ["highlights", "alerts", "notes", "bookings"].forEach(function(k){ if (Array.isArray(d[k]) && !d[k].length) delete d[k]; });
+    return d;
+  }
+
+  // 標題 + 說明 + 工具列
+  var title = document.createElement("h1"); title.className = "ed-title"; title.textContent = "編輯行程資料";
+  var sub = document.createElement("p"); sub.className = "ed-sub";
+  sub.textContent = "邊改邊自動存到這台裝置。改好按「匯出 trip.json」下載，取代旅程資料夾內的 trip.json 後重跑 python render.py，手冊就會套用。";
+  host.appendChild(title); host.appendChild(sub);
+
+  var bar = document.createElement("div"); bar.className = "ed-bar";
+  var exportBtn = document.createElement("button"); exportBtn.type = "button"; exportBtn.className = "ed-btn primary"; exportBtn.textContent = "⬇ 匯出 trip.json";
+  var resetBtn = document.createElement("button"); resetBtn.type = "button"; resetBtn.className = "ed-btn"; resetBtn.textContent = "還原草稿";
+  var backBtn = document.createElement("button"); backBtn.type = "button"; backBtn.className = "ed-btn"; backBtn.textContent = "← 回到手冊";
+  saveEl = document.createElement("span"); saveEl.className = "ed-save";
+  bar.appendChild(exportBtn); bar.appendChild(resetBtn); bar.appendChild(backBtn);
+  var spacer = document.createElement("span"); spacer.className = "spacer"; bar.appendChild(spacer);
+  bar.appendChild(saveEl);
+  host.appendChild(bar);
+
+  exportBtn.addEventListener("click", function(){
+    save();
+    var blob = new Blob([JSON.stringify(cleanExport(), null, 2) + "\n"], {type: "application/json"});
+    var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "trip.json";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); }, 1000);
+  });
+  resetBtn.addEventListener("click", function(){
+    if (confirm("還原成手冊目前的原始資料，並清除本機草稿？")) {
+      try { localStorage.removeItem(draftKey); } catch (e) {}
+      location.reload();
+    }
+  });
+  backBtn.addEventListener("click", function(){ location.href = location.pathname; });
+
+  var ITEM_TYPES = ["景點", "餐廳", "交通", "住宿", "購物"];
+  var STATUS = ["", "confirmed", "pending"];
+
+  // 旅程 meta
+  section("旅程", true, function(body){
+    var t = data.trip = data.trip || {};
+    var g = grid();
+    g.appendChild(field(t, "title", "標題", {full: true}));
+    g.appendChild(field(t, "destination", "目的地", {full: true}));
+    g.appendChild(field(t, "start_date", "開始日期", {type: "date"}));
+    g.appendChild(field(t, "end_date", "結束日期", {type: "date"}));
+    g.appendChild(field(t, "travelers", "人數", {type: "number"}));
+    g.appendChild(field(t, "currency", "幣別（如 NT$／¥）"));
+    g.appendChild(field(t, "budget", "總預算", {type: "number"}));
+    body.appendChild(g);
+    var fxTitle = document.createElement("div"); fxTitle.className = "ed-daytitle"; fxTitle.textContent = "雙幣別換算（選填）"; body.appendChild(fxTitle);
+    t.fx = t.fx || {};
+    var fg = grid();
+    fg.appendChild(field(t.fx, "currency", "換算幣別"));
+    fg.appendChild(field(t.fx, "rate", "匯率（金額 × 此值）", {type: "number"}));
+    body.appendChild(fg);
+  });
+
+  // 每日行程
+  section("每日行程", false, function(body){
+    data.days = data.days || [];
+    body.appendChild(listEditor(data.days, function(day, row){
+      var g = grid();
+      g.appendChild(field(day, "date", "日期", {type: "date"}));
+      g.appendChild(field(day, "theme", "主題"));
+      g.appendChild(field(day, "weather", "天氣／穿著", {full: true}));
+      row.appendChild(g);
+      var lbl = document.createElement("div"); lbl.className = "ed-daytitle"; lbl.textContent = "行程項目（請依時間排序）"; row.appendChild(lbl);
+      day.items = day.items || [];
+      row.appendChild(listEditor(day.items, function(item, irow){
+        var ig = grid();
+        ig.appendChild(field(item, "time", "時間", {type: "time"}));
+        ig.appendChild(field(item, "type", "類型", {type: "select", opts: ITEM_TYPES}));
+        ig.appendChild(field(item, "name", "名稱", {full: true}));
+        ig.appendChild(field(item, "note", "備註", {type: "textarea", full: true}));
+        ig.appendChild(field(item, "duration", "停留（如 1.5h）"));
+        ig.appendChild(field(item, "cost", "費用", {type: "number"}));
+        ig.appendChild(field(item, "map_query", "地圖搜尋字串"));
+        ig.appendChild(field(item, "next_transit", "到下一站的交通"));
+        ig.appendChild(field(item, "url", "連結", {full: true}));
+        ig.appendChild(field(item, "status", "狀態", {type: "select", opts: STATUS}));
+        irow.appendChild(ig);
+      }, "＋ 新增行程項目", function(){ return {time: "09:00", name: "新項目", type: "景點"}; }));
+    }, "＋ 新增一天", function(){ return {date: (data.trip && data.trip.start_date) || "", theme: "", items: []}; }));
+  });
+
+  // 訂位
+  section("訂位", false, function(body){
+    data.bookings = data.bookings || [];
+    body.appendChild(listEditor(data.bookings, function(b, row){
+      var g = grid();
+      g.appendChild(field(b, "type", "類型（航班／飯店…）"));
+      g.appendChild(field(b, "name", "名稱"));
+      g.appendChild(field(b, "date", "日期", {type: "date"}));
+      g.appendChild(field(b, "time", "時間", {type: "time"}));
+      g.appendChild(field(b, "code", "確認碼"));
+      g.appendChild(field(b, "cost", "費用", {type: "number"}));
+      g.appendChild(field(b, "note", "備註", {type: "textarea", full: true}));
+      g.appendChild(field(b, "url", "連結", {full: true}));
+      g.appendChild(field(b, "status", "狀態", {type: "select", opts: STATUS}));
+      row.appendChild(g);
+    }, "＋ 新增訂位", function(){ return {type: "飯店", name: ""}; }));
+  });
+
+  // 緊急資訊
+  section("緊急資訊", false, function(body){
+    var t = data.trip = data.trip || {};
+    t.emergency = t.emergency || [];
+    body.appendChild(listEditor(t.emergency, function(e, row){
+      var g = grid();
+      g.appendChild(field(e, "label", "名稱", {full: true}));
+      g.appendChild(field(e, "value", "說明／地址"));
+      g.appendChild(field(e, "tel", "電話（可一鍵撥號）"));
+      row.appendChild(g);
+    }, "＋ 新增緊急聯絡", function(){ return {label: "", value: "", tel: ""}; }));
+  });
+
+  // 打包清單
+  section("打包清單", false, function(body){
+    var t = data.trip = data.trip || {};
+    var pk = t.packing;
+    if (pk && pk.length && typeof pk[0] === "string") {
+      body.appendChild(stringListEditor(pk));
+    } else {
+      t.packing = pk || [];
+      body.appendChild(listEditor(t.packing, function(grp, row){
+        row.appendChild(field(grp, "group", "分組名稱"));
+        grp.items = grp.items || [];
+        var lbl = document.createElement("div"); lbl.className = "ed-daytitle"; lbl.textContent = "項目"; row.appendChild(lbl);
+        row.appendChild(stringListEditor(grp.items));
+      }, "＋ 新增分組", function(){ return {group: "新分組", items: []}; }));
+    }
+  });
+
+  // 重點總覽
+  section("重點總覽", false, function(body){
+    data.highlights = data.highlights || [];
+    body.appendChild(listEditor(data.highlights, function(h, row){
+      row.appendChild(field(h, "title", "標題", {full: true}));
+      row.appendChild(field(h, "text", "說明", {type: "textarea", full: true}));
+    }, "＋ 新增重點", function(){ return {title: "", text: ""}; }));
+  });
+
+  // 提醒
+  section("提醒（該注意的意外資訊）", false, function(body){
+    data.alerts = data.alerts || [];
+    body.appendChild(stringListEditor(data.alerts));
+  });
+
+  // 備忘
+  section("出發前備忘", false, function(body){
+    data.notes = data.notes || [];
+    body.appendChild(stringListEditor(data.notes));
+  });
+})();
+</script>
+
+<script>
+/* PWA：僅在 http/https 下註冊 service worker；file:// 單檔開啟時略過，不影響離線單檔用法 */
+if ("serviceWorker" in navigator && location.protocol.indexOf("http") === 0) {
+  window.addEventListener("load", function(){
+    navigator.serviceWorker.register("sw.js").catch(function(){});
+  });
+}
+</script>
+</body>
+</html>
