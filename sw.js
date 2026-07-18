@@ -1,5 +1,5 @@
 /* 旅程手冊離線快取（PWA）。以 file:// 開啟時不會註冊，不影響單檔離線用法 */
-const CACHE = "trip-97096513";
+const CACHE = "trip-a6c144e7";
 const ASSETS = ["./", "./index.html", "./行程表.html", "./manifest.webmanifest", "./icon.svg"];
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting()));

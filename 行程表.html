@@ -292,6 +292,19 @@ h1{
 }
 
 /* ── 提醒（你可能不知道、但該知道的事）── */
+.alerts-section[open]{padding-bottom:0}
+.alerts-summary{
+  list-style:none;cursor:pointer;
+  display:flex;justify-content:space-between;align-items:flex-start;gap:16px;
+}
+.alerts-summary::-webkit-details-marker{display:none}
+.alerts-summary .section-heading{margin-bottom:0}
+.alerts-toggle{
+  flex:0 0 auto;font-style:normal;font-size:26px;line-height:1;color:var(--pine);
+  padding-top:6px;transition:transform .2s;
+}
+.alerts-section[open] .alerts-toggle{transform:rotate(45deg)}
+.alerts-section[open] .alerts-body{margin-top:28px}
 .alert-grid{display:grid;gap:14px}
 .alert-grid>div{
   display:flex;gap:14px;align-items:flex-start;
@@ -595,33 +608,38 @@ body.editing>#editor{display:block !important}
 
 
 
-<section class="section" id="alerts">
-  <div class="section-heading">
-    <h2>你可能不知道、但該知道的事</h2>
-    <p>查證後發現的意外資訊——設施異動、季節限定已結束、當地潛規則等，特別留意。</p>
+<details class="section alerts-section" id="alerts" open>
+  <summary class="alerts-summary">
+    <div class="section-heading">
+      <h2>你可能不知道、但該知道的事</h2>
+      <p>查證後發現的意外資訊——設施異動、季節限定已結束、當地潛規則等，特別留意。（共 9 則，可收合）</p>
+    </div>
+    <span class="alerts-toggle" aria-hidden="true">＋</span>
+  </summary>
+  <div class="alerts-body">
+    <div class="alert-grid">
+    
+      <div><span>⚠️</span>太宰府天滿宮本殿已於2026年5月17日修復完工恢復參拜，原規劃的期間限定「浮かぶ森」臨時本殿（藤本壯介設計）已於2026年中拆除，10月造訪看到的是修復完成的正式本殿</div>
+    
+      <div><span>⚠️</span>阿蘇中岳火山口是否開放取決於當日火山氣體濃度，並非固定景點，出發前務必查阿蘇山公園道路官網（https://www.aso-volcano.jp/chinese/index.html）即時通行狀況；封閉時備案改往阿蘇火山博物館或內牧溫泉散策</div>
+    
+      <div><span>⚠️</span>阿蘇山區入夜後除車站周邊外幾乎沒有餐廳營業，強烈建議飯店訂一泊二食，否則長輩可能面臨晚餐無處可去</div>
+    
+      <div><span>⚠️</span>回程IT241是10:55起飛的早班機，福岡機場國際線建議提前2小時報到，10/20早上時間非常緊湊，行李與主要伴手禮請提前一天收妥、買齊</div>
+    
+      <div><span>⚠️</span>在日本合法載客包車須為「綠底白字」營業車牌，坊間較便宜的「白牌車」屬違法載客，事故後保險理賠可能有爭議</div>
+    
+      <div><span>⚠️</span>阿蘇、別府過夜通常需額外補貼司機住宿費（行情約日幣8,000/晚），請與車行確認是否已含在報價內</div>
+    
+      <div><span>⚠️</span>福岡屋台文化有潛規則：每人須點一杯飲料、依市條例禁止提供生食、吃完應盡快結帳不宜久坐</div>
+    
+      <div><span>⚠️</span>福岡名產「努努雞（冷炸雞）」等含肉製品依規定不能帶回台灣，須在當地食用完畢</div>
+    
+      <div><span>⚠️</span>部分老牌日系飯店可能將外國旅客安排在較舊的房型、房內插座數量偏少、浴缸較高，訂房時可留意「新館」標示並自備延長線</div>
+    
+    </div>
   </div>
-  <div class="alert-grid">
-  
-    <div><span>⚠️</span>太宰府天滿宮本殿已於2026年5月17日修復完工恢復參拜，原規劃的期間限定「浮かぶ森」臨時本殿（藤本壯介設計）已於2026年中拆除，10月造訪看到的是修復完成的正式本殿</div>
-  
-    <div><span>⚠️</span>阿蘇中岳火山口是否開放取決於當日火山氣體濃度，並非固定景點，出發前務必查阿蘇山公園道路官網（https://www.aso-volcano.jp/chinese/index.html）即時通行狀況；封閉時備案改往阿蘇火山博物館或內牧溫泉散策</div>
-  
-    <div><span>⚠️</span>阿蘇山區入夜後除車站周邊外幾乎沒有餐廳營業，強烈建議飯店訂一泊二食，否則長輩可能面臨晚餐無處可去</div>
-  
-    <div><span>⚠️</span>回程IT241是10:55起飛的早班機，福岡機場國際線建議提前2小時報到，10/20早上時間非常緊湊，行李與主要伴手禮請提前一天收妥、買齊</div>
-  
-    <div><span>⚠️</span>在日本合法載客包車須為「綠底白字」營業車牌，坊間較便宜的「白牌車」屬違法載客，事故後保險理賠可能有爭議</div>
-  
-    <div><span>⚠️</span>阿蘇、別府過夜通常需額外補貼司機住宿費（行情約日幣8,000/晚），請與車行確認是否已含在報價內</div>
-  
-    <div><span>⚠️</span>福岡屋台文化有潛規則：每人須點一杯飲料、依市條例禁止提供生食、吃完應盡快結帳不宜久坐</div>
-  
-    <div><span>⚠️</span>福岡名產「努努雞（冷炸雞）」等含肉製品依規定不能帶回台灣，須在當地食用完畢</div>
-  
-    <div><span>⚠️</span>部分老牌日系飯店可能將外國旅客安排在較舊的房型、房內插座數量偏少、浴缸較高，訂房時可留意「新館」標示並自備延長線</div>
-  
-  </div>
-</section>
+</details>
 
 
 <section class="section" id="itinerary">
@@ -1461,9 +1479,11 @@ body.editing>#editor{display:block !important}
     toggle.textContent = expand ? "全部收合" : "全部展開";
   });
 
-  // 列印時自動展開全部
+  // 列印時自動展開全部（含提醒區）
   window.addEventListener("beforeprint", function(){
     daysEls.forEach(function(d){ d.open = true; });
+    var al = document.getElementById("alerts");
+    if (al && al.tagName === "DETAILS") al.open = true;
   });
 
   // ── 今日模式：依裝置時鐘標出今天、灰階已過行程、浮出「下一站」 ──
