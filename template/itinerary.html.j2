@@ -280,6 +280,7 @@ h1{
   letter-spacing:.12em;margin-bottom:8px;
 }
 .pick-grid b{display:block;font-family:var(--serif);font-size:20px;font-variant-numeric:tabular-nums}
+.budget-stay{display:block;margin-top:6px;color:#b7cabd;font-size:12px;letter-spacing:.02em;font-variant-numeric:tabular-nums}
 .budget-total{
   display:flex;justify-content:space-between;align-items:baseline;gap:16px;
   margin-top:20px;font-size:15px;
@@ -737,6 +738,8 @@ body.editing>#editor{display:block !important}
       <div>
         <span>DAY {{ day.day_no }}{% if day.theme %} · {{ day.theme }}{% endif %}</span>
         <b>{{ money(day.subtotal) }}</b>
+        {% set stay = day["items"] | selectattr("type", "equalto", "住宿") | map(attribute="cost") | sum %}
+        {% if stay %}<small class="budget-stay">住宿 {{ money(stay) }}</small>{% endif %}
       </div>
     {% endfor %}
     {% set booking_cost = bookings | sum(attribute="cost") %}

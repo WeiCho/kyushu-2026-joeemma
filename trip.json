@@ -117,7 +117,7 @@
           "name": "クロスライフ博多天神（Cross Life Hakata Tenjin）Check-in",
           "type": "住宿",
           "note": "位天神鬧區、逛街與用餐方便，含隔日早餐；房價約NT$5,100（雙人房參考價），訂房時確認房型與房數",
-          "cost": 0,
+          "cost": 5100,
           "url": "https://www.agoda.com/zh-tw/cross-life-hakata-tenjin/hotel/fukuoka-jp.html",
           "map_query": "クロスライフ博多天神",
           "next_transit": "步行 → 天神／中洲用餐區"
@@ -187,7 +187,7 @@
           "name": "杖立観光ホテル ひぜんや（仗利肥前屋）Check-in（一泊二食）",
           "type": "住宿",
           "note": "位熊本南小國町杖立溫泉，跨熊本・大分縣境的大型溫泉旅館；含晚餐與隔日早餐；房價約NT$7,700（2人房參考價）",
-          "cost": 0,
+          "cost": 7700,
           "url": "https://www.agoda.com/zh-tw/tsuetate-kanko-hotel-hizenya/hotel/minamioguni-jp.html",
           "map_query": "杖立観光ホテル ひぜんや"
         }
@@ -238,7 +238,7 @@
           "name": "由布院 Airbnb Check-in（整棟）",
           "type": "住宿",
           "note": "7人整棟，位由布院一帶（詳細地址見Airbnb訂房確認信）；一晚NT$11,498",
-          "cost": 0,
+          "cost": 11498,
           "url": "https://www.airbnb.com.tw/rooms/1167780864029768897",
           "map_query": "由布院温泉"
         },
@@ -296,8 +296,8 @@
           "time": "18:00",
           "name": "福岡 Airbnb Check-in（整棟，共2晚）",
           "type": "住宿",
-          "note": "7人整棟，福岡市區（詳細地址見Airbnb訂房確認信，link2 地點請再核對）；入住10/18、10/19共2晚，10/20一早退房；2晚合計NT$23,664",
-          "cost": 0,
+          "note": "7人整棟，福岡市區（詳細地址見Airbnb訂房確認信，link2 地點請再核對）；入住10/18、10/19共2晚、10/20一早退房；此列為第1晚，2晚合計NT$23,664（每晚NT$11,832）",
+          "cost": 11832,
           "url": "https://www.airbnb.com.tw/rooms/1612087588299808150",
           "map_query": "博多駅"
         }
@@ -341,7 +341,17 @@
           "type": "餐廳",
           "note": "最後一晚可體驗道地屋台氣氛；禮儀提醒：每人需點一杯飲料、屋台禁生食，長輩淺嚐即止不宜久坐",
           "duration": "1.5h",
-          "map_query": "中洲屋台街"
+          "map_query": "中洲屋台街",
+          "next_transit": "步行／地鐵 → 福岡 Airbnb"
+        },
+        {
+          "time": "21:00",
+          "name": "福岡 Airbnb（第2晚）",
+          "type": "住宿",
+          "note": "回同一整棟Airbnb過夜；此列為第2晚（每晚NT$11,832）",
+          "cost": 11832,
+          "url": "https://www.airbnb.com.tw/rooms/1612087588299808150",
+          "map_query": "博多駅"
         }
       ],
       "weather": "福岡市區 16–24°C，海邊風較大"
@@ -389,32 +399,32 @@
       "type": "飯店",
       "name": "クロスライフ博多天神（Cross Life Hakata Tenjin）1晚",
       "date": "2026-10-15",
-      "cost": 5100,
-      "note": "天神鬧區、含早餐；房價約NT$5,100（雙人房參考價），訂房時確認房型與房數",
+      "cost": 0,
+      "note": "天神鬧區、含早餐；房價約NT$5,100（雙人房參考價），訂房時確認房型與房數；金額已列入 Day 1 每日花費",
       "url": "https://www.agoda.com/zh-tw/cross-life-hakata-tenjin/hotel/fukuoka-jp.html"
     },
     {
       "type": "飯店",
       "name": "杖立観光ホテル ひぜんや（仗利肥前屋）1晚（一泊二食）",
       "date": "2026-10-16",
-      "cost": 7700,
-      "note": "熊本南小國町杖立溫泉；含晚餐＋早餐；房價約NT$7,700（2人房參考價）",
+      "cost": 0,
+      "note": "熊本南小國町杖立溫泉；含晚餐＋早餐；房價約NT$7,700（2人房參考價）；金額已列入 Day 2 每日花費",
       "url": "https://www.agoda.com/zh-tw/tsuetate-kanko-hotel-hizenya/hotel/minamioguni-jp.html"
     },
     {
       "type": "民宿",
       "name": "由布院 Airbnb（整棟）1晚",
       "date": "2026-10-17",
-      "cost": 11498,
-      "note": "7人整棟一晚NT$11,498；地點於由布院一帶",
+      "cost": 0,
+      "note": "7人整棟一晚NT$11,498；地點於由布院一帶；金額已列入 Day 3 每日花費",
       "url": "https://www.airbnb.com.tw/rooms/1167780864029768897"
     },
     {
       "type": "民宿",
       "name": "福岡 Airbnb（整棟）2晚",
       "date": "2026-10-18",
-      "cost": 23664,
-      "note": "7人整棟2晚（10/18、10/19）合計NT$23,664；福岡市區，link2 確切地點請再核對",
+      "cost": 0,
+      "note": "7人整棟2晚（10/18、10/19）合計NT$23,664（每晚NT$11,832）；福岡市區，link2 確切地點請再核對；金額已分列入 Day 4、Day 5 每日花費",
       "url": "https://www.airbnb.com.tw/rooms/1612087588299808150"
     }
   ],
