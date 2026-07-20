@@ -1149,15 +1149,16 @@ body.editing>#editor{display:block !important}
   // 標題 + 說明 + 工具列
   var title = document.createElement("h1"); title.className = "ed-title"; title.textContent = "編輯行程資料";
   var sub = document.createElement("p"); sub.className = "ed-sub";
-  sub.textContent = "邊改邊自動存到這台裝置。改好按「匯出 trip.json」下載，取代旅程資料夾內的 trip.json 後重跑 python render.py，手冊就會套用。";
+  sub.textContent = "邊改邊自動存到這台裝置。改好可「匯出 trip.json」下載，或「複製 JSON」直接貼到雲端 repo 的 trip.json；更新 trip.json 後重新渲染，手冊就會套用。";
   host.appendChild(title); host.appendChild(sub);
 
   var bar = document.createElement("div"); bar.className = "ed-bar";
   var exportBtn = document.createElement("button"); exportBtn.type = "button"; exportBtn.className = "ed-btn primary"; exportBtn.textContent = "⬇ 匯出 trip.json";
+  var copyBtn = document.createElement("button"); copyBtn.type = "button"; copyBtn.className = "ed-btn"; copyBtn.textContent = "📋 複製 JSON";
   var resetBtn = document.createElement("button"); resetBtn.type = "button"; resetBtn.className = "ed-btn"; resetBtn.textContent = "還原草稿";
   var backBtn = document.createElement("button"); backBtn.type = "button"; backBtn.className = "ed-btn"; backBtn.textContent = "← 回到手冊";
   saveEl = document.createElement("span"); saveEl.className = "ed-save";
-  bar.appendChild(exportBtn); bar.appendChild(resetBtn); bar.appendChild(backBtn);
+  bar.appendChild(exportBtn); bar.appendChild(copyBtn); bar.appendChild(resetBtn); bar.appendChild(backBtn);
   var spacer = document.createElement("span"); spacer.className = "spacer"; bar.appendChild(spacer);
   bar.appendChild(saveEl);
   host.appendChild(bar);
@@ -1168,6 +1169,28 @@ body.editing>#editor{display:block !important}
     var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "trip.json";
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(function(){ URL.revokeObjectURL(a.href); }, 1000);
+  });
+  copyBtn.addEventListener("click", function(){
+    save();
+    var text = JSON.stringify(cleanExport(), null, 2) + "\n";
+    function flash(msg){
+      copyBtn.textContent = msg;
+      setTimeout(function(){ copyBtn.textContent = "📋 複製 JSON"; }, 2000);
+    }
+    function fallback(){
+      try {
+        var ta = document.createElement("textarea");
+        ta.value = text; ta.style.position = "fixed"; ta.style.top = "0"; ta.style.opacity = "0";
+        document.body.appendChild(ta); ta.focus(); ta.select();
+        var ok = document.execCommand("copy"); ta.remove();
+        flash(ok ? "✓ 已複製" : "複製失敗，請手動選取");
+      } catch (e) { flash("複製失敗，請手動選取"); }
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function(){ flash("✓ 已複製"); }, fallback);
+    } else {
+      fallback();
+    }
   });
   resetBtn.addEventListener("click", function(){
     if (confirm("還原成手冊目前的原始資料，並清除本機草稿？")) {
