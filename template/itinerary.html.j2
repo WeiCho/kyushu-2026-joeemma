@@ -1326,7 +1326,26 @@ body.editing>#editor{display:block !important}
 /* PWA：僅在 http/https 下註冊 service worker；file:// 單檔開啟時略過，不影響離線單檔用法 */
 if ("serviceWorker" in navigator && location.protocol.indexOf("http") === 0) {
   window.addEventListener("load", function(){
-    navigator.serviceWorker.register("sw.js").catch(function(){});
+    // 記住載入時是否已被舊版 SW 控制：首次安裝為 false，用來避免第一次進站誤重整
+    var hadController = !!navigator.serviceWorker.controller;
+    navigator.serviceWorker.register("sw.js").then(function(reg){
+      if (reg && reg.update) { try { reg.update(); } catch (e) {} }  // 每次開啟主動查有無新版
+    }).catch(function(){});
+    // 新版 SW 接管後自動重整一次，讓主畫面 App 不用手動刷就看到新內容
+    var refreshing = false;
+    navigator.serviceWorker.addEventListener("controllerchange", function(){
+      if (refreshing || !hadController) return;  // 首次安裝（本來沒有 controller）不重整
+      refreshing = true;
+      location.reload();
+    });
+  });
+  // 從背景喚醒（切回主畫面 App）時再查一次更新，抓到就會走上面的自動重整
+  document.addEventListener("visibilitychange", function(){
+    if (document.visibilityState === "visible" && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.getRegistration().then(function(reg){
+        if (reg && reg.update) { try { reg.update(); } catch (e) {} }
+      }).catch(function(){});
+    }
   });
 }
 </script>
