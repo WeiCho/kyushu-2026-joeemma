@@ -468,11 +468,21 @@ h1{
 .disc-opt b{font-size:15px;font-weight:700;line-height:1.4}
 .disc-options input:checked + .disc-opt b{color:var(--pine)}
 .disc-opt small{color:var(--muted);font-size:13px;line-height:1.6}
+.disc-optactions{flex:0 0 auto;display:flex;align-items:center;gap:8px}
 .disc-link{
-  flex:0 0 auto;color:var(--warm);font-size:13px;font-weight:700;text-decoration:none;
+  color:var(--warm);font-size:13px;font-weight:700;text-decoration:none;
   min-height:44px;display:inline-flex;align-items:center;padding:0 4px;
 }
 .disc-link:hover{text-decoration:underline}
+.disc-decide{
+  background:none;border:1px solid var(--line);border-radius:999px;white-space:nowrap;
+  padding:7px 14px;min-height:40px;font:inherit;font-size:13px;font-weight:700;
+  color:var(--pine);cursor:pointer;
+}
+.disc-decide:hover{background:var(--sage)}
+.disc-decide.is-decided{background:var(--pine);color:#fff;border-color:var(--pine)}
+.disc-options li.decided-row{background:var(--sage);box-shadow:inset 3px 0 0 var(--pine)}
+:root[data-theme="dark"] .disc-options li.decided-row{background:#1f2b25}
 .disc-clear{
   margin-top:14px;background:none;border:1px solid var(--line);border-radius:999px;
   padding:9px 16px;font:inherit;font-size:13px;font-weight:700;color:var(--pine);cursor:pointer;
@@ -670,11 +680,11 @@ body.editing>#editor{display:block !important}
   <div class="discuss-list">
   {% for d in discussions %}
     {% set ti = loop.index0 %}
-    <article class="disc">
+    <article class="disc" data-topic="{{ ti }}">
       <div class="disc-head">
         <div class="disc-head-main">
           <h3>{{ d.title }}</h3>
-          {% if d.decided %}<p class="disc-decided">✅ 已決定：{{ d.decided }}</p>{% endif %}
+          <p class="disc-decided"{% if not d.decided %} hidden{% endif %}>✅ 已決定：<span class="disc-decided-val" data-server="{{ d.decided or '' }}">{{ d.decided }}</span></p>
           {% if d.note %}
           <details class="disc-note-toggle">
             <summary>ⓘ 說明</summary>
@@ -695,7 +705,10 @@ body.editing>#editor{display:block !important}
               {% if o.note %}<small>{{ o.note }}</small>{% endif %}
             </span>
           </label>
-          {% if o.url %}<a class="disc-link" href="{{ o.url }}">詳情 ↗</a>{% endif %}
+          <div class="disc-optactions">
+            {% if o.url %}<a class="disc-link" href="{{ o.url }}">詳情 ↗</a>{% endif %}
+            <button class="disc-decide" type="button" data-opt="{{ loop.index }}" data-label="{{ o.label }}">決定</button>
+          </div>
         </li>
       {% endfor %}
       </ul>
@@ -1138,6 +1151,49 @@ body.editing>#editor{display:block !important}
       refresh();
     });
     refresh();
+
+    // 「決定」鈕：把選定項寫進決定欄（存本機），題目上方顯示綠色徽章
+    var decideBtns = Array.prototype.slice.call(card.querySelectorAll(".disc-decide"));
+    var badge = card.querySelector(".disc-decided");
+    var badgeVal = card.querySelector(".disc-decided-val");
+    if (decideBtns.length && badge && badgeVal) {
+      var topic = card.getAttribute("data-topic");
+      var dKey = "decide:" + location.pathname + ":" + topic;
+      var server = badgeVal.getAttribute("data-server") || "";
+      function renderDecision(){
+        var stored = null;
+        try { stored = localStorage.getItem(dKey); } catch (e) {}
+        var label = "";
+        if (stored) {
+          var chosen = card.querySelector('.disc-decide[data-opt="' + stored + '"]');
+          if (chosen) label = chosen.getAttribute("data-label") || "";
+        }
+        if (!label && server) label = server;   // 未在本機決定時，退回檔案裡的定案
+        badgeVal.textContent = label;
+        badge.hidden = !label;
+        decideBtns.forEach(function(btn){
+          var on = stored && btn.getAttribute("data-opt") === stored;
+          btn.classList.toggle("is-decided", !!on);
+          btn.textContent = on ? "✅ 已決定" : "決定";
+          btn.setAttribute("aria-pressed", on ? "true" : "false");
+          var li = btn.closest("li");
+          if (li) li.classList.toggle("decided-row", !!on);
+        });
+      }
+      decideBtns.forEach(function(btn){
+        btn.addEventListener("click", function(){
+          var opt = btn.getAttribute("data-opt");
+          var cur = null;
+          try { cur = localStorage.getItem(dKey); } catch (e) {}
+          try {
+            if (cur === opt) localStorage.removeItem(dKey);   // 再點一次取消決定
+            else localStorage.setItem(dKey, opt);
+          } catch (e) {}
+          renderDecision();
+        });
+      });
+      renderDecision();
+    }
   });
 })();
 </script>
