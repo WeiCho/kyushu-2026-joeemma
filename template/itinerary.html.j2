@@ -433,8 +433,18 @@ h1{
 .discuss-list{display:grid;gap:20px}
 .disc{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:24px 26px}
 .disc-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:8px}
+.disc-head-main{min-width:0}
 .disc-head h3{margin:0;font-family:var(--serif);font-size:20px;line-height:1.35}
-.disc-note{margin:6px 0 0;color:var(--muted);font-size:14px;line-height:1.7}
+.disc-note-toggle{margin-top:8px}
+.disc-note-toggle>summary{
+  list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:5px;
+  color:var(--pine);font-size:13px;font-weight:700;
+  border:1px solid var(--line);border-radius:999px;padding:5px 12px;min-height:32px;
+}
+.disc-note-toggle>summary::-webkit-details-marker{display:none}
+.disc-note-toggle>summary:hover{background:var(--sage)}
+.disc-note-toggle[open]>summary{background:var(--sage)}
+.disc-note{margin:10px 0 0;color:var(--muted);font-size:14px;line-height:1.7}
 .disc-count{
   flex:0 0 auto;font-size:12px;font-weight:800;letter-spacing:.03em;white-space:nowrap;
   background:var(--sage);color:var(--pine);border-radius:999px;padding:6px 12px;
@@ -656,9 +666,14 @@ body.editing>#editor{display:block !important}
     {% set ti = loop.index0 %}
     <article class="disc">
       <div class="disc-head">
-        <div>
+        <div class="disc-head-main">
           <h3>{{ d.title }}</h3>
-          {% if d.note %}<p class="disc-note">{{ d.note }}</p>{% endif %}
+          {% if d.note %}
+          <details class="disc-note-toggle">
+            <summary>ⓘ 說明</summary>
+            <p class="disc-note">{{ d.note }}</p>
+          </details>
+          {% endif %}
         </div>
         <span class="disc-count" aria-live="polite"></span>
       </div>
