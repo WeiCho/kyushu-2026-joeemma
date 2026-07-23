@@ -435,6 +435,12 @@ h1{
 .disc-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:8px}
 .disc-head-main{min-width:0}
 .disc-head h3{margin:0;font-family:var(--serif);font-size:20px;line-height:1.35}
+.disc-decided{
+  margin:10px 0 0;display:inline-flex;align-items:center;gap:6px;
+  background:var(--pine);color:#fff;font-weight:800;font-size:14px;
+  border-radius:10px;padding:7px 13px;line-height:1.4;
+}
+:root[data-theme="dark"] .disc-decided{background:#2f5544}
 .disc-note-toggle{margin-top:8px}
 .disc-note-toggle>summary{
   list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:5px;
@@ -668,6 +674,7 @@ body.editing>#editor{display:block !important}
       <div class="disc-head">
         <div class="disc-head-main">
           <h3>{{ d.title }}</h3>
+          {% if d.decided %}<p class="disc-decided">✅ 已決定：{{ d.decided }}</p>{% endif %}
           {% if d.note %}
           <details class="disc-note-toggle">
             <summary>ⓘ 說明</summary>
@@ -1441,6 +1448,7 @@ body.editing>#editor{display:block !important}
     });
     body.appendChild(listEditor(data.discussions, function(d, row){
       row.appendChild(field(d, "title", "討論題目", {full: true}));
+      row.appendChild(field(d, "decided", "已決定（選填，填了會顯示綠色徽章）", {full: true}));
       row.appendChild(field(d, "note", "說明（選填）", {type: "textarea", full: true}));
       var lbl = document.createElement("div"); lbl.className = "ed-daytitle"; lbl.textContent = "選項（手冊上可複選）"; row.appendChild(lbl);
       d.options = d.options || [];
