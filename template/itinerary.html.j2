@@ -429,6 +429,42 @@ h1{
 .pack-items input{width:18px;height:18px;accent-color:var(--pine);flex:0 0 auto}
 .pack-items input:checked + span{color:var(--muted);text-decoration:line-through}
 
+/* ── 討論區（待討論事項 + 可複選選項，選取狀態存本機）── */
+.discuss-list{display:grid;gap:20px}
+.disc{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:24px 26px}
+.disc-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin-bottom:8px}
+.disc-head h3{margin:0;font-family:var(--serif);font-size:20px;line-height:1.35}
+.disc-note{margin:6px 0 0;color:var(--muted);font-size:14px;line-height:1.7}
+.disc-count{
+  flex:0 0 auto;font-size:12px;font-weight:800;letter-spacing:.03em;white-space:nowrap;
+  background:var(--sage);color:var(--pine);border-radius:999px;padding:6px 12px;
+  font-variant-numeric:tabular-nums;
+}
+.disc-options{list-style:none;margin:14px 0 0;padding:0;border-top:1px solid var(--line)}
+.disc-options li{
+  display:flex;align-items:center;gap:12px;
+  border-bottom:1px solid var(--line);padding:4px 8px;border-radius:10px;
+}
+.disc-options li:has(input:checked){background:var(--sage)}
+.disc-optlabel{display:flex;gap:12px;align-items:baseline;flex:1;min-width:0;padding:11px 0;cursor:pointer}
+.disc-options input{width:20px;height:20px;accent-color:var(--pine);flex:0 0 auto}
+.disc-opt{display:flex;flex-direction:column;gap:3px;min-width:0}
+.disc-opt b{font-size:15px;font-weight:700;line-height:1.4}
+.disc-options input:checked + .disc-opt b{color:var(--pine)}
+.disc-opt small{color:var(--muted);font-size:13px;line-height:1.6}
+.disc-link{
+  flex:0 0 auto;color:var(--warm);font-size:13px;font-weight:700;text-decoration:none;
+  min-height:44px;display:inline-flex;align-items:center;padding:0 4px;
+}
+.disc-link:hover{text-decoration:underline}
+.disc-clear{
+  margin-top:14px;background:none;border:1px solid var(--line);border-radius:999px;
+  padding:9px 16px;font:inherit;font-size:13px;font-weight:700;color:var(--pine);cursor:pointer;
+}
+.disc-clear:hover{background:var(--sage)}
+.disc-clear[hidden]{display:none}
+:root[data-theme="dark"] .disc-options li:has(input:checked){background:#1f2b25}
+
 /* ── 頁內編輯器（?edit=1）── */
 body.editing>*{display:none !important}
 body.editing>#editor{display:block !important}
@@ -561,6 +597,7 @@ body.editing>#editor{display:block !important}
 <nav class="sticky-nav" aria-label="快速跳轉">
   <div class="nav-links">
     {% if highlights %}<a href="#overview">總覽</a>{% endif %}
+    {%- if discussions %}<a href="#discuss">討論</a>{% endif %}
     {%- if alerts %}<a href="#alerts">提醒</a>{% endif %}
     <a href="#itinerary">行程</a>
     {%- if bookings %}<a href="#bookings">訂位</a>{% endif %}
@@ -602,6 +639,48 @@ body.editing>#editor{display:block !important}
       <b>{{ "%02d" | format(loop.index) }}</b>
       <h3>{{ h.title }}</h3>
       {% if h.text %}<p>{{ h.text }}</p>{% endif %}
+    </article>
+  {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if discussions %}
+<section class="section" id="discuss">
+  <div class="section-heading">
+    <h2>討論區</h2>
+    <p>待討論的事項與各種選項——討論時直接點選（可複選、各自獨立勾），選取狀態記在這台裝置。要新增或修改題目，用右上角 ✎ 編輯器。</p>
+  </div>
+  <div class="discuss-list">
+  {% for d in discussions %}
+    {% set ti = loop.index0 %}
+    <article class="disc">
+      <div class="disc-head">
+        <div>
+          <h3>{{ d.title }}</h3>
+          {% if d.note %}<p class="disc-note">{{ d.note }}</p>{% endif %}
+        </div>
+        <span class="disc-count" aria-live="polite"></span>
+      </div>
+      {% if d.options %}
+      <ul class="disc-options">
+      {% for o in d.options %}
+        <li>
+          <label class="disc-optlabel">
+            <input type="checkbox" data-disc="{{ ti }}:{{ loop.index }}">
+            <span class="disc-opt">
+              <b>{{ o.label }}</b>
+              {% if o.note %}<small>{{ o.note }}</small>{% endif %}
+            </span>
+          </label>
+          {% if o.url %}<a class="disc-link" href="{{ o.url }}">詳情 ↗</a>{% endif %}
+        </li>
+      {% endfor %}
+      </ul>
+      <button class="disc-clear" type="button" hidden>清除本題選擇</button>
+      {% else %}
+      <p class="disc-note">（尚未列出選項，用右上角 ✎ 編輯器新增）</p>
+      {% endif %}
     </article>
   {% endfor %}
   </div>
@@ -1009,6 +1088,35 @@ body.editing>#editor{display:block !important}
       try { localStorage.setItem(key, box.checked ? "1" : "0"); } catch (e) {}
     });
   });
+
+  // 討論區：選項複選狀態存 localStorage（依本頁路徑分隔），即時更新「已選 n」與清除鈕
+  Array.prototype.forEach.call(document.querySelectorAll(".disc"), function(card){
+    var boxes = Array.prototype.slice.call(card.querySelectorAll("input[data-disc]"));
+    if (!boxes.length) return;
+    var countEl = card.querySelector(".disc-count");
+    var clearBtn = card.querySelector(".disc-clear");
+    function keyOf(box){ return "disc:" + location.pathname + ":" + box.getAttribute("data-disc"); }
+    function refresh(){
+      var n = boxes.filter(function(b){ return b.checked; }).length;
+      if (countEl) countEl.textContent = n ? "已選 " + n : "尚未選";
+      if (clearBtn) clearBtn.hidden = n === 0;
+    }
+    boxes.forEach(function(box){
+      try { box.checked = localStorage.getItem(keyOf(box)) === "1"; } catch (e) {}
+      box.addEventListener("change", function(){
+        try { localStorage.setItem(keyOf(box), box.checked ? "1" : "0"); } catch (e) {}
+        refresh();
+      });
+    });
+    if (clearBtn) clearBtn.addEventListener("click", function(){
+      boxes.forEach(function(box){
+        box.checked = false;
+        try { localStorage.setItem(keyOf(box), "0"); } catch (e) {}
+      });
+      refresh();
+    });
+    refresh();
+  });
 })();
 </script>
 
@@ -1142,7 +1250,7 @@ body.editing>#editor{display:block !important}
     var t = d.trip || {};
     if (t.fx && !(Number(t.fx.rate) > 0)) delete t.fx;
     ["emergency", "packing"].forEach(function(k){ if (Array.isArray(t[k]) && !t[k].length) delete t[k]; });
-    ["highlights", "alerts", "notes", "bookings"].forEach(function(k){ if (Array.isArray(d[k]) && !d[k].length) delete d[k]; });
+    ["highlights", "alerts", "notes", "bookings", "discussions"].forEach(function(k){ if (Array.isArray(d[k]) && !d[k].length) delete d[k]; });
     return d;
   }
 
@@ -1306,6 +1414,29 @@ body.editing>#editor{display:block !important}
       row.appendChild(field(h, "title", "標題", {full: true}));
       row.appendChild(field(h, "text", "說明", {type: "textarea", full: true}));
     }, "＋ 新增重點", function(){ return {title: "", text: ""}; }));
+  });
+
+  // 討論區
+  section("討論區（待討論事項與選項）", false, function(body){
+    // 選項若寫成純字串，先正規化成 {label} 以便逐欄編輯
+    data.discussions = (data.discussions || []).map(function(d){
+      d = d || {};
+      d.options = (d.options || []).map(function(o){ return typeof o === "string" ? {label: o} : o; });
+      return d;
+    });
+    body.appendChild(listEditor(data.discussions, function(d, row){
+      row.appendChild(field(d, "title", "討論題目", {full: true}));
+      row.appendChild(field(d, "note", "說明（選填）", {type: "textarea", full: true}));
+      var lbl = document.createElement("div"); lbl.className = "ed-daytitle"; lbl.textContent = "選項（手冊上可複選）"; row.appendChild(lbl);
+      d.options = d.options || [];
+      row.appendChild(listEditor(d.options, function(o, orow){
+        var og = grid();
+        og.appendChild(field(o, "label", "選項", {full: true}));
+        og.appendChild(field(o, "note", "備註（選填）", {type: "textarea", full: true}));
+        og.appendChild(field(o, "url", "連結（選填）", {full: true}));
+        orow.appendChild(og);
+      }, "＋ 新增選項", function(){ return {label: ""}; }));
+    }, "＋ 新增討論題目", function(){ return {title: "", options: []}; }));
   });
 
   // 提醒

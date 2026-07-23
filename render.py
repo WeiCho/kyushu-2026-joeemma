@@ -187,6 +187,22 @@ def validate(data):
     for h_idx, h in enumerate(highlights, 1):
         _require(h, "title", f"highlights 第 {h_idx} 項")
 
+    discussions = data.get("discussions") or []
+    if not isinstance(discussions, list):
+        raise TripError("discussions 必須是陣列")
+    for d_idx, disc in enumerate(discussions, 1):
+        ctx = f"discussions 第 {d_idx} 項"
+        _require(disc, "title", ctx)
+        opts = disc.get("options") or []
+        if not isinstance(opts, list):
+            raise TripError(f"{ctx} 的 options 必須是陣列")
+        for o_idx, opt in enumerate(opts, 1):
+            if isinstance(opt, str):
+                continue
+            if not isinstance(opt, dict):
+                raise TripError(f"{ctx} 第 {o_idx} 個選項必須是字串或物件")
+            _require(opt, "label", f"{ctx} 第 {o_idx} 個選項")
+
 
 def make_icon_svg(trip):
     """單色松綠圓角方塊 + 襯線首字，作為 PWA / 主畫面圖示。"""
@@ -377,6 +393,16 @@ def enrich(data):
                     break
         bookings.append(booking)
 
+    # 討論區：把字串選項正規化成 {label}，其餘欄位（note/url）原樣保留
+    discussions = []
+    for raw in data.get("discussions") or []:
+        disc = dict(raw)
+        opts = []
+        for o in disc.get("options") or []:
+            opts.append({"label": o} if isinstance(o, str) else dict(o))
+        disc["options"] = opts
+        discussions.append(disc)
+
     budget = trip["budget"]
     travelers = trip["travelers"] or 1
     by_category = sorted(
@@ -390,6 +416,7 @@ def enrich(data):
         "notes": data.get("notes") or [],
         "alerts": data.get("alerts") or [],
         "highlights": data.get("highlights") or [],
+        "discussions": discussions,
         "pending": pending,
         "totals": {
             "spent": spent,
