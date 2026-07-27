@@ -451,6 +451,12 @@ h1{
 .disc-note-toggle>summary:hover{background:var(--sage)}
 .disc-note-toggle[open]>summary{background:var(--sage)}
 .disc-note{margin:10px 0 0;color:var(--muted);font-size:14px;line-height:1.7;white-space:pre-line}
+.live-status{margin:10px 0 0;padding:10px 12px;border:1px solid var(--line);border-left:4px solid var(--pine);border-radius:8px;background:var(--sage);font-size:13px;line-height:1.7}
+.live-status .ls-head{font-weight:800;color:var(--pine);display:flex;flex-wrap:wrap;gap:8px;align-items:baseline}
+.live-status .ls-badge{background:var(--pine);color:#fff;border-radius:999px;padding:2px 10px;font-size:12px}
+.live-status .ls-detail{margin:6px 0 0;color:var(--muted);white-space:pre-line}
+.live-status .ls-foot{margin:6px 0 0;font-size:12px;color:var(--muted)}
+:root[data-theme="dark"] .live-status .ls-badge{background:#2f5544}
 .disc-count{
   flex:0 0 auto;font-size:12px;font-weight:800;letter-spacing:.03em;white-space:nowrap;
   background:var(--sage);color:var(--pine);border-radius:999px;padding:6px 12px;
@@ -777,6 +783,13 @@ body.editing>#editor{display:block !important}
           <div>
             <h4><span class="tico">{{ TYPE_META[item.type].icon if item.type in TYPE_META else '📍' }}</span>{% if item.url %}<a class="name" href="{{ item.url }}">{{ item.name }} ↗</a>{% else %}{{ item.name }}{% endif %}{% if item.map_url %} <a class="loc" href="{{ item.map_url }}">📍 地圖</a>{% endif %}{% for lk in item.links %} <a class="loc" href="{{ lk.url }}" target="_blank" rel="noopener">{{ lk.emoji }} {{ lk.label }}</a>{% endfor %}</h4>
             {% if item.note %}<p class="desc">{{ item.note }}</p>{% endif %}
+            {% if item.live_status %}
+            <div class="live-status">
+              <div class="ls-head">{% if item.live_status.date_label %}<span>{{ item.live_status.date_label }}</span>{% endif %}<span class="ls-badge">{{ item.live_status.status }}</span></div>
+              {% if item.live_status.detail %}<p class="ls-detail">{{ item.live_status.detail }}</p>{% endif %}
+              <p class="ls-foot">{% if item.live_status.updated %}更新：{{ item.live_status.updated }}{% endif %}{% if item.live_status.source %} · <a href="{{ item.live_status.source }}" target="_blank" rel="noopener">運行狀況官網 ↗</a>{% endif %}</p>
+            </div>
+            {% endif %}
             {% set meta = [] %}
             {%- if item.duration %}{% set _ = meta.append("停留 " ~ item.duration) %}{% endif %}
             {%- if item.cost %}{% set _ = meta.append(money(item.cost)) %}{% endif %}
