@@ -22,11 +22,14 @@
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <script>
 /* 早期套用主題與字級偏好，避免載入閃爍。亮色為預設；深色/大字為選用 */
-(function(){try{var d=document.documentElement;
+(function(){var d=document.documentElement;
+  // 有 JS 才收合（換日、工具列、浮卡）。沒有這個 class，CSS 一律展開全部內容
+  d.className += " js";
+  try{
   var t=localStorage.getItem("theme")||(window.matchMedia&&matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light");
   d.setAttribute("data-theme",t);
   if(localStorage.getItem("textsize")==="large")d.setAttribute("data-theme-size","large");
-}catch(e){document.documentElement.setAttribute("data-theme","light");}})();
+}catch(e){d.setAttribute("data-theme","light");}})();
 </script>
 <style>
 /* ══════════════════════════════════════════════════════════════
@@ -47,6 +50,8 @@
   --pine:#2d2519;       /* 實心按鈕底 */
   --sage:#ebe9e3;       /* 淺底（編輯器區塊標題） */
   --hair-dark:rgba(255,255,255,.26);
+  /* 與 --paper 同色但全透明。直接對 transparent 漸層在 sRGB 下會透出灰邊 */
+  --paper-0:rgba(244,244,242,0);
 
   /* 筑紫ゴシック Pro B 的在地替代。繁中字面排前面，避免逐字掉字型 */
   --sans:"Noto Sans TC","Source Han Sans TC","PingFang TC","Microsoft JhengHei",
@@ -64,6 +69,7 @@
 :root[data-theme="dark"]{
   --paper:#17130d; --ink:#ece7dd; --line:#3a342b; --card:#221c14;
   --muted:#a49a8c; --warm:#e08a72; --focus:#e08a72; --pine:#ece7dd; --sage:#221c14;
+  --paper-0:rgba(23,19,13,0);
 }
 :root[data-theme="dark"] .cta .o,
 :root[data-theme="dark"] .now-go{background:var(--ink);color:var(--paper)}
@@ -136,7 +142,24 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 }
 .sticky-nav a:hover::after,.sticky-nav a:focus-visible::after,
 .sticky-nav a.active::after{right:0}
-.nav-tools{display:flex;gap:8px;flex:0 0 auto}
+/* 工具列：三顆鈕收進一顆三條線圖示，點開才展開。沒有 JS 時三顆直接並排 */
+.nav-tools{position:relative;flex:0 0 auto}
+.tools-toggle{display:none}
+.js .tools-toggle{
+  display:grid;place-items:center;gap:4px;
+  min-width:38px;min-height:38px;padding:0 9px;border-radius:4px;
+  border:.8px solid currentColor;background:transparent;color:inherit;cursor:pointer;opacity:.75;
+}
+.js .tools-toggle:hover,.js .tools-toggle[aria-expanded="true"]{opacity:1}
+.tools-toggle i{display:block;width:16px;height:.8px;background:currentColor}
+.tools-menu{display:flex;gap:8px}
+.js .tools-menu{
+  position:absolute;top:calc(100% + 8px);right:0;flex-direction:column;
+  background:var(--paper);border:.8px solid var(--line);border-radius:4px;padding:8px;
+  box-shadow:0 2px 14px rgba(45,37,25,.09);
+}
+.js .tools-menu[hidden]{display:none}
+.sticky-nav.on-dark .tools-menu{background:#241d13;border-color:var(--hair-dark)}
 .nav-tool{
   min-width:38px;min-height:38px;border-radius:4px;border:.8px solid currentColor;
   background:transparent;color:inherit;font:inherit;font-size:14px;cursor:pointer;
@@ -180,11 +203,28 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 }
 
 /* ── 今日即時狀態小卡（取行程中第一筆 live_status）── */
+/* 浮在右下角（取自 3jigen.jp 的 Pick Up 卡）。
+   沒有 JS 時退回文流內的一般卡片，不會變成蓋住內容的浮層 */
 .card-live{
   width:min(360px,100%);margin:clamp(26px,4.5vh,48px) auto 0;
   background:var(--card);border:.8px solid var(--line);border-radius:4px;
   padding:14px 16px 15px;text-align:left;
 }
+.js .card-live{
+  position:fixed;right:var(--gut);bottom:24px;z-index:35;margin:0;
+  width:min(340px,calc(100% - var(--gut)*2));
+  box-shadow:0 2px 14px rgba(45,37,25,.09);
+}
+@media (prefers-reduced-motion:no-preference){
+  .js .card-live{
+    opacity:0;transform:translateY(16px);
+    transition:opacity .55s var(--ease),transform .55s var(--ease);
+  }
+  .js .card-live.is-in{opacity:1;transform:none}
+  /* 開始往下捲就退場 */
+  .js .card-live.is-out{opacity:0;transform:translateY(16px)}
+}
+.js .card-live.is-out{pointer-events:none;visibility:hidden}
 .card-live .top{
   display:flex;justify-content:space-between;align-items:baseline;gap:10px;
   padding-bottom:9px;border-bottom:.8px solid var(--line);
@@ -211,6 +251,26 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
   display:flex;justify-content:space-between;align-items:flex-start;gap:20px;flex-wrap:wrap;
 }
 
+/* ── 區塊之間的漸層銜接 ──
+   每個區塊自己是一段直向漸層，且**上一段的結束色 = 下一段的起始色**，
+   所以交界處沒有色階，捲過去只覺得底色慢慢在變，不會出現斷層。
+   色差刻意壓在 2–6 個色階以內：要能區分區塊，但不能吵。 */
+.section{background-image:linear-gradient(180deg,var(--sec-from) 0%,var(--sec-to) 100%)}
+#alerts   {--sec-from:#f4f4f2; --sec-to:#efeeea}
+#itinerary{--sec-from:#efeeea; --sec-to:#f1efe9}
+#bookings {--sec-from:#f1efe9; --sec-to:#edebe4}
+#emergency{--sec-from:#edebe4; --sec-to:#f1efea}
+#budget   {--sec-from:#f1efea; --sec-to:#edeae1}
+#notes    {--sec-from:#edeae1; --sec-to:#f2f0eb}
+#packing  {--sec-from:#f2f0eb; --sec-to:#f4f4f2}
+:root[data-theme="dark"] #alerts   {--sec-from:#17130d; --sec-to:#1c1711}
+:root[data-theme="dark"] #itinerary{--sec-from:#1c1711; --sec-to:#191510}
+:root[data-theme="dark"] #bookings {--sec-from:#191510; --sec-to:#1e1913}
+:root[data-theme="dark"] #emergency{--sec-from:#1e1913; --sec-to:#1a1610}
+:root[data-theme="dark"] #budget   {--sec-from:#1a1610; --sec-to:#201a13}
+:root[data-theme="dark"] #notes    {--sec-from:#201a13; --sec-to:#1b1610}
+:root[data-theme="dark"] #packing  {--sec-from:#1b1610; --sec-to:#17130d}
+
 /* ── 待確認橫幅 ── */
 .pending-banner{max-width:1440px;margin:0 auto;padding:clamp(80px,12vh,120px) var(--gut) 0}
 .pending-banner details{border:.8px solid var(--warm);border-radius:4px;padding:14px 16px}
@@ -230,10 +290,13 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
   --open:0%;
   --fade:1;
 }
+/* 深色塊的上下緣各溶回紙色，避免與相鄰淺色區塊之間出現硬邊 */
 #overview::before{
   content:"";position:absolute;inset:0;z-index:0;
   background-color:#2d2519;
   background-image:
+    linear-gradient(180deg,var(--paper) 0%,var(--paper-0) 11%),
+    linear-gradient(0deg,var(--paper) 0%,var(--paper-0) 13%),
     radial-gradient(120% 78% at 16% 4%,rgba(255,244,226,.13) 0%,rgba(255,244,226,0) 60%),
     linear-gradient(180deg,#1a140d 0%,#2b2318 46%,#473b2a 100%);
   clip-path:inset(0 var(--open));
@@ -426,16 +489,29 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 }
 
 /* ── 緊急資訊 ── */
-.emergency-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:0}
-.emergency-grid .card{
-  border-top:.8px solid var(--line);padding:clamp(16px,2.4vh,26px) clamp(16px,2vw,28px) clamp(16px,2.4vh,26px) 0;
+/* 版式參考 tsuchitokaze.co.jp 的問い合わせ：左側標題、右側細線分隔的欄位表 */
+.em-wrap{display:grid;grid-template-columns:minmax(0,1fr);gap:clamp(24px,4vh,44px)}
+@media (width>=900px){
+  .em-wrap{grid-template-columns:minmax(220px,.7fr) minmax(0,2fr);gap:clamp(32px,5vw,90px)}
+  .em-wrap .section-heading{margin-bottom:0}
 }
-.emergency-grid b{font-size:14px;letter-spacing:.1em;color:var(--muted)}
-.emergency-grid p{margin:6px 0 0;font-size:15.5px;line-height:1.8}
+.emergency-grid{display:grid;gap:0}
+.em-row{
+  display:grid;grid-template-columns:minmax(0,1fr);gap:2px;
+  padding-block:clamp(14px,2.2vh,22px);border-bottom:.8px solid var(--line);
+}
+.em-row:first-child{border-top:.8px solid var(--line)}
+@media (width>=560px){
+  .em-row{grid-template-columns:minmax(7em,10em) minmax(0,1fr);gap:clamp(16px,3vw,40px);align-items:baseline}
+}
+.emergency-grid b{font-size:15px;letter-spacing:.08em;color:var(--muted)}
+.emergency-grid p{margin:0;font-size:15.5px;line-height:1.8}
 .emergency-grid a.tel{
-  display:inline-block;margin-top:8px;font-family:var(--latin);font-size:18px;letter-spacing:.06em;
+  display:inline-flex;align-items:center;min-height:40px;margin-top:2px;
+  font-family:var(--latin);font-size:19px;letter-spacing:.06em;
   text-decoration:none;border-bottom:.8px solid var(--line);
 }
+@media (pointer:coarse){ .emergency-grid a.tel{min-height:44px} }
 
 /* ── 花費 ── */
 .recommendation{border-top:.8px solid var(--line);padding-top:clamp(22px,3.6vh,44px)}
@@ -659,9 +735,15 @@ body.editing>#editor{display:block !important}
     {%- if trip.packing %}<a href="#packing">打包</a>{% endif %}
   </div>
   <div class="nav-tools">
-    <button class="nav-tool" type="button" data-toggle="edit" aria-label="編輯行程資料">✎</button>
-    <button class="nav-tool" type="button" data-toggle="theme" aria-pressed="false" aria-label="切換深色模式">🌙</button>
-    <button class="nav-tool" type="button" data-toggle="size" aria-pressed="false" aria-label="切換大字模式">A⁺</button>
+    <button class="tools-toggle" id="tools-toggle" type="button"
+            aria-expanded="false" aria-controls="tools-menu" aria-label="開啟工具選單">
+      <i></i><i></i><i></i>
+    </button>
+    <div class="tools-menu" id="tools-menu">
+      <button class="nav-tool" type="button" data-toggle="edit" aria-label="編輯行程資料">✎</button>
+      <button class="nav-tool" type="button" data-toggle="theme" aria-pressed="false" aria-label="切換深色模式">🌙</button>
+      <button class="nav-tool" type="button" data-toggle="size" aria-pressed="false" aria-label="切換大字模式">A⁺</button>
+    </div>
   </div>
 </nav>
 
@@ -763,13 +845,7 @@ body.editing>#editor{display:block !important}
           <div>
             <h4><span class="tico">{{ TYPE_META[item.type].icon if item.type in TYPE_META else '📍' }}</span>{% if item.url %}<a class="name" href="{{ item.url }}">{{ item.name }} ↗</a>{% else %}{{ item.name }}{% endif %}{% if item.map_url %} <a class="loc" href="{{ item.map_url }}">📍 地圖</a>{% endif %}{% for lk in item.links %} <a class="loc" href="{{ lk.url }}" target="_blank" rel="noopener">{{ lk.emoji }} {{ lk.label }}</a>{% endfor %}</h4>
             {% if item.note %}<p class="desc">{{ item.note }}</p>{% endif %}
-            {% if item.live_status %}
-            <div class="live-status">
-              <div class="ls-head">{% if item.live_status.date_label %}<span>{{ item.live_status.date_label }}</span>{% endif %}<span class="ls-badge">{{ item.live_status.status }}</span></div>
-              {% if item.live_status.detail %}<p class="ls-detail">{{ item.live_status.detail }}</p>{% endif %}
-              <p class="ls-foot">{% if item.live_status.updated %}更新：{{ item.live_status.updated }}{% endif %}{% if item.live_status.source %} · <a href="{{ item.live_status.source }}" target="_blank" rel="noopener">運行狀況官網 ↗</a>{% endif %}</p>
-            </div>
-            {% endif %}
+            {# live_status 只出現在封面的浮卡，行程內不重複 #}
             {% set meta = [] %}
             {%- if item.duration %}{% set _ = meta.append("停留 " ~ item.duration) %}{% endif %}
             {%- if item.cost %}{% set _ = meta.append(money(item.cost)) %}{% endif %}
@@ -820,18 +896,23 @@ body.editing>#editor{display:block !important}
 
 {% if trip.emergency %}
 <section class="section" id="emergency">
-  <div class="section-heading">
-    <h2>緊急資訊</h2>
-    <p>臨時需要時最難翻——先放這裡，手機點電話可直接撥號。</p>
-  </div>
-  <div class="emergency-grid">
-  {% for e in trip.emergency %}
-    <div class="card">
-      <b>{{ e.label }}</b>
-      {% if e.value %}<p>{{ e.value }}</p>{% endif %}
-      {% if e.tel %}<a class="tel" href="tel:{{ e.tel }}">📞 {{ e.tel }}</a>{% endif %}
+  {# 版式參考 tsuchitokaze.co.jp 的問い合わせ：左側標題、右側細線分隔的欄位表 #}
+  <div class="em-wrap">
+    <div class="section-heading">
+      <h2>緊急資訊</h2>
+      <p>臨時需要時最難翻——先放這裡，手機點電話可直接撥號。</p>
     </div>
-  {% endfor %}
+    <div class="emergency-grid">
+    {% for e in trip.emergency %}
+      <div class="em-row">
+        <b>{{ e.label }}</b>
+        <div class="em-val">
+          {% if e.value %}<p>{{ e.value }}</p>{% endif %}
+          {% if e.tel %}<a class="tel" href="tel:{{ e.tel }}">{{ e.tel }}</a>{% endif %}
+        </div>
+      </div>
+    {% endfor %}
+    </div>
   </div>
 </section>
 {% endif %}
@@ -1155,6 +1236,39 @@ body.editing>#editor{display:block !important}
     if (h && h.charAt(0) !== "#") { a.target = "_blank"; a.rel = "noopener"; }
   });
 
+  // ── 工具列：三顆鈕收在三條線圖示裡 ──
+  var toolsToggle = document.getElementById("tools-toggle");
+  var toolsMenu = document.getElementById("tools-menu");
+  if (toolsToggle && toolsMenu) {
+    toolsMenu.hidden = true;
+    var setTools = function(open){
+      toolsMenu.hidden = !open;
+      toolsToggle.setAttribute("aria-expanded", open ? "true" : "false");
+      toolsToggle.setAttribute("aria-label", open ? "關閉工具選單" : "開啟工具選單");
+    };
+    toolsToggle.addEventListener("click", function(e){
+      e.stopPropagation();
+      setTools(toolsMenu.hidden);
+    });
+    // 點外面或按 Esc 收起來
+    document.addEventListener("click", function(e){
+      if (!toolsMenu.hidden && !toolsMenu.contains(e.target) && e.target !== toolsToggle) setTools(false);
+    });
+    document.addEventListener("keydown", function(e){
+      if (e.key === "Escape" && !toolsMenu.hidden) { setTools(false); toolsToggle.focus(); }
+    });
+  }
+
+  // ── 封面浮卡：載入時浮出，開始往下捲就退場 ──
+  var liveCard = document.querySelector(".card-live");
+  if (liveCard) {
+    requestAnimationFrame(function(){
+      requestAnimationFrame(function(){ liveCard.classList.add("is-in"); });
+    });
+    // 保險：rAF 在分頁未渲染時不會回呼，浮卡會永遠停在 opacity:0
+    setTimeout(function(){ liveCard.classList.add("is-in"); }, 400);
+  }
+
   // ── 固定頂列底色 + 總覽色帶隨捲動展開 ──
   var head = document.querySelector(".sticky-nav");
   var ov = document.getElementById("overview");
@@ -1163,6 +1277,7 @@ body.editing>#editor{display:block !important}
   function clamp01(v){ return v < 0 ? 0 : v > 1 ? 1 : v; }
   function syncScroll(){
     if (head) head.classList.toggle("stuck", window.scrollY > 40);
+    if (liveCard) liveCard.classList.toggle("is-out", window.scrollY > 120);
     if (!ov) return;
     var d = ov.getBoundingClientRect();
     if (head){
