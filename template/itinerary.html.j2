@@ -264,7 +264,15 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
    一個帶＝一種底色（不在帶內做漸層），相關的章節歸在同一帶：
      B 提醒＋行程　C 訂位＋緊急　D 花費　E 備忘＋打包
    帶與帶之間留一段空白，底色在那段裡由上一帶淡出、接到下一帶，所以沒有硬邊。 */
-.band{background:var(--band)}
+/* 進場方式與總覽一致：底色由中間往兩側展開，內容另外淡入。
+   clip 掛在背景層（::before），整塊裁切會把文字從中間切斷。
+   --open / --fade 的預設值就是「完全展開」，沒有 JS 或要求減少動態時直接是最終狀態。 */
+.band{position:relative;--open:0%;--fade:1}
+.band::before{
+  content:"";position:absolute;inset:0;z-index:0;
+  background:var(--band);clip-path:inset(0 var(--open));
+}
+.band>*{position:relative;z-index:1;opacity:var(--fade)}
 .band-b{--band:#f2f1ed}
 .band-c{--band:#eceae3}
 .band-d{--band:#f4f3ef}
@@ -285,12 +293,6 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 :root[data-theme="dark"] .gap-cd{--from:#201a13; --to:#191510}
 :root[data-theme="dark"] .gap-de{--from:#191510; --to:#1e1913}
 
-/* 帶進場：預設可見，有 JS 時才先收起來 */
-@media (prefers-reduced-motion:no-preference){
-  .js .band.rv{opacity:0;transform:translateY(22px);
-    transition:opacity 1s var(--ease),transform 1s var(--ease)}
-  .js .band.rv.in{opacity:1;transform:none}
-}
 
 /* 同一帶內需要更大喘息的章節（訂位 → 緊急資訊）。
    這裡不用 var(--sec) 的倍數：那樣算出來只有 190px 左右，參考圖那段留白接近半個畫面高 */
@@ -357,7 +359,8 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 }
 
 /* ── 提醒 ── */
-.alerts-section{border-top:.8px solid var(--line);margin-top:var(--sec)}
+/* 區塊銜接不畫橫線，改用底色與進場動畫區分 */
+.alerts-section{margin-top:var(--sec)}
 .alerts-summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;
   align-items:flex-start;gap:20px;padding-top:var(--sec)}
 .alerts-summary::-webkit-details-marker{display:none}
@@ -541,7 +544,7 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 @media (pointer:coarse){ .emergency-grid a.tel{min-height:44px} }
 
 /* ── 花費 ── */
-.recommendation{border-top:.8px solid var(--line);padding-top:clamp(22px,3.6vh,44px)}
+.recommendation{padding-top:clamp(22px,3.6vh,44px)}
 .recommendation .eyebrow{
   margin:0;font-family:var(--latin);font-size:13px;letter-spacing:.16em;color:var(--muted);
 }
@@ -706,8 +709,8 @@ body.editing>#editor{display:block !important}
   }
   .sticky-nav,.now-bar,.pending-banner,.day-tools,.daybar,.stay-link,.loc,.go,
   .band-gap{display:none}
-  .band{background:#fff !important}
-  .js .band.rv{opacity:1 !important;transform:none !important}
+  .band::before{background:#fff !important;clip-path:none !important}
+  .band>*{opacity:1 !important}
   .section-far{padding-top:24px}
   .stop.past{opacity:1}
   .hero{min-height:0;padding:24px 0}
@@ -829,7 +832,7 @@ body.editing>#editor{display:block !important}
 {% endif %}
 
 {# ── 區塊 B：提醒 + 行程（同一個底色） ── #}
-<div class="band band-b rv">
+<div class="band band-b">
 {% if alerts %}
 <details class="section alerts-section" id="alerts">
   <summary class="alerts-summary">
@@ -917,7 +920,7 @@ body.editing>#editor{display:block !important}
 <div class="band-gap gap-bc" aria-hidden="true"></div>
 
 {# ── 區塊 C：訂位 + 緊急資訊（同一個底色，兩者之間留大間距） ── #}
-<div class="band band-c rv">
+<div class="band band-c">
 {% if bookings %}
 <section class="section" id="bookings">
   <div class="section-heading">
@@ -970,7 +973,7 @@ body.editing>#editor{display:block !important}
 </div>{# /band-c #}
 <div class="band-gap gap-cd" aria-hidden="true"></div>
 
-<div class="band band-d rv">
+<div class="band band-d">
 <section class="section" id="budget">
   <div class="recommendation">
     <div class="section-heading">
@@ -1036,7 +1039,7 @@ body.editing>#editor{display:block !important}
 <div class="band-gap gap-de" aria-hidden="true"></div>
 
 {# ── 區塊 E：備忘 + 打包 ── #}
-<div class="band band-e rv">
+<div class="band band-e">
 {% if notes %}
 <section class="section" id="notes">
   <div class="section-heading">
@@ -1337,24 +1340,30 @@ body.editing>#editor{display:block !important}
   // ── 固定頂列底色 + 總覽色帶隨捲動展開 ──
   var head = document.querySelector(".sticky-nav");
   var ov = document.getElementById("overview");
+  // 分帶與總覽共用同一套展開：底色由中間往兩側開，內容隨後淡入
+  var bands = [].slice.call(document.querySelectorAll(".band"));
+  if (ov) bands.push(ov);
   // 使用者要求減少動態時完全不碰 --open/--fade，兩者的 CSS 預設值就是「已展開」
   var wantsMotion = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   function clamp01(v){ return v < 0 ? 0 : v > 1 ? 1 : v; }
   function syncScroll(){
     if (head) head.classList.toggle("stuck", window.scrollY > 40);
     if (liveCard) liveCard.classList.toggle("is-out", window.scrollY > 120);
-    if (!ov) return;
-    var d = ov.getBoundingClientRect();
-    if (head){
+    if (head && ov){
+      var d0 = ov.getBoundingClientRect();
       var line = head.getBoundingClientRect().bottom;
-      head.classList.toggle("on-dark", d.top < line - 6 && d.bottom > line);
+      head.classList.toggle("on-dark", d0.top < line - 6 && d0.bottom > line);
     }
     if (!wantsMotion) return;
     var vh = window.innerHeight;
-    var p = clamp01((vh - d.top) / (vh * 0.65));
     var maxInset = window.innerWidth <= 760 ? 12 : 22;   // 窄螢幕別縮掉太多可視寬度
-    ov.style.setProperty("--open", (maxInset * (1 - p)).toFixed(2) + "%");
-    ov.style.setProperty("--fade", clamp01((p - 0.45) / 0.35).toFixed(3));
+    for (var i = 0; i < bands.length; i++){
+      var el = bands[i], d = el.getBoundingClientRect();
+      // 進度：這一帶的上緣從視窗底部走到 35% 處的這段路
+      var p = clamp01((vh - d.top) / (vh * 0.65));
+      el.style.setProperty("--open", (maxInset * (1 - p)).toFixed(2) + "%");
+      el.style.setProperty("--fade", clamp01((p - 0.45) / 0.35).toFixed(3));
+    }
   }
   // 直接同步，不繞 requestAnimationFrame：rAF 在分頁切到背景時不會回呼，
   // 一旦 --fade 已被設為 0 就再也改不回來，總覽整區會永遠透明
@@ -1362,8 +1371,11 @@ body.editing>#editor{display:block !important}
   window.addEventListener("resize", syncScroll);
   document.addEventListener("visibilitychange", syncScroll);
   window.addEventListener("beforeprint", function(){
-    // 紙本不做展開動畫，且深色底已在 @media print 關掉
-    if (ov){ ov.style.setProperty("--open","0%"); ov.style.setProperty("--fade","1"); }
+    // 紙本不做展開動畫。沒有這段，未捲到的帶會整片印成空白
+    bands.forEach(function(el){
+      el.style.setProperty("--open","0%");
+      el.style.setProperty("--fade","1");
+    });
   });
   syncScroll();
 
@@ -1377,27 +1389,6 @@ body.editing>#editor{display:block !important}
     });
   });
 
-  // ── 分帶進場：整帶淡入上浮 ──
-  var bands = [].slice.call(document.querySelectorAll(".band.rv"));
-  function revealAll(){ bands.forEach(function(b){ b.classList.add("in"); }); }
-  if (!("IntersectionObserver" in window) ||
-      matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    revealAll();
-  } else {
-    // 門檻壓低：帶本身很高，等它露出一點就開始，免得看到半個帶了才動
-    var bio = new IntersectionObserver(function(entries){
-      entries.forEach(function(e){
-        if (!e.isIntersecting) return;
-        e.target.classList.add("in");
-        bio.unobserve(e.target);
-      });
-    }, {rootMargin:"0px 0px -8% 0px", threshold:0.02});
-    bands.forEach(function(b){ bio.observe(b); });
-    // 保險：observer 若沒回呼（分頁未渲染、被節流），整帶會永遠透明
-    setTimeout(revealAll, 1500);
-  }
-  // 列印時一律全部顯示，不能讓紙上出現空白帶
-  window.addEventListener("beforeprint", revealAll);
 })();
 </script>
 
