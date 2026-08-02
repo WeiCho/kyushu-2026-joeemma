@@ -275,10 +275,12 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 /* 進場方式與總覽一致：底色由中間往兩側展開，內容另外淡入。
    clip 掛在背景層（::before），整塊裁切會把文字從中間切斷。
    --open / --fade 的預設值就是「完全展開」，沒有 JS 或要求減少動態時直接是最終狀態。 */
-.band{position:relative;--open:0%;--fade:1}
+/* 帶的底色不做左右展開：那會讓帶的第一個章節（訂位、備忘）出現時
+   露出兩側較窄的色塊，跟帶中間的章節（花費）看起來不一樣。
+   左右展開只留給總覽那一塊，其餘一律「底色滿版、內容淡入」。 */
+.band{position:relative}
 .band::before{
-  content:"";position:absolute;inset:0;z-index:0;
-  background:var(--band);clip-path:inset(0 var(--open));
+  content:"";position:absolute;inset:0;z-index:0;background:var(--band);
 }
 .band>*{position:relative;z-index:1}
 /* 每個章節各自淡入，所以帶裡的第二個章節（緊急、打包）不會一開始就出現 */
@@ -409,13 +411,17 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
   border:.8px solid var(--warm);border-radius:4px;padding:1px 8px;white-space:nowrap;
 }
 
+/* 換日時面板高度會變，瀏覽器的 scroll anchoring 會自行補償捲動位置，
+   跟「換完回到行程頂端」的定位打架。這裡關掉，位置一律由程式決定 */
+.days{overflow-anchor:none}
 .day{padding-top:clamp(24px,4vh,48px)}
 /* 沒有 JS 時所有天照常顯示；有 JS 才切換 */
 .js .day:not(.is-on){display:none}
 
 .day-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:clamp(20px,3.4vh,38px)}
 @media (width>=900px){
-  .day-grid{grid-template-columns:minmax(220px,.58fr) minmax(0,2fr);gap:clamp(32px,4.4vw,80px)}
+  /* 左欄放寬（日期與主題常換行），右欄相應變窄並往右推 */
+  .day-grid{grid-template-columns:minmax(280px,.95fr) minmax(0,1.85fr);gap:clamp(44px,6vw,120px)}
   .day-aside{border-right:.8px solid var(--line);padding-right:clamp(22px,2.8vw,52px)}
 }
 .day-no{
@@ -720,7 +726,7 @@ body.editing>#editor{display:block !important}
   }
   .sticky-nav,.now-bar,.pending-banner,.day-tools,.daybar,.stay-link,.loc,.go,
   .band-gap{display:none}
-  .band::before{background:#fff !important;clip-path:none !important}
+  .band::before{background:#fff !important}
   .section{opacity:1 !important}
   .section-far{padding-top:24px}
   .stop.past{opacity:1}
@@ -1173,7 +1179,20 @@ body.editing>#editor{display:block !important}
     }
     if (prevBtn) prevBtn.disabled = (cur === 0);
     if (nextBtn) nextBtn.disabled = (cur === daysEls.length - 1);
-    if (focus) d.scrollIntoView({block:"nearest"});
+    // 換日後回到「行程」章節的頂端。按鈕在頁面下方，不捲回去的話
+    // 換完會停在下一天的中段，看不到自己換到了哪一天
+    if (focus){
+      var sec = document.getElementById("itinerary");
+      if (sec){
+        var head = document.querySelector(".sticky-nav");
+        var offset = head ? head.getBoundingClientRect().height : 0;
+        var top = sec.getBoundingClientRect().top + window.scrollY - offset - 8;
+        window.scrollTo({
+          top: Math.max(0, top),
+          behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"
+        });
+      }
+    }
   }
   function dayIndexOf(el){
     while (el && el !== document.body){
@@ -1402,12 +1421,12 @@ body.editing>#editor{display:block !important}
 
     if (!wantsMotion) return;
     var vh = window.innerHeight;
-    var maxInset = window.innerWidth <= 760 ? 12 : 22;   // 窄螢幕別縮掉太多可視寬度
-    for (var i = 0; i < bands.length; i++){
-      var el = bands[i], d = el.getBoundingClientRect();
-      // 進度：這一帶的上緣從視窗底部走到 35% 處的這段路
-      var p = clamp01((vh - d.top) / (vh * 0.65));
-      el.style.setProperty("--open", (maxInset * (1 - p)).toFixed(2) + "%");
+    // 左右展開只留給總覽；其餘區塊一律底色滿版，只做內容淡入
+    if (ov){
+      var od = ov.getBoundingClientRect();
+      var maxInset = window.innerWidth <= 760 ? 12 : 22;  // 窄螢幕別縮掉太多可視寬度
+      var op = clamp01((vh - od.top) / (vh * 0.65));
+      ov.style.setProperty("--open", (maxInset * (1 - op)).toFixed(2) + "%");
     }
     for (var j = 0; j < fades.length; j++){
       var fe = fades[j], fd = fe.getBoundingClientRect();
@@ -1421,8 +1440,8 @@ body.editing>#editor{display:block !important}
   window.addEventListener("resize", syncScroll);
   document.addEventListener("visibilitychange", syncScroll);
   window.addEventListener("beforeprint", function(){
-    // 紙本不做展開動畫。沒有這段，未捲到的帶與章節會整片印成空白
-    bands.forEach(function(el){ el.style.setProperty("--open","0%"); });
+    // 紙本不做展開動畫。沒有這段，未捲到的章節會整片印成空白
+    if (ov) ov.style.setProperty("--open","0%");
     fades.forEach(function(el){ el.style.setProperty("--fade","1"); });
   });
   syncScroll();
