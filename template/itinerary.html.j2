@@ -120,16 +120,20 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 .wrap{max-width:1440px;margin:0 auto;padding-inline:var(--gut)}
 
 /* ── 固定頂列（無字標，導覽靠右）── */
+/* 滿版一整行，不留左右空白；底色由 JS 取「此刻在頂列底下的那一帶」的顏色，
+   所以捲動時它會跟著背景走，不需要分隔線就融進畫面 */
 .sticky-nav{
-  position:fixed;inset:0 0 auto;z-index:40;
-  display:flex;justify-content:flex-end;align-items:center;gap:clamp(12px,2vw,28px);
-  max-width:1440px;margin:0 auto;padding:clamp(12px,2.2vh,20px) var(--gut);
-  transition:background .3s var(--ease),color .3s var(--ease),box-shadow .3s var(--ease);
+  position:fixed;inset:0 0 auto;z-index:40;width:100%;
+  transition:background-color .35s var(--ease),color .35s var(--ease);
 }
-/* 捲離最頂端後給底色，否則固定頂列會直接壓在章節標題上 */
-.sticky-nav.stuck{background:var(--paper);box-shadow:0 .8px 0 var(--line)}
-/* 進入深色總覽區時整條反白，避免亮色橫條切斷滿版深色 */
-.sticky-nav.stuck.on-dark{background:#241d13;color:#fff;box-shadow:0 .8px 0 var(--hair-dark)}
+.sticky-nav>.nav-inner{
+  max-width:1440px;margin:0 auto;
+  display:flex;justify-content:flex-end;align-items:center;gap:clamp(12px,2vw,28px);
+  padding:clamp(12px,2.2vh,20px) var(--gut);
+}
+.sticky-nav.stuck{background-color:var(--nav-bg,var(--paper))}
+/* 進入深色總覽區時整條反白 */
+.sticky-nav.stuck.on-dark{background-color:#241d13;color:#fff}
 .nav-links{display:flex;gap:clamp(14px,2.2vw,30px);overflow-x:auto;scrollbar-width:none}
 .nav-links::-webkit-scrollbar{display:none}
 .sticky-nav a{
@@ -246,8 +250,12 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 .card-live .state{margin:11px 0 0;font-size:15.5px;line-height:1.65}
 .card-live .keys{
   margin:6px 0 0;font-size:14px;line-height:1.7;color:var(--muted);
+  /* 只留兩行，超出的收掉。這是速查卡，不是完整公告 */
   display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;
+  white-space:pre-line;
 }
+.card-live a.who{text-decoration:none;border-bottom:.8px solid var(--line)}
+.card-live a.who:hover{border-color:currentColor}
 
 /* ── 章節 ── */
 .section{max-width:1440px;margin:0 auto;padding:var(--sec) var(--gut) 0}
@@ -272,7 +280,9 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
   content:"";position:absolute;inset:0;z-index:0;
   background:var(--band);clip-path:inset(0 var(--open));
 }
-.band>*{position:relative;z-index:1;opacity:var(--fade)}
+.band>*{position:relative;z-index:1}
+/* 每個章節各自淡入，所以帶裡的第二個章節（緊急、打包）不會一開始就出現 */
+.section{opacity:var(--fade,1)}
 .band-b{--band:#f2f1ed}
 .band-c{--band:#eceae3}
 .band-d{--band:#f4f3ef}
@@ -377,9 +387,10 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 .alert-grid span{color:var(--warm);flex:0 0 auto}
 
 /* ── 每日行程：左右換日 ── */
+/* 換日列：放在當天內容之後，不畫上下線 */
 .daybar{
-  display:flex;align-items:center;gap:clamp(14px,2.4vw,32px);
-  border-block:.8px solid var(--line);padding-block:clamp(14px,2.2vh,22px);
+  display:flex;align-items:center;justify-content:center;gap:clamp(18px,3vw,44px);
+  padding-block:clamp(24px,4vh,48px) 0;
 }
 .arw{
   width:52px;height:52px;flex:0 0 auto;border-radius:50%;
@@ -389,10 +400,9 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 }
 .arw:hover:not(:disabled){background:var(--ink);color:var(--paper)}
 .arw:disabled{opacity:.26;cursor:default}
-.daybar .mid{flex:1 1 auto;min-width:0;text-align:center}
-.daybar .cnt{font-family:var(--latin);font-size:14px;letter-spacing:.12em;color:var(--muted)}
 .daybar .th{
-  display:block;margin-top:2px;font-size:clamp(16px,1.6vw,20px);line-height:1.6;letter-spacing:.06em;
+  flex:0 1 auto;min-width:0;text-align:center;
+  font-size:clamp(16px,1.6vw,20px);line-height:1.6;letter-spacing:.06em;
 }
 .daybar .today-badge{
   margin-left:.6em;font-size:12px;letter-spacing:.1em;color:var(--warm);
@@ -439,7 +449,8 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
   display:grid;grid-template-columns:auto minmax(0,1fr);gap:clamp(14px,2.2vw,36px);
   padding-block:clamp(18px,2.8vh,32px);border-bottom:.8px solid var(--line);
 }
-.stop:first-child{border-top:.8px solid var(--line)}
+/* 每天的第一站與最後一站不畫線：那是日與日的邊界，不是站與站的分隔 */
+.timeline .stop:last-child{border-bottom:0}
 .stop time{
   font-family:var(--latin);font-size:clamp(22px,2.2vw,28px);line-height:1.35;
   letter-spacing:.03em;white-space:nowrap;
@@ -710,7 +721,7 @@ body.editing>#editor{display:block !important}
   .sticky-nav,.now-bar,.pending-banner,.day-tools,.daybar,.stay-link,.loc,.go,
   .band-gap{display:none}
   .band::before{background:#fff !important;clip-path:none !important}
-  .band>*{opacity:1 !important}
+  .section{opacity:1 !important}
   .section-far{padding-top:24px}
   .stop.past{opacity:1}
   .hero{min-height:0;padding:24px 0}
@@ -736,11 +747,13 @@ body.editing>#editor{display:block !important}
 <script id="trip-src" type="application/json">{{ data_json | safe }}</script>
 <div class="editor" id="editor" hidden></div>
 
-{%- set ns = namespace(live=none, live_where=none) -%}
+{%- set ns = namespace(live=none, live_where=none, live_title=none) -%}
 {%- for day in days -%}
   {%- for item in day["items"] -%}
     {%- if item.live_status and not ns.live -%}
-      {%- set ns.live = item.live_status -%}{%- set ns.live_where = item.name -%}
+      {%- set ns.live = item.live_status -%}
+      {%- set ns.live_where = item.name -%}
+      {%- set ns.live_title = item.live_status.title_zh -%}
     {%- endif -%}
   {%- endfor -%}
 {%- endfor -%}
@@ -756,14 +769,21 @@ body.editing>#editor{display:block !important}
   </div>
 
   {%- if ns.live %}
-  {# 行程中第一筆即時狀態，浮到封面上：出發前最常臨時要查的就是這個 #}
+  {# 行程中第一筆即時狀態，浮到封面上：出發前最常臨時要查的就是這個。
+     status_zh / summary_zh 是選填的中文欄位；沒填就退回原始（來源網站為日文）。 #}
   <div class="card-live">
     <div class="top">
-      <span class="who">{{ ns.live_where }}</span>
+      {%- if ns.live.source %}
+      <a class="who" href="{{ ns.live.source }}" target="_blank" rel="noopener">{{ ns.live_title or ns.live_where }} ↗</a>
+      {%- else %}
+      <span class="who">{{ ns.live_title or ns.live_where }}</span>
+      {%- endif %}
       {% if ns.live.updated %}<span class="upd">{{ ns.live.updated }}</span>{% endif %}
     </div>
-    <p class="state">{{ ns.live.status }}</p>
-    {% if ns.live.detail %}<p class="keys">{{ ns.live.detail }}</p>{% endif %}
+    <p class="state">{{ ns.live.status_zh or ns.live.status }}</p>
+    {% if ns.live.summary_zh or ns.live.detail %}
+    <p class="keys">{{ ns.live.summary_zh or ns.live.detail }}</p>
+    {% endif %}
   </div>
   {%- endif %}
 
@@ -771,6 +791,7 @@ body.editing>#editor{display:block !important}
 </header>
 
 <nav class="sticky-nav" aria-label="快速跳轉">
+  <div class="nav-inner">
   <div class="nav-links">
     {% if highlights %}<a href="#overview">總覽</a>{% endif %}
     {%- if alerts %}<a href="#alerts">提醒</a>{% endif %}
@@ -791,6 +812,7 @@ body.editing>#editor{display:block !important}
       <button class="nav-tool" type="button" data-toggle="theme" aria-pressed="false" aria-label="切換深色模式">🌙</button>
       <button class="nav-tool" type="button" data-toggle="size" aria-pressed="false" aria-label="切換大字模式">A⁺</button>
     </div>
+  </div>
   </div>
 </nav>
 
@@ -837,7 +859,7 @@ body.editing>#editor{display:block !important}
 <details class="section alerts-section" id="alerts">
   <summary class="alerts-summary">
     <div class="section-heading">
-      <h2>你可能不知道、但該知道的事</h2>
+      <h2>提醒</h2>
       <p>查證後發現的意外資訊——設施異動、季節限定已結束、當地潛規則等，特別留意。（共 {{ alerts | length }} 則，可收合）</p>
     </div>
     <span class="alerts-toggle" aria-hidden="true">＋</span>
@@ -856,15 +878,6 @@ body.editing>#editor{display:block !important}
   <div class="section-heading">
     <h2>行程</h2>
     <p>左右切換天數；點「導航」直接開 Google Maps。</p>
-  </div>
-
-  <div class="daybar">
-    <button class="arw" id="day-prev" type="button" aria-label="前一天">←</button>
-    <div class="mid">
-      <span class="cnt lat" id="day-count">01 / {{ "%02d" | format(days | length) }}</span>
-      <span class="th" id="day-theme"></span>
-    </div>
-    <button class="arw" id="day-next" type="button" aria-label="後一天">→</button>
   </div>
 
   <div class="days">
@@ -914,6 +927,13 @@ body.editing>#editor{display:block !important}
     </section>
   {% endfor %}
   </div>
+
+  {# 換日列放在當天內容之後：看完一天才需要翻頁 #}
+  <div class="daybar">
+    <button class="arw" id="day-prev" type="button" aria-label="前一天">←</button>
+    <span class="th" id="day-theme"></span>
+    <button class="arw" id="day-next" type="button" aria-label="後一天">→</button>
+  </div>
 </section>
 
 </div>{# /band-b #}
@@ -924,7 +944,7 @@ body.editing>#editor{display:block !important}
 {% if bookings %}
 <section class="section" id="bookings">
   <div class="section-heading">
-    <h2>訂位總覽</h2>
+    <h2>訂位</h2>
     <p>航班、住宿與餐廳的確認碼集中在這裡，報到時不用翻信箱。</p>
   </div>
   <div class="stay-list">
@@ -953,7 +973,7 @@ body.editing>#editor{display:block !important}
   {# 版式參考 3jigen.jp 的 Company：左側大標題、中間一條直線、右側欄位表，列間不畫橫線 #}
   <div class="em-wrap">
     <div class="em-head">
-      <h2>緊急資訊</h2>
+      <h2>緊急</h2>
       <p>臨時需要時最難翻——手機點電話可直接撥號。</p>
     </div>
     <div class="emergency-grid">
@@ -977,7 +997,7 @@ body.editing>#editor{display:block !important}
 <section class="section" id="budget">
   <div class="recommendation">
     <div class="section-heading">
-      <h2>花費總覽</h2>
+      <h2>花費</h2>
       <p>每天一列，右側為當日小計。</p>
     </div>
     {% if totals.has_costs %}
@@ -1043,7 +1063,7 @@ body.editing>#editor{display:block !important}
 {% if notes %}
 <section class="section" id="notes">
   <div class="section-heading">
-    <h2>出發前備忘</h2>
+    <h2>備忘</h2>
   </div>
   <div class="check-grid">
   {% for n in notes %}
@@ -1056,7 +1076,7 @@ body.editing>#editor{display:block !important}
 {% if trip.packing %}
 <section class="section" id="packing">
   <div class="section-heading">
-    <h2>打包清單</h2>
+    <h2>打包</h2>
     <p>出發前一項一項勾，勾選狀態會記在這台裝置。</p>
   </div>
   <div class="packing">
@@ -1133,17 +1153,14 @@ body.editing>#editor{display:block !important}
   var daysEls = Array.prototype.slice.call(document.querySelectorAll("section.day"));
   var prevBtn = document.getElementById("day-prev");
   var nextBtn = document.getElementById("day-next");
-  var cntEl   = document.getElementById("day-count");
   var themeEl = document.getElementById("day-theme");
   var cur = 0;
 
-  function pad2(n){ return (n < 10 ? "0" : "") + n; }
   function showDay(n, focus){
     if (!daysEls.length) return;
     cur = Math.max(0, Math.min(daysEls.length - 1, n));
     daysEls.forEach(function(d, k){ d.classList.toggle("is-on", k === cur); });
     var d = daysEls[cur];
-    if (cntEl) cntEl.textContent = pad2(cur + 1) + " / " + pad2(daysEls.length);
     if (themeEl){
       themeEl.textContent = d.getAttribute("data-theme-text") || "";
       // 今日徽章跟著當天走
@@ -1340,9 +1357,14 @@ body.editing>#editor{display:block !important}
   // ── 固定頂列底色 + 總覽色帶隨捲動展開 ──
   var head = document.querySelector(".sticky-nav");
   var ov = document.getElementById("overview");
-  // 分帶與總覽共用同一套展開：底色由中間往兩側開，內容隨後淡入
+  // 底色展開掛在「帶」上；內容淡入改掛在「章節」上，
+  // 這樣同一帶裡的第二個章節（緊急、打包）也會等捲到才出現，動畫與花費一致
   var bands = [].slice.call(document.querySelectorAll(".band"));
   if (ov) bands.push(ov);
+  var fades = [].slice.call(document.querySelectorAll("main .section"));
+  if (ov) fades.push(ov);
+  // 依此刻位於頂列底下的那一帶，決定頂列底色
+  var navTinted = [].slice.call(document.querySelectorAll(".band, .band-gap"));
   // 使用者要求減少動態時完全不碰 --open/--fade，兩者的 CSS 預設值就是「已展開」
   var wantsMotion = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   function clamp01(v){ return v < 0 ? 0 : v > 1 ? 1 : v; }
@@ -1354,6 +1376,30 @@ body.editing>#editor{display:block !important}
       var line = head.getBoundingClientRect().bottom;
       head.classList.toggle("on-dark", d0.top < line - 6 && d0.bottom > line);
     }
+    // 頂列底色：取此刻壓在頂列底下的那一塊背景，讓它跟著背景走
+    if (head){
+      var line2 = head.getBoundingClientRect().bottom;
+      var tint = "";
+      for (var t = 0; t < navTinted.length; t++){
+        var el2 = navTinted[t], tr = el2.getBoundingClientRect();
+        if (tr.top <= line2 && tr.bottom > line2){
+          var st = getComputedStyle(el2);
+          if (el2.classList.contains("band-gap")){
+            // 帶間空白的底色是漸層，讀不到單一色值，改取兩端的變數
+            var half = (line2 - tr.top) / Math.max(1, tr.height);
+            tint = st.getPropertyValue(half < 0.5 ? "--from" : "--to").trim();
+          } else {
+            // band 的底色畫在 ::before 上，元素本身是透明的
+            tint = getComputedStyle(el2, "::before").backgroundColor;
+            if (!tint || tint === "rgba(0, 0, 0, 0)") tint = st.backgroundColor;
+          }
+          break;
+        }
+      }
+      // 找不到就沿用上一個顏色，不要跳回預設值造成閃色
+      if (tint && tint !== "rgba(0, 0, 0, 0)") head.style.setProperty("--nav-bg", tint);
+    }
+
     if (!wantsMotion) return;
     var vh = window.innerHeight;
     var maxInset = window.innerWidth <= 760 ? 12 : 22;   // 窄螢幕別縮掉太多可視寬度
@@ -1362,7 +1408,11 @@ body.editing>#editor{display:block !important}
       // 進度：這一帶的上緣從視窗底部走到 35% 處的這段路
       var p = clamp01((vh - d.top) / (vh * 0.65));
       el.style.setProperty("--open", (maxInset * (1 - p)).toFixed(2) + "%");
-      el.style.setProperty("--fade", clamp01((p - 0.45) / 0.35).toFixed(3));
+    }
+    for (var j = 0; j < fades.length; j++){
+      var fe = fades[j], fd = fe.getBoundingClientRect();
+      var fp = clamp01((vh - fd.top) / (vh * 0.65));
+      fe.style.setProperty("--fade", clamp01((fp - 0.35) / 0.35).toFixed(3));
     }
   }
   // 直接同步，不繞 requestAnimationFrame：rAF 在分頁切到背景時不會回呼，
@@ -1371,11 +1421,9 @@ body.editing>#editor{display:block !important}
   window.addEventListener("resize", syncScroll);
   document.addEventListener("visibilitychange", syncScroll);
   window.addEventListener("beforeprint", function(){
-    // 紙本不做展開動畫。沒有這段，未捲到的帶會整片印成空白
-    bands.forEach(function(el){
-      el.style.setProperty("--open","0%");
-      el.style.setProperty("--fade","1");
-    });
+    // 紙本不做展開動畫。沒有這段，未捲到的帶與章節會整片印成空白
+    bands.forEach(function(el){ el.style.setProperty("--open","0%"); });
+    fades.forEach(function(el){ el.style.setProperty("--fade","1"); });
   });
   syncScroll();
 
