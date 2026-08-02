@@ -44,48 +44,40 @@ python3 render.py .        # 讀 ./trip.json → 產出 行程表.html + PWA 檔
 
 ---
 
-## 2. 待完成：每日自動更新划船狀態的「雲端排程」
+## 2. 已完成：每日自動更新划船狀態（GitHub Actions）
 
-**目標**：用 Claude Code 的 scheduled cloud agent（routine），每天自動抓 takachiho-kanko.info → 更新高千穗 `live_status` → `render.py` → commit & push。
+**做法**：`.github/workflows/takachiho.yml` 每天抓 takachiho-kanko.info → 更新 `trip.json` 的 `live_status` → commit & push → 重新 render 並部署 GitHub Pages。
 
-**目前卡點**：建立 routine 時 API 回 401 —
-> `Connect your GitHub account before saving a routine that uses a GitHub repository.`
-
-→ 使用者需先到 **https://claude.ai/code/routines** 連結 GitHub 帳號（要有本 repo 存取權）。連好後即可建立。
-
-### 使用者已確認的排程規格
 | 項目 | 值 |
 |---|---|
-| 方式 | 雲端排程（scheduled cloud agent / routine） |
-| 時間 | 每天 **09:00 JST**（= `00:00 UTC`），**9 月起**、只在 9・10 月執行 |
-| Cron | `0 0 * 9,10 *` |
-| 自動推送 | **自動 commit + push 到 GitHub main** |
-| Repo | `https://github.com/WeiCho/kyushu-2026-joeemma` |
-| Model | `claude-sonnet-5` |
-| Env | Default（`env_01YQ2yEjugps2w2PgcWJmnek`） |
-| 工具 | WebFetch / Bash / Read / Write / Edit / Grep / Glob |
+| Workflow | `.github/workflows/takachiho.yml` |
+| 腳本 | `scripts/update_takachiho.py`（只用 Python 標準庫） |
+| 時間 | 每天 **09:04 JST**（cron `4 0 * 8,9,10 *`，UTC），只在 8・9・10 月執行 |
+| 手動執行 | Actions 頁面 → 「高千穗峽划船狀態每日更新」→ Run workflow |
+| 產物 | 只 commit `trip.json`；HTML/PWA 由同一個 job 重新 render 後直接部署 Pages |
 
-### 接手步驟（GitHub 連好後）
-1. 用 `schedule` skill 或直接 `ToolSearch select:RemoteTrigger` 載入 RemoteTrigger 工具。
-2. `RemoteTrigger action:create`，body 用上面規格；`events[].data.message.content` 放下方「agent 任務 prompt」。
-3. 成功後把 routine 連結（`https://claude.ai/code/routines/{id}`）回報使用者。
+### 為什麼不是 Claude 雲端排程（routine）
+原本建了 routine `trig_01XCaq8oV8KYoLfrvmJWrd2J`，但 2026-08-02 首次試跑發現**雲端環境的 egress proxy 擋掉 takachiho-kanko.info**（CONNECT 收到 403，`connect_rejected`），是網路政策封鎖、不是暫時性錯誤。該 routine 已停用，改用 GitHub Actions。
 
-### agent 任務 prompt（放進 routine 的 message.content）
-> 你是這個九州行程規劃 repo（kyushu-2026-joeemma）的自動更新代理。任務：抓取高千穗峽貸しボート（划船）當日運行狀態，更新到行程檔並 push。
->
-> 1. 用 WebFetch 抓 https://takachiho-kanko.info/ ，擷取：更新時間、日期（M/D[Ddd]，星期英文縮寫）、運行狀態原文、當日券殘り枚數（今天與隔天）、注意事項原文。
-> 2. 讀取 repo 根目錄 trip.json，在 days[].items 找 name 含「高千穗峽」的 item。
-> 3. 用 python3 覆寫該 item 的 live_status（欄位：date_label / status / updated / detail / source，見 AUTOMATION.md）。寫回時 ensure_ascii=False, indent=2，其餘內容不動。
-> 4. `python3 render.py .` 重新產出（需 jinja2，未裝先 `pip install -r requirements.txt`）。
-> 5. 只 `git add trip.json`（HTML/PWA 產物不 commit）；有 diff 才 commit，訊息「chore: 高千穗峽划船運行狀態每日更新（<date_label> <status>）」，然後 `git push origin main`；無 diff 就不 commit。
-> 6. 回報今天的 date_label、status、當日券殘量、是否有 push。
->
-> 注意：雲端環境無本機檔案；時間以 JST 為準；抓取失敗別亂猜，保留原狀並回報。
+（另外那次試跑還把 `trip.json` 裡 7/27 的舊值當成「今天抓到的」回報，看起來像抓成功。所以現在腳本一律做日期校驗。）
 
-> 備註：routine 建好後，行程結束（10/20）或 10 月底可到 https://claude.ai/code/routines 停用或刪除。
+### 腳本行為
+- 解析官網 `<div class="box_boat">` 區塊：更新時間、`M/D[Ddd]`、運行狀態、`<small class="note">` 全文（`<br>` → 換行）。
+- **日期校驗**：官網顯示的 M/D ≠ 今天（JST）→ 印訊息、**不寫檔**、離開碼 0（官網每早 8 點左右才更新，偶爾會慢，不算錯誤）。
+- **抓取或解析失敗** → 離開碼 1，Actions 亮紅燈，**不會寫入舊值**。
+- `detail` 直接存官網日文原文（不再手動翻譯，才能全自動）。
+- 內容與現有 `live_status` 完全相同時不寫檔，也就不會產生空 commit。
+
+### 官網改版時要改哪裡
+`scripts/update_takachiho.py` 最上面的 `RE_BLOCK` / `RE_DATE` / `RE_STATUS` / `RE_NOTE` 四個正規式。改版時 workflow 會直接失敗並印出是哪一段解析不到。
+
+### 行程結束後
+10/20 行程結束或 10 月底，把 `.github/workflows/takachiho.yml` 刪掉或在 Actions 頁面停用即可。
 
 ---
 
 ## 摘要給接手者
-- 功能已上線，資料手動填到 `2026-07-27`。
-- **唯一待辦**：使用者連 GitHub → 建立上述 routine。
+- `live_status` 功能已上線。
+- 每日更新改用 GitHub Actions（`takachiho.yml`），2026-08-02 起每天 09:04 JST 自動跑，無待辦。
+- Claude 雲端 routine 已停用（該環境連不到來源網站）。
+- 行程結束（10/20）或 10 月底可刪掉 workflow。

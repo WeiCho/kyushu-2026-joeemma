@@ -1,0 +1,82 @@
+name: 高千穗峽划船狀態每日更新
+
+on:
+  schedule:
+    # 00:04 UTC = 09:04 JST，只在 8/9/10 月跑（官網每早 8 點左右更新）
+    - cron: "4 0 * 8,9,10 *"
+  workflow_dispatch:
+
+# 與 deploy.yml 共用同一個 Pages 併發群組，避免兩邊同時部署
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # 抓不到或解析不出來就直接失敗（紅燈），不會寫入舊值
+      - name: 抓取官網並更新 trip.json
+        run: python scripts/update_takachiho.py trip.json
+
+      - name: Commit & push
+        id: commit
+        env:
+          PYTHONIOENCODING: utf-8
+        run: |
+          if git diff --quiet -- trip.json; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "trip.json 無變化，不 commit"
+            exit 0
+          fi
+          msg=$(python - <<'PY'
+          import json
+          s = json.load(open("trip.json", encoding="utf-8"))
+          it = [i for d in s["days"] for i in d["items"] if "高千穗峽" in i.get("name", "")][0]["live_status"]
+          print(f"chore: 高千穗峽划船運行狀態每日更新（{it['date_label']} {it['status']}）")
+          PY
+          )
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add trip.json
+          git commit -m "$msg"
+          git push origin HEAD:main
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      # 以下只有真的有更新時才跑（用 GITHUB_TOKEN push 不會觸發 deploy.yml，所以這裡自己重建網站）
+      - name: Install deps
+        if: steps.commit.outputs.changed == 'true'
+        run: pip install "jinja2>=3.1"
+
+      - name: Render handbook from trip.json
+        if: steps.commit.outputs.changed == 'true'
+        run: python render.py .
+
+      - name: Assemble site
+        if: steps.commit.outputs.changed == 'true'
+        run: |
+          mkdir -p _site
+          cp index.html sw.js manifest.webmanifest icon.svg "行程表.html" _site/
+          touch _site/.nojekyll
+
+      - uses: actions/upload-pages-artifact@v3
+        if: steps.commit.outputs.changed == 'true'
+        with:
+          path: _site
+
+      - id: deployment
+        if: steps.commit.outputs.changed == 'true'
+        uses: actions/deploy-pages@v4
