@@ -145,13 +145,22 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 /* 工具列：三顆鈕收進一顆三條線圖示，點開才展開。沒有 JS 時三顆直接並排 */
 .nav-tools{position:relative;flex:0 0 auto}
 .tools-toggle{display:none}
+/* 三條線本身就是圖示，不加外框；點擊區用 padding 撐足 44px */
 .js .tools-toggle{
-  display:grid;place-items:center;gap:4px;
-  min-width:38px;min-height:38px;padding:0 9px;border-radius:4px;
-  border:.8px solid currentColor;background:transparent;color:inherit;cursor:pointer;opacity:.75;
+  display:flex;flex-direction:column;justify-content:center;align-items:flex-end;gap:5px;
+  width:44px;height:44px;padding:0;border:0;border-radius:0;
+  background:transparent;color:inherit;cursor:pointer;
 }
-.js .tools-toggle:hover,.js .tools-toggle[aria-expanded="true"]{opacity:1}
-.tools-toggle i{display:block;width:16px;height:.8px;background:currentColor}
+.tools-toggle i{
+  display:block;width:22px;height:1.2px;background:currentColor;
+  transition:transform .35s var(--ease),opacity .35s var(--ease),width .35s var(--ease);
+}
+.tools-toggle i:nth-child(2){width:16px}
+.js .tools-toggle:hover i:nth-child(2){width:22px}
+/* 展開時收成一個叉 */
+.js .tools-toggle[aria-expanded="true"] i:nth-child(1){transform:translateY(6.2px) rotate(45deg)}
+.js .tools-toggle[aria-expanded="true"] i:nth-child(2){opacity:0}
+.js .tools-toggle[aria-expanded="true"] i:nth-child(3){transform:translateY(-6.2px) rotate(-45deg);width:22px}
 .tools-menu{display:flex;gap:8px}
 .js .tools-menu{
   position:absolute;top:calc(100% + 8px);right:0;flex-direction:column;
@@ -251,25 +260,41 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
   display:flex;justify-content:space-between;align-items:flex-start;gap:20px;flex-wrap:wrap;
 }
 
-/* ── 區塊之間的漸層銜接 ──
-   每個區塊自己是一段直向漸層，且**上一段的結束色 = 下一段的起始色**，
-   所以交界處沒有色階，捲過去只覺得底色慢慢在變，不會出現斷層。
-   色差刻意壓在 2–6 個色階以內：要能區分區塊，但不能吵。 */
-.section{background-image:linear-gradient(180deg,var(--sec-from) 0%,var(--sec-to) 100%)}
-#alerts   {--sec-from:#f4f4f2; --sec-to:#efeeea}
-#itinerary{--sec-from:#efeeea; --sec-to:#f1efe9}
-#bookings {--sec-from:#f1efe9; --sec-to:#edebe4}
-#emergency{--sec-from:#edebe4; --sec-to:#f1efea}
-#budget   {--sec-from:#f1efea; --sec-to:#edeae1}
-#notes    {--sec-from:#edeae1; --sec-to:#f2f0eb}
-#packing  {--sec-from:#f2f0eb; --sec-to:#f4f4f2}
-:root[data-theme="dark"] #alerts   {--sec-from:#17130d; --sec-to:#1c1711}
-:root[data-theme="dark"] #itinerary{--sec-from:#1c1711; --sec-to:#191510}
-:root[data-theme="dark"] #bookings {--sec-from:#191510; --sec-to:#1e1913}
-:root[data-theme="dark"] #emergency{--sec-from:#1e1913; --sec-to:#1a1610}
-:root[data-theme="dark"] #budget   {--sec-from:#1a1610; --sec-to:#201a13}
-:root[data-theme="dark"] #notes    {--sec-from:#201a13; --sec-to:#1b1610}
-:root[data-theme="dark"] #packing  {--sec-from:#1b1610; --sec-to:#17130d}
+/* ── 區塊分帶 ──
+   一個帶＝一種底色（不在帶內做漸層），相關的章節歸在同一帶：
+     B 提醒＋行程　C 訂位＋緊急　D 花費　E 備忘＋打包
+   帶與帶之間留一段空白，底色在那段裡由上一帶淡出、接到下一帶，所以沒有硬邊。 */
+.band{background:var(--band)}
+.band-b{--band:#f2f1ed}
+.band-c{--band:#eceae3}
+.band-d{--band:#f4f3ef}
+.band-e{--band:#eae7e0}
+:root[data-theme="dark"] .band-b{--band:#1b1610}
+:root[data-theme="dark"] .band-c{--band:#201a13}
+:root[data-theme="dark"] .band-d{--band:#191510}
+:root[data-theme="dark"] .band-e{--band:#1e1913}
+
+.band-gap{
+  height:clamp(140px,26vh,300px);
+  background-image:linear-gradient(180deg,var(--from) 0%,var(--to) 100%);
+}
+.gap-bc{--from:#f2f1ed; --to:#eceae3}
+.gap-cd{--from:#eceae3; --to:#f4f3ef}
+.gap-de{--from:#f4f3ef; --to:#eae7e0}
+:root[data-theme="dark"] .gap-bc{--from:#1b1610; --to:#201a13}
+:root[data-theme="dark"] .gap-cd{--from:#201a13; --to:#191510}
+:root[data-theme="dark"] .gap-de{--from:#191510; --to:#1e1913}
+
+/* 帶進場：預設可見，有 JS 時才先收起來 */
+@media (prefers-reduced-motion:no-preference){
+  .js .band.rv{opacity:0;transform:translateY(22px);
+    transition:opacity 1s var(--ease),transform 1s var(--ease)}
+  .js .band.rv.in{opacity:1;transform:none}
+}
+
+/* 同一帶內需要更大喘息的章節（訂位 → 緊急資訊）。
+   這裡不用 var(--sec) 的倍數：那樣算出來只有 190px 左右，參考圖那段留白接近半個畫面高 */
+.section-far{padding-top:clamp(200px,42vh,460px)}
 
 /* ── 待確認橫幅 ── */
 .pending-banner{max-width:1440px;margin:0 auto;padding:clamp(80px,12vh,120px) var(--gut) 0}
@@ -290,13 +315,15 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
   --open:0%;
   --fade:1;
 }
-/* 深色塊的上下緣各溶回紙色，避免與相鄰淺色區塊之間出現硬邊 */
+/* 上緣直接切齊，不做漸層（依指示）；只有下緣溶進下一帶的底色。
+   淡出色要用「與下一帶同色但 alpha 0」，用 transparent 會透出灰邊 */
+#overview{--fade-to:#f2f1ed; --fade-to-0:rgba(242,241,237,0)}
+:root[data-theme="dark"] #overview{--fade-to:#1b1610; --fade-to-0:rgba(27,22,16,0)}
 #overview::before{
   content:"";position:absolute;inset:0;z-index:0;
   background-color:#2d2519;
   background-image:
-    linear-gradient(180deg,var(--paper) 0%,var(--paper-0) 11%),
-    linear-gradient(0deg,var(--paper) 0%,var(--paper-0) 13%),
+    linear-gradient(0deg,var(--fade-to) 0%,var(--fade-to-0) 13%),
     radial-gradient(120% 78% at 16% 4%,rgba(255,244,226,.13) 0%,rgba(255,244,226,0) 60%),
     linear-gradient(180deg,#1a140d 0%,#2b2318 46%,#473b2a 100%);
   clip-path:inset(0 var(--open));
@@ -489,23 +516,23 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 }
 
 /* ── 緊急資訊 ── */
-/* 版式參考 tsuchitokaze.co.jp 的問い合わせ：左側標題、右側細線分隔的欄位表 */
+/* 版式參考 3jigen.jp 的 Company：左側大標題、中間一條直線、右側欄位表。
+   列與列之間刻意不畫橫線（依指示），改用行距分隔 */
 .em-wrap{display:grid;grid-template-columns:minmax(0,1fr);gap:clamp(24px,4vh,44px)}
 @media (width>=900px){
-  .em-wrap{grid-template-columns:minmax(220px,.7fr) minmax(0,2fr);gap:clamp(32px,5vw,90px)}
-  .em-wrap .section-heading{margin-bottom:0}
+  .em-wrap{grid-template-columns:minmax(240px,.8fr) minmax(0,1.6fr);gap:clamp(40px,7vw,130px)}
+  .emergency-grid{border-left:.8px solid var(--line);padding-left:clamp(40px,7vw,130px)}
+  .em-wrap{gap:0}
 }
-.emergency-grid{display:grid;gap:0}
-.em-row{
-  display:grid;grid-template-columns:minmax(0,1fr);gap:2px;
-  padding-block:clamp(14px,2.2vh,22px);border-bottom:.8px solid var(--line);
-}
-.em-row:first-child{border-top:.8px solid var(--line)}
+.em-head h2{font-size:clamp(30px,4.4vw,56px);line-height:1.2;letter-spacing:.04em}
+.em-head p{margin:12px 0 0;color:var(--muted);font-size:15px;line-height:1.8}
+.emergency-grid{display:grid;gap:clamp(10px,1.6vh,18px)}
+.em-row{display:grid;grid-template-columns:minmax(0,1fr);gap:2px}
 @media (width>=560px){
-  .em-row{grid-template-columns:minmax(7em,10em) minmax(0,1fr);gap:clamp(16px,3vw,40px);align-items:baseline}
+  .em-row{grid-template-columns:minmax(7em,9em) minmax(0,1fr);gap:clamp(16px,3vw,40px);align-items:baseline}
 }
-.emergency-grid b{font-size:15px;letter-spacing:.08em;color:var(--muted)}
-.emergency-grid p{margin:0;font-size:15.5px;line-height:1.8}
+.emergency-grid b{font-size:15.5px;letter-spacing:.06em;color:var(--muted)}
+.emergency-grid p{margin:0;font-size:16px;line-height:1.8}
 .emergency-grid a.tel{
   display:inline-flex;align-items:center;min-height:40px;margin-top:2px;
   font-family:var(--latin);font-size:19px;letter-spacing:.06em;
@@ -519,22 +546,35 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
   margin:0;font-family:var(--latin);font-size:13px;letter-spacing:.16em;color:var(--muted);
 }
 .recommendation h3{margin:6px 0 clamp(20px,3.4vh,38px);font-size:clamp(20px,2.2vw,26px);letter-spacing:.08em}
-.pick-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0}
-.pick-grid>div{
-  border-top:.8px solid var(--line);padding:clamp(14px,2.2vh,22px) 20px clamp(14px,2.2vh,22px) 0;
-}
-.pick-grid span{display:block;font-size:14px;color:var(--muted);letter-spacing:.04em}
-.pick-grid b{
-  display:block;margin-top:6px;font-family:var(--latin);font-size:20px;letter-spacing:.04em;
-}
-.budget-stay{display:block;margin-top:4px;font-size:13px;color:var(--muted)}
-.budget-total,.per-person{
-  display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:10px;
+/* 每天一列的明細表：編號、名稱、金額靠右。金額同欄右對齊才好直向比較 */
+.pick-grid{display:grid;gap:0}
+.pick-row{
+  display:grid;grid-template-columns:auto minmax(0,1fr) auto;
+  gap:clamp(12px,2.4vw,36px);align-items:baseline;
   border-top:.8px solid var(--line);padding-block:clamp(14px,2.2vh,22px);
 }
-.budget-total span,.per-person span{font-size:15px;letter-spacing:.04em}
-.budget-total b,.per-person b{font-family:var(--latin);font-size:clamp(20px,2.4vw,28px);letter-spacing:.03em}
-.per-person{border-bottom:.8px solid var(--line)}
+.pick-row:last-child{border-bottom:.8px solid var(--line)}
+.pick-no{
+  font-family:var(--latin);font-size:14px;letter-spacing:.1em;color:var(--muted);
+  white-space:nowrap;min-width:4.5em;
+}
+.pick-name{font-size:16px;line-height:1.7;letter-spacing:.04em}
+.pick-amt{font-family:var(--latin);font-size:clamp(18px,1.8vw,22px);letter-spacing:.03em;
+  white-space:nowrap;text-align:right}
+.budget-stay{display:block;margin-top:2px;font-size:13.5px;color:var(--muted)}
+@media (width<=560px){
+  .pick-row{grid-template-columns:auto minmax(0,1fr);row-gap:4px}
+  .pick-amt{grid-column:2;justify-self:end}
+}
+/* 合計：靠右、與明細拉開，是這一區的收束點 */
+.budget-total,.per-person{
+  display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:baseline;
+  gap:10px clamp(16px,3vw,40px);padding-block:clamp(12px,2vh,20px);
+}
+.budget-total{margin-top:clamp(18px,3vh,34px)}
+.budget-total span,.per-person span{font-size:15px;letter-spacing:.04em;color:var(--muted)}
+.budget-total b{font-family:var(--latin);font-size:clamp(22px,2.8vw,32px);letter-spacing:.03em}
+.per-person b{font-family:var(--latin);font-size:clamp(18px,2vw,22px);letter-spacing:.03em}
 .over-tag{
   margin-left:.6em;color:var(--warm);border:.8px solid var(--warm);border-radius:4px;
   padding:1px 8px;font-size:13px;letter-spacing:.06em;
@@ -664,7 +704,11 @@ body.editing>#editor{display:block !important}
   :root[data-theme]{
     --paper:#fff;--ink:#2d2519;--line:#c9c7bf;--card:#fff;--muted:#5b554d;--warm:#8c2f22;
   }
-  .sticky-nav,.now-bar,.pending-banner,.day-tools,.daybar,.stay-link,.loc,.go{display:none}
+  .sticky-nav,.now-bar,.pending-banner,.day-tools,.daybar,.stay-link,.loc,.go,
+  .band-gap{display:none}
+  .band{background:#fff !important}
+  .js .band.rv{opacity:1 !important;transform:none !important}
+  .section-far{padding-top:24px}
   .stop.past{opacity:1}
   .hero{min-height:0;padding:24px 0}
   .hero .drop,.card-live{display:none}
@@ -784,6 +828,8 @@ body.editing>#editor{display:block !important}
 </section>
 {% endif %}
 
+{# ── 區塊 B：提醒 + 行程（同一個底色） ── #}
+<div class="band band-b rv">
 {% if alerts %}
 <details class="section alerts-section" id="alerts">
   <summary class="alerts-summary">
@@ -867,6 +913,11 @@ body.editing>#editor{display:block !important}
   </div>
 </section>
 
+</div>{# /band-b #}
+<div class="band-gap gap-bc" aria-hidden="true"></div>
+
+{# ── 區塊 C：訂位 + 緊急資訊（同一個底色，兩者之間留大間距） ── #}
+<div class="band band-c rv">
 {% if bookings %}
 <section class="section" id="bookings">
   <div class="section-heading">
@@ -895,12 +946,12 @@ body.editing>#editor{display:block !important}
 {% endif %}
 
 {% if trip.emergency %}
-<section class="section" id="emergency">
-  {# 版式參考 tsuchitokaze.co.jp 的問い合わせ：左側標題、右側細線分隔的欄位表 #}
+<section class="section section-far" id="emergency">
+  {# 版式參考 3jigen.jp 的 Company：左側大標題、中間一條直線、右側欄位表，列間不畫橫線 #}
   <div class="em-wrap">
-    <div class="section-heading">
+    <div class="em-head">
       <h2>緊急資訊</h2>
-      <p>臨時需要時最難翻——先放這裡，手機點電話可直接撥號。</p>
+      <p>臨時需要時最難翻——手機點電話可直接撥號。</p>
     </div>
     <div class="emergency-grid">
     {% for e in trip.emergency %}
@@ -916,26 +967,35 @@ body.editing>#editor{display:block !important}
   </div>
 </section>
 {% endif %}
+</div>{# /band-c #}
+<div class="band-gap gap-cd" aria-hidden="true"></div>
 
+<div class="band band-d rv">
 <section class="section" id="budget">
   <div class="recommendation">
-    <p class="eyebrow">BUDGET</p>
-    <h3>花費總覽</h3>
+    <div class="section-heading">
+      <h2>花費總覽</h2>
+      <p>每天一列，右側為當日小計。</p>
+    </div>
     {% if totals.has_costs %}
+    {# 每天一列，像明細一樣橫向排開；金額靠右對齊便於直向比較 #}
     <div class="pick-grid">
     {% for day in days %}
-      <div>
-        <span>DAY {{ day.day_no }}{% if day.theme %} · {{ day.theme }}{% endif %}</span>
-        <b>{{ money(day.subtotal) }}</b>
-        {% set stay = day["items"] | selectattr("type", "equalto", "住宿") | map(attribute="cost") | sum %}
-        {% if stay %}<small class="budget-stay">住宿 {{ money(stay) }}</small>{% endif %}
+      <div class="pick-row">
+        <span class="pick-no">DAY {{ "%02d" | format(day.day_no) }}</span>
+        <span class="pick-name">{{ day.theme or "自由安排" }}
+          {%- set stay = day["items"] | selectattr("type", "equalto", "住宿") | map(attribute="cost") | sum -%}
+          {%- if stay %}<small class="budget-stay">住宿 {{ money(stay) }}</small>{% endif -%}
+        </span>
+        <b class="pick-amt">{{ money(day.subtotal) }}</b>
       </div>
     {% endfor %}
     {% set booking_cost = bookings | sum(attribute="cost") %}
     {% if booking_cost %}
-      <div>
-        <span>訂位（機票、飯店…）</span>
-        <b>{{ money(booking_cost) }}</b>
+      <div class="pick-row">
+        <span class="pick-no">訂位</span>
+        <span class="pick-name">機票、住宿等預先付款項目</span>
+        <b class="pick-amt">{{ money(booking_cost) }}</b>
       </div>
     {% endif %}
     </div>
@@ -972,7 +1032,11 @@ body.editing>#editor{display:block !important}
     {% endif %}
   </div>
 </section>
+</div>{# /band-d #}
+<div class="band-gap gap-de" aria-hidden="true"></div>
 
+{# ── 區塊 E：備忘 + 打包 ── #}
+<div class="band band-e rv">
 {% if notes %}
 <section class="section" id="notes">
   <div class="section-heading">
@@ -1016,6 +1080,7 @@ body.editing>#editor{display:block !important}
   </div>
 </section>
 {% endif %}
+</div>{# /band-e #}
 </main>
 
 <footer class="footnote">
@@ -1311,6 +1376,28 @@ body.editing>#editor{display:block !important}
       try { localStorage.setItem(key, box.checked ? "1" : "0"); } catch (e) {}
     });
   });
+
+  // ── 分帶進場：整帶淡入上浮 ──
+  var bands = [].slice.call(document.querySelectorAll(".band.rv"));
+  function revealAll(){ bands.forEach(function(b){ b.classList.add("in"); }); }
+  if (!("IntersectionObserver" in window) ||
+      matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    revealAll();
+  } else {
+    // 門檻壓低：帶本身很高，等它露出一點就開始，免得看到半個帶了才動
+    var bio = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if (!e.isIntersecting) return;
+        e.target.classList.add("in");
+        bio.unobserve(e.target);
+      });
+    }, {rootMargin:"0px 0px -8% 0px", threshold:0.02});
+    bands.forEach(function(b){ bio.observe(b); });
+    // 保險：observer 若沒回呼（分頁未渲染、被節流），整帶會永遠透明
+    setTimeout(revealAll, 1500);
+  }
+  // 列印時一律全部顯示，不能讓紙上出現空白帶
+  window.addEventListener("beforeprint", revealAll);
 })();
 </script>
 
