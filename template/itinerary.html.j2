@@ -218,8 +218,9 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 /* 浮在右下角（取自 3jigen.jp 的 Pick Up 卡）。
    沒有 JS 時退回文流內的一般卡片，不會變成蓋住內容的浮層 */
 .card-live{
-  /* 內容區固定 210×125（--live-box），外面再加 16 內距與 .8 邊框 */
-  --live-box:calc(210px + 32px + 1.6px);
+  /* 內容區固定 215×125（--live-box），外面再加 16 內距與 .8 邊框。
+     215 是量 iOS 的結果：PingFang 比 Windows 的字寬，210 會讓摘要多折一行 */
+  --live-box:calc(215px + 32px + 1.6px);
   width:min(var(--live-box),100%);margin:clamp(26px,4.5vh,48px) auto 0;
   min-height:calc(125px + 32px + 1.6px);
   background:var(--card);border:.8px solid var(--line);border-radius:4px;
@@ -259,7 +260,8 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
   color:var(--warm);font-size:12px;letter-spacing:.04em;white-space:nowrap;
 }
 .card-live .keys{
-  margin:4px 0 0;font-size:14px;line-height:1.7;color:var(--muted);
+  /* 13.5 而非 14：iOS 的 PingFang 比桌機字寬，14 會讓摘要在 215 寬裡多折一行 */
+  margin:4px 0 0;font-size:13.5px;line-height:1.75;color:var(--muted);
   /* 不截字：內容由 scripts/update_takachiho.py 濃縮成兩行短句，這裡完整顯示 */
   white-space:pre-line;
 }
