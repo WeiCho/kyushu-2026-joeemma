@@ -571,11 +571,6 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
   margin-left:.6em;color:var(--warm);border:.8px solid var(--warm);border-radius:4px;
   padding:1px 8px;font-size:13px;letter-spacing:.06em;
 }
-.cat-bars{margin-top:clamp(18px,3vh,34px);display:grid;gap:10px}
-.cat-row{display:grid;grid-template-columns:6em 1fr auto;gap:14px;align-items:center;font-size:14px}
-.cat-row .bar{height:.8px;background:var(--line);position:relative}
-.cat-row .bar i{position:absolute;inset:0 auto 0 0;height:3px;top:-1px;background:var(--ink)}
-.cat-row .amt{font-family:var(--latin);letter-spacing:.04em}
 .pick-note,.budget-empty{margin:clamp(14px,2.4vh,26px) 0 0;font-size:15px;line-height:1.85;color:var(--muted)}
 
 /* ── 備忘 ── */
@@ -680,7 +675,6 @@ body.editing>#editor{display:block !important}
 /* ── RWD ── */
 @media (width<=640px){
   .stop{grid-template-columns:minmax(0,1fr);gap:2px}
-  .cat-row{grid-template-columns:5em 1fr auto;gap:10px}
 }
 
 /* ── 列印 ── */
@@ -943,34 +937,24 @@ body.editing>#editor{display:block !important}
   </div>
   <div class="budget-total">
     <span>已排入合計{% if totals.over %} <span class="over-tag">超出預算 {{ money(totals.spent - totals.budget) }}</span>{% endif %}</span>
-    <b>{{ money(totals.spent) }}{{ fx_alt(totals.spent) }} / {{ money(totals.budget) }}</b>
+    <b>{{ money(totals.spent) }}{{ fx_alt(totals.spent) }}</b>
   </div>
   <div class="per-person">
     <span>每人分攤（{{ trip.travelers }} 人）</span>
     <b>{{ money(totals.per_person) }}{{ fx_alt(totals.per_person) }}</b>
   </div>
-  {% if totals.by_category %}
-  <div class="cat-bars">
-  {% for c in totals.by_category %}
-    <div class="cat-row">
-      <span>{{ c.label }}</span>
-      <span class="bar"><i style="width:{{ (c.amount / totals.spent * 100) | round(1) }}%"></i></span>
-      <span class="amt">{{ money(c.amount) }}</span>
-    </div>
-  {% endfor %}
-  </div>
-  {% endif %}
+  {#- 大字只留合計與每人平均；類別占比那幾條移除，這裡用一行字交代預算餘裕 -#}
   {% if totals.over %}
-  <p class="pick-note">已超出預算，出發前再檢視一次大項花費。</p>
+  <p class="pick-note">預算 {{ money(totals.budget) }}，已超出 {{ money(totals.spent - totals.budget) }}，出發前再檢視一次大項花費。</p>
   {% else %}
-  <p class="pick-note">預算尚有 {{ money(totals.budget - totals.spent) }} 餘裕。</p>
+  <p class="pick-note">預算 {{ money(totals.budget) }}，目前尚有 {{ money(totals.budget - totals.spent) }} 餘裕。</p>
   {% endif %}
   {% else %}
   <div class="budget-total">
     <span>預算</span>
     <b>{{ money(totals.budget) }}{{ fx_alt(totals.budget) }}</b>
   </div>
-  <p class="budget-empty">花費尚未填入。待各項報價／確認金額後再逐筆補上，這裡會自動顯示合計、每人分攤與類別占比。</p>
+  <p class="budget-empty">花費尚未填入。待各項報價／確認金額後再逐筆補上，這裡會自動顯示合計與每人分攤。</p>
   {% endif %}
   </div>
 </section>
