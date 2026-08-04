@@ -86,8 +86,8 @@
 [data-theme-size="large"] .stop h4{font-size:20px}
 [data-theme-size="large"] .stop .desc{font-size:17px}
 [data-theme-size="large"] .stop .meta{font-size:16px}
-[data-theme-size="large"] .day-route,
-[data-theme-size="large"] .day-weather{font-size:16px}
+[data-theme-size="large"] .day-weather,
+[data-theme-size="large"] .day-note{font-size:16px}
 [data-theme-size="large"] .check-grid>div,
 [data-theme-size="large"] .emergency-grid p,
 [data-theme-size="large"] .pending-banner li{font-size:17px}
@@ -437,11 +437,9 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 .day-aside h3{
   font-size:clamp(17px,1.6vw,21px);line-height:1.7;letter-spacing:.06em;margin:16px 0 0;
 }
-.day-route{
-  margin:10px 0 0;font-size:14px;line-height:1.8;color:var(--muted);
-  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;
-}
-.day-weather{margin:8px 0 0;font-size:14px;color:var(--muted)}
+.day-weather{margin:14px 0 0;font-size:14px;line-height:1.8;color:var(--muted)}
+/* 當日小提醒：跟天氣同一種灰，字級一樣，只用行距分開 */
+.day-note{margin:6px 0 0;font-size:14px;line-height:1.8;color:var(--muted)}
 .day-tools{margin-top:16px}
 .route-btn{
   display:inline-flex;align-items:center;gap:10px;min-height:44px;padding:0 16px;
@@ -866,8 +864,9 @@ body.editing>#editor{display:block !important}
             <small>{{ day.date_label }} · {{ day.weekday }}</small>
           </b>
           <h3>{{ day.theme or "自由安排" }}</h3>
-          <p class="day-route">{{ day["items"] | map(attribute="name") | join(" → ") }}</p>
+          {#- 左欄只留「當地氣候 + 當日小提醒」，整串景點鏈右邊的時間軸就看得到 -#}
           {% if day.weather %}<p class="day-weather">{{ day.weather }}</p>{% endif %}
+          {% if day.note %}<p class="day-note">{{ day.note }}</p>{% endif %}
           {% if day.route_url %}
           <div class="day-tools">
             <a class="route-btn" href="{{ day.route_url }}" target="_blank" rel="noopener">本日路線一鍵導航</a>
@@ -1688,6 +1687,7 @@ body.editing>#editor{display:block !important}
       g.appendChild(field(day, "date", "日期", {type: "date"}));
       g.appendChild(field(day, "theme", "主題"));
       g.appendChild(field(day, "weather", "天氣／穿著", {full: true}));
+      g.appendChild(field(day, "note", "當日小提醒", {full: true}));
       row.appendChild(g);
       var lbl = document.createElement("div"); lbl.className = "ed-daytitle"; lbl.textContent = "行程項目（請依時間排序）"; row.appendChild(lbl);
       day.items = day.items || [];
