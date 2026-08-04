@@ -568,14 +568,15 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 .budget-lines span{font-size:15px;letter-spacing:.04em;color:var(--muted);justify-self:end}
 .budget-lines b{
   font-family:var(--latin);font-size:clamp(22px,2.8vw,32px);letter-spacing:.03em;
-  justify-self:end;
+  justify-self:start;   /* 數字靠左起排，兩列的開頭才對得齊 */
 }
+/* 預算那行放進同一個格線的第二欄，開頭跟數字切齊 */
+.budget-lines .pick-note{grid-column:2;margin:clamp(6px,1.2vh,12px) 0 0;text-align:left}
 .over-tag{
   margin-left:.6em;color:var(--warm);border:.8px solid var(--warm);border-radius:4px;
   padding:1px 8px;font-size:13px;letter-spacing:.06em;
 }
-/* 預算那一行跟著合計靠右 */
-.pick-note{margin:clamp(10px,1.8vh,18px) 0 0;font-size:15px;line-height:1.85;color:var(--muted);text-align:right}
+.pick-note{margin:clamp(10px,1.8vh,18px) 0 0;font-size:15px;line-height:1.85;color:var(--muted)}
 .budget-empty{margin:clamp(14px,2.4vh,26px) 0 0;font-size:15px;line-height:1.85;color:var(--muted)}
 
 /* ── 備忘 ── */
@@ -945,13 +946,13 @@ body.editing>#editor{display:block !important}
     <b>{{ money(totals.spent) }}{{ fx_alt(totals.spent) }}</b>
     <span>每人平均</span>
     <b>{{ money(totals.per_person) }}{{ fx_alt(totals.per_person) }}</b>
+    {#- 大字只留合計與每人平均；類別占比那幾條移除，這裡用一行字交代預算餘裕 -#}
+    {% if totals.over %}
+    <p class="pick-note">預算 {{ money(totals.budget) }}，已超出 {{ money(totals.spent - totals.budget) }}，出發前再檢視一次大項花費。</p>
+    {% else %}
+    <p class="pick-note">預算 {{ money(totals.budget) }}，目前尚有 {{ money(totals.budget - totals.spent) }} 餘裕。</p>
+    {% endif %}
   </div>
-  {#- 大字只留合計與每人平均；類別占比那幾條移除，這裡用一行字交代預算餘裕 -#}
-  {% if totals.over %}
-  <p class="pick-note">預算 {{ money(totals.budget) }}，已超出 {{ money(totals.spent - totals.budget) }}，出發前再檢視一次大項花費。</p>
-  {% else %}
-  <p class="pick-note">預算 {{ money(totals.budget) }}，目前尚有 {{ money(totals.budget - totals.spent) }} 餘裕。</p>
-  {% endif %}
   {% else %}
   <div class="budget-lines">
     <span>預算</span>
