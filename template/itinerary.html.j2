@@ -214,36 +214,64 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
   margin-top:clamp(24px,4vh,52px);
 }
 
-/* ── 今日即時狀態小卡（取行程中第一筆 live_status）── */
+/* ── 封面浮卡（可疊多張，往左滑換下一張）── */
 /* 浮在右下角（取自 3jigen.jp 的 Pick Up 卡）。
-   沒有 JS 時退回文流內的一般卡片，不會變成蓋住內容的浮層 */
-.card-live{
-  /* 內容區固定 215×125（--live-box），外面再加 16 內距與 .8 邊框。
+   沒有 JS 時退回文流內、一張張往下排的一般卡片，不會變成蓋住內容的浮層 */
+.card-deck{
+  /* 卡片內容區固定 215×125（--live-box），外面再加 16 內距與 .8 邊框。
      215 是量 iOS 的結果：PingFang 比 Windows 的字寬，210 會讓摘要多折一行 */
   --live-box:calc(215px + 32px + 1.6px);
+  --live-h:calc(125px + 32px + 1.6px);
   width:min(var(--live-box),100%);margin:clamp(26px,4.5vh,48px) auto 0;
-  min-height:calc(125px + 32px + 1.6px);
+  display:grid;gap:12px;
+}
+.card-live{
+  width:100%;min-height:var(--live-h);
   background:var(--card);border:.8px solid var(--line);border-radius:4px;
   padding:16px;text-align:left;   /* 四邊等寬，卡片內不做左右差 */
 }
-.js .card-live{
+.js .card-deck{
   /* 右緣對齊內容區右緣：章節是 max-width 1440 置中再加左右留白，
      所以右邊要留「置中剩餘的一半 + 留白」，寬螢幕才不會比文字更靠邊 */
   position:fixed;right:calc((100% - min(100%,1440px)) / 2 + var(--gut));
-  bottom:24px;z-index:35;margin:0;
+  bottom:24px;z-index:35;margin:0;display:block;
   width:min(var(--live-box),calc(100% - var(--gut)*2));
-  box-shadow:0 2px 14px rgba(45,37,25,.09);
+  height:var(--live-h);
+  touch-action:pan-y;   /* 左右手勢留給換卡，上下仍可正常捲頁 */
 }
+/* 疊在一起：只有最上面那張完全顯示，後面的往上縮一點露出邊 */
+.js .card-deck .card-live{
+  position:absolute;inset:0;margin:0;
+  box-shadow:0 2px 14px rgba(45,37,25,.09);
+  transform:translate3d(0,var(--dy,0),0) scale(var(--sc,1));
+  opacity:var(--op,1);z-index:var(--z,1);
+  transition:transform .42s var(--ease),opacity .42s var(--ease);
+}
+.js .card-deck .card-live.is-dragging{transition:none}
+/* 頁碼點：也可直接點著換卡（桌機沒有滑動手勢時用得到） */
+.deck-dots{display:none}
+.js .card-deck .deck-dots{
+  display:flex;gap:6px;position:absolute;right:16px;bottom:-16px;z-index:36;
+}
+.js .deck-dots button{
+  width:16px;height:16px;padding:0;border:0;background:transparent;cursor:pointer;
+  display:grid;place-items:center;
+}
+.js .deck-dots button::before{
+  content:"";width:5px;height:5px;border-radius:50%;background:var(--line);
+  transition:background .3s var(--ease);
+}
+.js .deck-dots button[aria-current="true"]::before{background:var(--muted)}
 @media (prefers-reduced-motion:no-preference){
-  .js .card-live{
+  .js .card-deck{
     opacity:0;transform:translateY(16px);
     transition:opacity .55s var(--ease),transform .55s var(--ease);
   }
-  .js .card-live.is-in{opacity:1;transform:none}
+  .js .card-deck.is-in{opacity:1;transform:none}
   /* 開始往下捲就退場 */
-  .js .card-live.is-out{opacity:0;transform:translateY(16px)}
+  .js .card-deck.is-out{opacity:0;transform:translateY(16px)}
 }
-.js .card-live.is-out{pointer-events:none;visibility:hidden}
+.js .card-deck.is-out{pointer-events:none;visibility:hidden}
 .card-live .top{padding-bottom:7px;border-bottom:.8px solid var(--line)}
 /* 標題不截字：寧可換行也不要出現「…」 */
 .card-live .who{font-size:14.5px;letter-spacing:.04em}
@@ -668,7 +696,7 @@ body.editing>#editor{display:block !important}
   .section{opacity:1 !important}
   .stop.past{opacity:1}
   .hero{min-height:0;padding:24px 0}
-  .hero .drop,.card-live{display:none}
+  .hero .drop,.card-deck{display:none}
   /* 換日是螢幕上的行為；紙本必須印出全部天數 */
   .js .day:not(.is-on){display:block}
   .day{break-inside:auto;padding-top:18px}
@@ -696,18 +724,30 @@ body.editing>#editor{display:block !important}
 <script id="trip-src" type="application/json">{{ data_json | safe }}</script>
 <div class="editor" id="editor" hidden></div>
 
-{%- set ns = namespace(live=none, live_where=none, live_title=none, live_tag=none) -%}
+{#- 封面浮卡：行程項目裡的 live_status（自動抓的即時狀態）與 card（手寫的提醒卡）
+    收成一疊，往左滑換下一張。即時狀態排前面（那是最需要一眼看到的），
+    手寫卡再依行程順序接在後面。 -#}
+{%- set ns = namespace(live_cards=[], note_cards=[]) -%}
 {%- for day in days -%}
   {%- for item in day["items"] -%}
-    {%- if item.live_status and not ns.live -%}
-      {%- set ns.live = item.live_status -%}
-      {%- set ns.live_where = item.name -%}
-      {%- set ns.live_title = item.live_status.title_zh -%}
+    {%- if item.live_status -%}
+      {%- set ls = item.live_status -%}
+      {#- 只留月日：卡片窄，時間對出發前查詢沒有幫助 -#}
+      {%- set upd = (ls.updated[5:10] if ls.updated and ls.updated[:2] == "20" and ls.updated[4] == "-" else ls.updated) -%}
       {#- live_tag 放在 item 上（不是 live_status 裡）：每天自動更新會整包覆寫 live_status -#}
-      {%- set ns.live_tag = item.live_tag -%}
+      {%- set _ = ns.live_cards.append({
+        "title": ls.title_zh or item.name, "url": ls.source,
+        "state": ls.status_zh or ls.status, "date": upd,
+        "tag": item.live_tag, "body": ls.summary_zh or ls.detail}) -%}
+    {%- elif item.card -%}
+      {%- set _ = ns.note_cards.append({
+        "title": item.card.title or item.name, "url": item.card.url,
+        "state": item.card.text, "date": item.card.date,
+        "tag": item.card.tag, "body": item.card["body"]}) -%}
     {%- endif -%}
   {%- endfor -%}
 {%- endfor -%}
+{%- set cards = ns.live_cards + ns.note_cards -%}
 <header class="hero">
   <h1>{{ trip.title }}</h1>
   <p class="lead">{{ trip.num_days }} 天 {{ trip.travelers }} 人。每天去哪、怎麼去、花多少，都在這一頁。</p>
@@ -718,24 +758,25 @@ body.editing>#editor{display:block !important}
     <span>預算 {{ money(trip.budget) }}</span>
   </div>
 
-  {%- if ns.live %}
-  {# 行程中第一筆即時狀態，浮到封面上：出發前最常臨時要查的就是這個。
-     status_zh / summary_zh 是選填的中文欄位；沒填就退回原始（來源網站為日文）。 #}
-  <div class="card-live">
-    <div class="top">
-      {%- if ns.live.source %}
-      <a class="who" href="{{ ns.live.source }}" target="_blank" rel="noopener">{{ ns.live_title or ns.live_where }}&nbsp;↗</a>
-      {%- else %}
-      <span class="who">{{ ns.live_title or ns.live_where }}</span>
+  {%- if cards %}
+  <div class="card-deck" id="card-deck">
+    {%- for c in cards %}
+    <article class="card-live" data-i="{{ loop.index0 }}">
+      <div class="top">
+        {%- if c.url %}
+        <a class="who" href="{{ c.url }}" target="_blank" rel="noopener">{{ c.title }}&nbsp;↗</a>
+        {%- else %}
+        <span class="who">{{ c.title }}</span>
+        {%- endif %}
+      </div>
+      <p class="state">{{ c.state }}
+        {%- if c.date %}<span class="upd">{{ c.date }}</span>{% endif %}
+        {%- if c.tag %}<span class="live-tag">{{ c.tag }}</span>{% endif %}</p>
+      {%- if c.body %}
+      <p class="keys">{{ c.body }}</p>
       {%- endif %}
-    </div>
-    <p class="state">{{ ns.live.status_zh or ns.live.status }}
-      {#- 只留月日：卡片窄，時間對出發前查詢沒有幫助 -#}
-      {%- if ns.live.updated %}<span class="upd">{{ ns.live.updated[5:10] if ns.live.updated[:2] == "20" and ns.live.updated[4] == "-" else ns.live.updated }}</span>{% endif %}
-      {%- if ns.live_tag %}<span class="live-tag">{{ ns.live_tag }}</span>{% endif %}</p>
-    {% if ns.live.summary_zh or ns.live.detail %}
-    <p class="keys">{{ ns.live.summary_zh or ns.live.detail }}</p>
-    {% endif %}
+    </article>
+    {%- endfor %}
   </div>
   {%- endif %}
 
@@ -1234,14 +1275,87 @@ body.editing>#editor{display:block !important}
     });
   }
 
-  // ── 封面浮卡：載入時浮出，開始往下捲就退場 ──
-  var liveCard = document.querySelector(".card-live");
+  // ── 封面浮卡：載入時浮出，開始往下捲就退場；多張時疊成一疊，往左滑換下一張 ──
+  var liveCard = document.getElementById("card-deck");
   if (liveCard) {
     requestAnimationFrame(function(){
       requestAnimationFrame(function(){ liveCard.classList.add("is-in"); });
     });
     // 保險：rAF 在分頁未渲染時不會回呼，浮卡會永遠停在 opacity:0
     setTimeout(function(){ liveCard.classList.add("is-in"); }, 400);
+  }
+
+  var deckCards = liveCard ? [].slice.call(liveCard.querySelectorAll(".card-live")) : [];
+  if (deckCards.length > 1) {
+    var cur = 0, dots = [];
+    // 疊法：最上面那張正常顯示，後面的往上縮一階，只露出邊
+    function layout(dx){
+      var n = deckCards.length;
+      deckCards.forEach(function(card, i){
+        var pos = (i - cur + n) % n;
+        var depth = Math.min(pos, 2);
+        card.style.setProperty("--dy", (-7 * depth) + "px");
+        card.style.setProperty("--sc", (1 - 0.035 * depth).toFixed(3));
+        card.style.setProperty("--op", pos === 0 ? "1" : (depth === 1 ? ".78" : ".5"));
+        card.style.setProperty("--z", String(n - depth));
+        card.setAttribute("aria-hidden", pos === 0 ? "false" : "true");
+        // 拖曳中只有最上面那張跟著手指走
+        if (pos === 0 && dx) {
+          card.style.transform = "translate3d(" + dx + "px,0,0)";
+        } else {
+          card.style.transform = "";
+        }
+      });
+      dots.forEach(function(d, i){ d.setAttribute("aria-current", i === cur ? "true" : "false"); });
+    }
+    function go(step){
+      cur = (cur + step + deckCards.length) % deckCards.length;
+      layout(0);
+    }
+
+    // 頁碼點：桌機沒有滑動手勢時也能換卡
+    var dotWrap = document.createElement("div");
+    dotWrap.className = "deck-dots";
+    deckCards.forEach(function(card, i){
+      var b = document.createElement("button");
+      b.type = "button";
+      b.setAttribute("aria-label", "顯示第 " + (i + 1) + " 張卡");
+      b.addEventListener("click", function(){ cur = i; layout(0); });
+      dotWrap.appendChild(b);
+      dots.push(b);
+    });
+    liveCard.appendChild(dotWrap);
+
+    // 手勢：水平拖曳超過門檻就換卡；沒超過就彈回。
+    // 直向的拖曳交還給頁面捲動（touch-action:pan-y 已允許）
+    var x0 = null, y0 = null, dx = 0, dragging = false;
+    liveCard.addEventListener("pointerdown", function(e){
+      if (e.target.closest("a") || e.target.closest("button")) return;
+      x0 = e.clientX; y0 = e.clientY; dx = 0; dragging = false;
+    });
+    liveCard.addEventListener("pointermove", function(e){
+      if (x0 === null) return;
+      var mx = e.clientX - x0, my = e.clientY - y0;
+      if (!dragging) {
+        if (Math.abs(mx) < 6 || Math.abs(mx) < Math.abs(my)) return;
+        dragging = true;
+        deckCards.forEach(function(c){ c.classList.add("is-dragging"); });
+        if (liveCard.setPointerCapture) { try { liveCard.setPointerCapture(e.pointerId); } catch (err) {} }
+      }
+      dx = mx;
+      layout(dx);
+    });
+    function endDrag(){
+      if (x0 === null) return;
+      x0 = null; y0 = null;
+      deckCards.forEach(function(c){ c.classList.remove("is-dragging"); });
+      if (dragging && Math.abs(dx) > 44) { go(dx < 0 ? 1 : -1); } else { layout(0); }
+      dragging = false; dx = 0;
+    }
+    liveCard.addEventListener("pointerup", endDrag);
+    liveCard.addEventListener("pointercancel", endDrag);
+    liveCard.addEventListener("pointerleave", endDrag);
+    layout(0);
   }
 
   // ── 固定頂列底色 + 深色花費色帶隨捲動展開 ──
