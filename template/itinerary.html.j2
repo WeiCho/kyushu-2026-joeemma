@@ -188,13 +188,10 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 }
 /* 手機：滿版高度＋大留白會讓標題被推到快一個畫面之後，改成貼著頂列開始 */
 @media (width<=560px){
-  /* 封面仍佔滿一個畫面（下一區的深色塊不該提前露出），
-     但不置中：標題貼著頂列開始，剩下的高度交給那條垂直線往下延伸 */
-  .hero{
-    justify-content:flex-start;
-    padding:clamp(76px,11vh,104px) var(--gut) clamp(28px,5vh,48px);
-  }
-  .hero .drop{flex:1 1 auto;min-height:40px}
+  /* 封面仍佔滿一個畫面（下一區的深色塊不該提前露出）。
+     上留白收窄、下留白加大，整組內容因此落在略高於正中的位置，
+     底部也留得下浮在右下角的即時小卡。垂直線維持原本的短線段 */
+  .hero{padding:clamp(76px,11vh,104px) var(--gut) clamp(150px,22vh,220px)}
 }
 .hero h1{
   text-align:center;font-size:clamp(40px,10vw,112px);line-height:1.12;letter-spacing:.02em;
