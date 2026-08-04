@@ -1360,8 +1360,8 @@ body.editing>#editor{display:block !important}
     layout(0);
   }
 
-  // ── 有 data-hours 的卡片：依日本時間顯示「正常營業／休息」 ──
-  // 手冊是靜態頁、可能放好幾天才打開，所以不在產生階段算，改在瀏覽器算。
+  // ── 有 data-hours 的卡片：看「今天（日本時間）有沒有營業」──
+  // 只判斷當天，不管此刻幾點；靜態頁可能隔幾天才打開，所以在瀏覽器端算。
   deckCards.forEach(function(card){
     var raw = card.getAttribute("data-hours");
     if (!raw) return;
@@ -1370,25 +1370,19 @@ body.editing>#editor{display:block !important}
     var stateEl = card.querySelector(".state");
     if (!stateEl || !stateEl.firstChild || stateEl.firstChild.nodeType !== 3) return;
     var label = stateEl.firstChild;
-    function toMin(hhmm){
-      var p = String(hhmm).split(":");
-      return (parseInt(p[0], 10) || 0) * 60 + (parseInt(p[1], 10) || 0);
-    }
-    function open(){
-      // 取日本當地時間：把 toLocaleString 的結果再解析回 Date
+    function openToday(){
+      // 取日本當地日期：把 toLocaleString 的結果再解析回 Date
       var d = new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Tokyo"}));
       var mmdd = ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2);
       if ((spec.closed || []).indexOf(mmdd) > -1) return false;
-      var mins = d.getHours() * 60 + d.getMinutes();
-      var ranges = (spec.open || {})[String(d.getDay())] || [];
-      for (var i = 0; i < ranges.length; i++) {
-        if (mins >= toMin(ranges[i][0]) && mins < toMin(ranges[i][1])) return true;
-      }
-      return false;
+      return ((spec.open || {})[String(d.getDay())] || []).length > 0;
     }
-    function paint(){ label.nodeValue = open() ? "正常營業" : "休息"; }
+    function paint(){ label.nodeValue = openToday() ? "正常營業" : "休息"; }
     paint();
-    setInterval(paint, 60000);
+    // 跨日才需要重算：回到分頁時對一次就夠
+    document.addEventListener("visibilitychange", function(){
+      if (!document.hidden) paint();
+    });
   });
 
   // ── 固定頂列底色 + 深色花費色帶隨捲動展開 ──
