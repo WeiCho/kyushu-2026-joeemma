@@ -61,7 +61,7 @@
 
   --w:600;              /* 實測全站字重 */
   --gut:clamp(18px,4.2vw,64px);
-  --sec:clamp(64px,11vh,150px);
+  --sec:clamp(88px,15vh,200px);   /* 章節上下留白，也決定帶與帶之間的呼吸 */
   --ease:cubic-bezier(.16,1,.3,1);
 }
 
@@ -305,7 +305,8 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
    畫面直接是最終狀態，不會整區空白。 */
 #emergency{
   position:relative;color:#fff;max-width:none;
-  margin-top:var(--sec);padding:var(--sec) 0;
+  /* 整塊比一般章節再厚一點：上下留白拉到 1.35 倍，下緣還要留給淡出 */
+  margin-top:var(--sec);padding:calc(var(--sec) * 1.35) 0;
   --open:0%;
   --fade:1;
 }
@@ -469,17 +470,22 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
    列與列之間刻意不畫橫線（依指示），改用行距分隔 */
 .em-wrap{display:grid;grid-template-columns:minmax(0,1fr);gap:clamp(24px,4vh,44px)}
 @media (width>=900px){
-  .em-wrap{grid-template-columns:minmax(240px,.8fr) minmax(0,1.6fr);gap:clamp(40px,7vw,130px)}
-  .emergency-grid{border-left:.8px solid var(--line);padding-left:clamp(40px,7vw,130px)}
-  .em-wrap{gap:0}
+  /* 左欄只放標題，右邊留給欄位表：欄名與內容都要能一行放完，
+     所以左欄壓窄、直線與右欄之間的留白也收斂 */
+  .em-wrap{grid-template-columns:minmax(200px,.55fr) minmax(0,2fr);gap:0}
+  .emergency-grid{border-left:.8px solid var(--line);padding-left:clamp(32px,5vw,86px)}
 }
 .em-head h2{font-size:clamp(30px,4.4vw,56px);line-height:1.2;letter-spacing:.04em}
 .em-head p{margin:12px 0 0;color:var(--muted);font-size:15px;line-height:1.8}
-.emergency-grid{display:grid;gap:clamp(10px,1.6vh,18px)}
+.emergency-grid{display:grid;gap:clamp(14px,2.2vh,26px)}
 .em-row{display:grid;grid-template-columns:minmax(0,1fr);gap:2px}
 @media (width>=560px){
-  .em-row{grid-template-columns:minmax(7em,9em) minmax(0,1fr);gap:clamp(16px,3vw,40px);align-items:baseline}
+  /* 欄名欄寬足夠放「外交部旅外急難救助專線」這種長標，避免折行 */
+  .em-row{grid-template-columns:minmax(11.5em,13em) minmax(0,1fr);gap:clamp(16px,2.4vw,34px);align-items:baseline}
 }
+/* 欄名與內容都盡量一行：容不下時才折 */
+.emergency-grid b,.emergency-grid p{text-wrap:pretty}
+@media (width>=900px){ .emergency-grid b{white-space:nowrap} }
 .emergency-grid b{font-size:15.5px;letter-spacing:.06em;color:var(--muted)}
 .emergency-grid p{margin:0;font-size:16px;line-height:1.8}
 .emergency-grid a.tel{
@@ -774,7 +780,7 @@ body.editing>#editor{display:block !important}
     <div class="em-wrap">
       <div class="em-head">
         <h2>緊急</h2>
-        <p>臨時需要時最難翻——手機點電話可直接撥號。</p>
+        <p>手機點電話可直接撥號。</p>
       </div>
       <div class="emergency-grid">
       {% for e in trip.emergency %}
@@ -797,7 +803,6 @@ body.editing>#editor{display:block !important}
 <section class="section" id="itinerary">
   <div class="section-heading">
     <h2>行程</h2>
-    <p>左右切換天數；點「導航」直接開 Google Maps。</p>
   </div>
 
   <div class="days">
@@ -828,9 +833,9 @@ body.editing>#editor{display:block !important}
             <h4><span class="tico">{{ TYPE_META[item.type].icon if item.type in TYPE_META else '📍' }}</span>{% if item.url %}<a class="name" href="{{ item.url }}">{{ item.name }} ↗</a>{% else %}{{ item.name }}{% endif %}{% if item.map_url %} <a class="loc" href="{{ item.map_url }}">📍 地圖</a>{% endif %}{% for lk in item.links %} <a class="loc" href="{{ lk.url }}" target="_blank" rel="noopener">{{ lk.emoji }} {{ lk.label }}</a>{% endfor %}</h4>
             {% if item.note %}<p class="desc">{{ item.note }}</p>{% endif %}
             {# live_status 只出現在封面的浮卡，行程內不重複 #}
+            {# 金額一律只出現在「花費」那一區，行程列表不重複寫價錢 #}
             {% set meta = [] %}
             {%- if item.duration %}{% set _ = meta.append("停留 " ~ item.duration) %}{% endif %}
-            {%- if item.cost %}{% set _ = meta.append(money(item.cost)) %}{% endif %}
             {%- if item.booking and item.booking.hours %}{% set _ = meta.append("營業 " ~ item.booking.hours) %}{% endif %}
             {% if meta or (item.booking and item.booking.code) %}
             <p class="meta">{{ meta | join(" · ") }}{% if item.booking and item.booking.code %}{% if meta %} · {% endif %}確認碼 <b>{{ item.booking.code }}</b>{% endif %}</p>
