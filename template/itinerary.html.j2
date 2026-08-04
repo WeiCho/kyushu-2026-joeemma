@@ -89,7 +89,6 @@
 [data-theme-size="large"] .day-route,
 [data-theme-size="large"] .day-weather{font-size:16px}
 [data-theme-size="large"] .check-grid>div,
-[data-theme-size="large"] .alert-grid>div,
 [data-theme-size="large"] .emergency-grid p,
 [data-theme-size="large"] .pending-banner li{font-size:17px}
 [data-theme-size="large"] .emergency-grid a.tel{font-size:18px}
@@ -266,42 +265,30 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 }
 
 /* ── 區塊分帶 ──
-   一個帶＝一種底色（不在帶內做漸層），相關的章節歸在同一帶：
-     A 花費（深色）　B 行程　C 緊急　E 提醒＋備忘＋打包
-   帶與帶之間留一段空白，底色在那段裡由上一帶淡出、接到下一帶，所以沒有硬邊。 */
-/* 進場方式與花費區一致：底色由中間往兩側展開，內容另外淡入。
-   clip 掛在背景層（::before），整塊裁切會把文字從中間切斷。
-   --open / --fade 的預設值就是「完全展開」，沒有 JS 或要求減少動態時直接是最終狀態。 */
-/* 帶的底色不做左右展開：那會讓帶的第一個章節（提醒、備忘）出現時
-   露出兩側較窄的色塊，跟帶中間的章節看起來不一樣。
-   左右展開只留給深色花費那一塊，其餘一律「底色滿版、內容淡入」。 */
+   一個帶＝一種底色，相關的章節歸在同一帶：
+     A 緊急（深色）　B 行程　C 花費　E 提醒＋打包
+   帶與帶直接相接，不留空白段：換色在下一帶開頭的那一小段裡完成
+   （--prev → --band 的漸層），所以既沒有硬邊，也不會出現一塊空的過場。 */
+/* 帶的底色不做左右展開：那會讓帶的第一個章節出現時露出兩側較窄的色塊，
+   跟帶中間的章節看起來不一樣。左右展開只留給深色那一塊，
+   其餘一律「底色滿版、內容淡入」。 */
 .band{position:relative}
 .band::before{
-  content:"";position:absolute;inset:0;z-index:0;background:var(--band);
+  content:"";position:absolute;inset:0;z-index:0;
+  /* background-color 保留單一色值：頂列要靠它取此刻壓在底下的底色 */
+  background-color:var(--band);
+  background-image:linear-gradient(180deg,var(--prev,var(--band)) 0,var(--band) clamp(120px,20vh,260px));
 }
 .band>*{position:relative;z-index:1}
-/* 每個章節各自淡入，所以帶裡的第二個章節（緊急、打包）不會一開始就出現 */
+/* 每個章節各自淡入，所以帶裡的第二個章節（打包）不會一開始就出現 */
 .section{opacity:var(--fade,1)}
-.band-b{--band:#f2f1ed}
-.band-c{--band:#eceae3}
-.band-e{--band:#eae7e0}
-:root[data-theme="dark"] .band-b{--band:#1b1610}
-:root[data-theme="dark"] .band-c{--band:#201a13}
-:root[data-theme="dark"] .band-e{--band:#1e1913}
-
-.band-gap{
-  height:clamp(140px,26vh,300px);
-  background-image:linear-gradient(180deg,var(--from) 0%,var(--to) 100%);
-}
-.gap-bc{--from:#f2f1ed; --to:#eceae3}
-.gap-ce{--from:#eceae3; --to:#eae7e0}
-:root[data-theme="dark"] .gap-bc{--from:#1b1610; --to:#201a13}
-:root[data-theme="dark"] .gap-ce{--from:#201a13; --to:#1e1913}
-
-
-/* 同一帶內需要更大喘息的章節（提醒 → 備忘）。
-   這裡不用 var(--sec) 的倍數：那樣算出來只有 190px 左右，參考圖那段留白接近半個畫面高 */
-.section-far{padding-top:clamp(200px,42vh,460px)}
+/* 上一帶的底色（--prev）就是上面那一帶的 --band，改色時兩處要一起改 */
+.band-b{--band:#f2f1ed; --prev:#f2f1ed}
+.band-c{--band:#eceae3; --prev:#f2f1ed}
+.band-e{--band:#eae7e0; --prev:#eceae3}
+:root[data-theme="dark"] .band-b{--band:#1b1610; --prev:#1b1610}
+:root[data-theme="dark"] .band-c{--band:#201a13; --prev:#1b1610}
+:root[data-theme="dark"] .band-e{--band:#1e1913; --prev:#201a13}
 
 /* ── 待確認橫幅 ── */
 .pending-banner{max-width:1440px;margin:0 auto;padding:clamp(80px,12vh,120px) var(--gut) 0}
@@ -311,12 +298,12 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 .pending-banner li{font-size:15px;line-height:1.85;color:var(--muted)}
 .pending-banner a{color:var(--ink)}
 
-/* ── 花費（深色首區）：底色漸層並隨捲動由中間往兩側展開 ──
+/* ── 緊急（深色首區）：底色漸層並隨捲動由中間往兩側展開 ──
    手法取自 3jigen.jp 首圖的 `clip-path: inset(0 X%)`，X 由 22% 收到 0。
    clip 掛在背景層（::before），文字另外淡入 —— 整塊裁切會把文字從中間切斷。
    --open / --fade 的預設值就是「完全展開」，所以沒有 JS 或使用者要求減少動態時，
    畫面直接是最終狀態，不會整區空白。 */
-#budget{
+#emergency{
   position:relative;color:#fff;max-width:none;
   margin-top:var(--sec);padding:var(--sec) 0;
   --open:0%;
@@ -324,39 +311,33 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 }
 /* 上緣直接切齊，不做漸層（依指示）；只有下緣溶進下一帶的底色。
    淡出色要用「與下一帶同色但 alpha 0」，用 transparent 會透出灰邊 */
-#budget{--fade-to:#f2f1ed; --fade-to-0:rgba(242,241,237,0)}
-:root[data-theme="dark"] #budget{--fade-to:#1b1610; --fade-to-0:rgba(27,22,16,0)}
-#budget::before{
+#emergency{--fade-to:#f2f1ed; --fade-to-0:rgba(242,241,237,0)}
+:root[data-theme="dark"] #emergency{--fade-to:#1b1610; --fade-to-0:rgba(27,22,16,0)}
+#emergency::before{
   content:"";position:absolute;inset:0;z-index:0;
-  background-color:#2d2519;
+  /* 比先前淡一階：整塊偏中性的暖褐，白字仍有足夠對比 */
+  background-color:#4a3f31;
   background-image:
     /* 下緣淡出的高度用固定長度（＝底部留白），不用百分比：
-       這一區內容多、整塊很高時，13% 會蓋到最後幾列明細 */
+       這一區內容多、整塊很高時，百分比會蓋到最後幾列 */
     linear-gradient(0deg,var(--fade-to) 0%,var(--fade-to-0) calc(var(--sec) * .85)),
-    radial-gradient(120% 78% at 16% 4%,rgba(255,244,226,.13) 0%,rgba(255,244,226,0) 60%),
-    linear-gradient(180deg,#1a140d 0%,#2b2318 46%,#473b2a 100%);
+    radial-gradient(120% 78% at 16% 4%,rgba(255,244,226,.12) 0%,rgba(255,244,226,0) 60%),
+    linear-gradient(180deg,#3a3126 0%,#4c4133 46%,#6b5c46 100%);
   clip-path:inset(0 var(--open));
 }
-#budget>*{position:relative;z-index:1;opacity:var(--fade)}
-#budget .ov-inner{max-width:1440px;margin:0 auto;padding-inline:var(--gut)}
-#budget .section-heading h2,
-#budget .section-heading p{color:#fff}
-#budget .section-heading p{opacity:.7}
-/* 深色底上的明細：分隔線與次要文字都改用白色系，否則細線與 muted 會看不見 */
-#budget .pick-row{border-color:var(--hair-dark)}
-#budget .pick-row:last-child{border-bottom-color:var(--hair-dark)}
-#budget .pick-no,
-#budget .budget-stay,
-#budget .budget-total span,
-#budget .per-person span,
-#budget .pick-note,
-#budget .budget-empty{color:rgba(255,255,255,.68)}
-#budget .cat-row .bar{background:var(--hair-dark)}
-#budget .cat-row .bar i{background:#fff}
+#emergency>*{position:relative;z-index:1;opacity:var(--fade)}
+#emergency .ov-inner{max-width:1440px;margin:0 auto;padding-inline:var(--gut)}
+/* 深色底上的欄位表：直線與次要文字都改白色系，否則會看不見 */
+#emergency .em-head h2,#emergency .emergency-grid p{color:#fff}
+#emergency .em-head p,#emergency .emergency-grid b{color:rgba(255,255,255,.72)}
+#emergency .emergency-grid{border-left-color:var(--hair-dark)}
+#emergency .emergency-grid a.tel{color:#fff;border-bottom-color:var(--hair-dark)}
 
-/* ── 提醒 ── */
+/* ── 提醒（原本的提醒與備忘合併成這一區，可收合、預設收起）── */
 /* 區塊銜接不畫橫線，改用底色與進場動畫區分 */
-.alerts-section{margin-top:var(--sec)}
+/* 不用 margin-top：這一區是帶裡的第一個元素，外邊距會被帶「擠」出去變成空白帶。
+   需要的上留白由 .alerts-summary 的 padding-top 負責 */
+.alerts-section{margin-top:0}
 .alerts-summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;
   align-items:flex-start;gap:20px;padding-top:var(--sec)}
 .alerts-summary::-webkit-details-marker{display:none}
@@ -364,13 +345,6 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 .alerts-section[open] .alerts-toggle{transform:rotate(45deg)}
 .alerts-section .section-heading{margin-bottom:0}
 .alerts-body{padding-top:clamp(20px,3.4vh,40px)}
-.alert-grid{display:grid;gap:0}
-.alert-grid>div{
-  display:flex;gap:14px;padding-block:clamp(14px,2.2vh,22px);
-  border-top:.8px solid var(--line);font-size:15.5px;line-height:1.85;
-}
-.alert-grid>div:last-child{border-bottom:.8px solid var(--line)}
-.alert-grid span{color:var(--warm);flex:0 0 auto}
 
 /* ── 每日行程：左右換日 ── */
 /* 換日列：放在當天內容之後，不畫上下線 */
@@ -679,11 +653,9 @@ body.editing>#editor{display:block !important}
   :root[data-theme]{
     --paper:#fff;--ink:#2d2519;--line:#c9c7bf;--card:#fff;--muted:#5b554d;--warm:#8c2f22;
   }
-  .sticky-nav,.now-bar,.pending-banner,.day-tools,.daybar,.loc,.go,
-  .band-gap{display:none}
+  .sticky-nav,.now-bar,.pending-banner,.day-tools,.daybar,.loc,.go{display:none}
   .band::before{background:#fff !important}
   .section{opacity:1 !important}
-  .section-far{padding-top:24px}
   .stop.past{opacity:1}
   .hero{min-height:0;padding:24px 0}
   .hero .drop,.card-live{display:none}
@@ -693,15 +665,17 @@ body.editing>#editor{display:block !important}
   .day+.day{border-top:.8px solid var(--line);margin-top:18px}
   .stop{break-inside:avoid}
   /* 展開動畫在紙上沒有意義，且深色底會吃掉整桶碳粉 */
-  #budget{color:var(--ink);padding:24px 0}
-  #budget::before{display:none}
-  #budget>*{opacity:1}
-  #budget .section-heading h2,#budget .section-heading p{color:var(--ink)}
-  #budget .pick-row,#budget .pick-row:last-child{border-color:var(--line)}
-  #budget .pick-no,#budget .budget-stay,#budget .budget-total span,
-  #budget .per-person span,#budget .pick-note,#budget .budget-empty{color:var(--muted)}
-  #budget .cat-row .bar{background:var(--line)}
-  #budget .cat-row .bar i{background:var(--ink)}
+  #emergency{color:var(--ink);padding:24px 0}
+  #emergency::before{display:none}
+  #emergency>*{opacity:1}
+  #emergency .em-head h2,#emergency .emergency-grid p,
+  #emergency .emergency-grid a.tel{color:var(--ink)}
+  #emergency .em-head p,#emergency .emergency-grid b{color:var(--muted)}
+  #emergency .emergency-grid{border-left-color:var(--line)}
+  #emergency .emergency-grid a.tel{border-bottom-color:var(--line)}
+  /* 提醒螢幕上預設收起，紙本由 beforeprint 展開；這裡只收掉多餘留白與「＋」 */
+  .alerts-summary{padding-top:24px}
+  .alerts-toggle{display:none}
   a{text-decoration:none;color:inherit}
   body{background:#fff}
 }
@@ -758,11 +732,10 @@ body.editing>#editor{display:block !important}
 <nav class="sticky-nav" aria-label="快速跳轉">
   <div class="nav-inner">
   <div class="nav-links">
-    <a href="#budget">花費</a>
+    {% if trip.emergency %}<a href="#emergency">緊急</a>{% endif %}
     <a href="#itinerary">行程</a>
-    {%- if trip.emergency %}<a href="#emergency">緊急</a>{% endif %}
-    {%- if alerts %}<a href="#alerts">提醒</a>{% endif %}
-    {%- if notes %}<a href="#notes">備忘</a>{% endif %}
+    <a href="#budget">花費</a>
+    {%- if notes %}<a href="#notes">提醒</a>{% endif %}
     {%- if trip.packing %}<a href="#packing">打包</a>{% endif %}
   </div>
   <div class="nav-tools">
@@ -793,68 +766,31 @@ body.editing>#editor{display:block !important}
 </div>
 {% endif %}
 
-{# ── 區塊 A：花費（深色，先看錢） ── #}
-<section id="budget">
+{# ── 區塊 A：緊急（深色，臨時要用時最好找） ── #}
+{% if trip.emergency %}
+<section id="emergency">
   <div class="ov-inner">
-    <div class="section-heading">
-      <h2>花費</h2>
-      <p>每天一列，右側為當日小計。</p>
-    </div>
-    {% if totals.has_costs %}
-    {# 每天一列，像明細一樣橫向排開；金額靠右對齊便於直向比較 #}
-    <div class="pick-grid">
-    {% for day in days %}
-      <div class="pick-row">
-        <span class="pick-no">DAY {{ "%02d" | format(day.day_no) }}</span>
-        <span class="pick-name">{{ day.theme or "自由安排" }}
-          {%- set stay = day["items"] | selectattr("type", "equalto", "住宿") | map(attribute="cost") | sum -%}
-          {%- if stay %}<small class="budget-stay">住宿 {{ money(stay) }}</small>{% endif -%}
-        </span>
-        <b class="pick-amt">{{ money(day.subtotal) }}</b>
+    {# 版式參考 3jigen.jp 的 Company：左側大標題、中間一條直線、右側欄位表，列間不畫橫線 #}
+    <div class="em-wrap">
+      <div class="em-head">
+        <h2>緊急</h2>
+        <p>臨時需要時最難翻——手機點電話可直接撥號。</p>
       </div>
-    {% endfor %}
-    {% set booking_cost = bookings | sum(attribute="cost") %}
-    {% if booking_cost %}
-      <div class="pick-row">
-        <span class="pick-no">預付</span>
-        <span class="pick-name">機票、住宿等預先付款項目</span>
-        <b class="pick-amt">{{ money(booking_cost) }}</b>
+      <div class="emergency-grid">
+      {% for e in trip.emergency %}
+        <div class="em-row">
+          <b>{{ e.label }}</b>
+          <div class="em-val">
+            {% if e.value %}<p>{{ e.value }}</p>{% endif %}
+            {% if e.tel %}<a class="tel" href="tel:{{ e.tel }}">{{ e.tel }}</a>{% endif %}
+          </div>
+        </div>
+      {% endfor %}
       </div>
-    {% endif %}
     </div>
-    <div class="budget-total">
-      <span>已排入合計{% if totals.over %} <span class="over-tag">超出預算 {{ money(totals.spent - totals.budget) }}</span>{% endif %}</span>
-      <b>{{ money(totals.spent) }}{{ fx_alt(totals.spent) }} / {{ money(totals.budget) }}</b>
-    </div>
-    <div class="per-person">
-      <span>每人分攤（{{ trip.travelers }} 人）</span>
-      <b>{{ money(totals.per_person) }}{{ fx_alt(totals.per_person) }}</b>
-    </div>
-    {% if totals.by_category %}
-    <div class="cat-bars">
-    {% for c in totals.by_category %}
-      <div class="cat-row">
-        <span>{{ c.label }}</span>
-        <span class="bar"><i style="width:{{ (c.amount / totals.spent * 100) | round(1) }}%"></i></span>
-        <span class="amt">{{ money(c.amount) }}</span>
-      </div>
-    {% endfor %}
-    </div>
-    {% endif %}
-    {% if totals.over %}
-    <p class="pick-note">已超出預算，出發前再檢視一次大項花費。</p>
-    {% else %}
-    <p class="pick-note">預算尚有 {{ money(totals.budget - totals.spent) }} 餘裕。</p>
-    {% endif %}
-    {% else %}
-    <div class="budget-total">
-      <span>預算</span>
-      <b>{{ money(totals.budget) }}{{ fx_alt(totals.budget) }}</b>
-    </div>
-    <p class="budget-empty">花費尚未填入。待各項報價／確認金額後再逐筆補上，這裡會自動顯示合計、每人分攤與類別占比。</p>
-    {% endif %}
   </div>
 </section>
+{% endif %}
 
 {# ── 區塊 B：行程 ── #}
 <div class="band band-b">
@@ -921,67 +857,90 @@ body.editing>#editor{display:block !important}
 </section>
 
 </div>{# /band-b #}
-<div class="band-gap gap-bc" aria-hidden="true"></div>
-
-{# ── 區塊 C：緊急資訊 ── #}
+{# ── 區塊 C：花費 ── #}
 <div class="band band-c">
-{% if trip.emergency %}
-<section class="section" id="emergency">
-  {# 版式參考 3jigen.jp 的 Company：左側大標題、中間一條直線、右側欄位表，列間不畫橫線 #}
-  <div class="em-wrap">
-    <div class="em-head">
-      <h2>緊急</h2>
-      <p>臨時需要時最難翻——手機點電話可直接撥號。</p>
+<section class="section" id="budget">
+  <div class="recommendation">
+  <div class="section-heading">
+    <h2>花費</h2>
+    <p>每天一列，右側為當日小計。</p>
+  </div>
+  {% if totals.has_costs %}
+  {# 每天一列，像明細一樣橫向排開；金額靠右對齊便於直向比較 #}
+  <div class="pick-grid">
+  {% for day in days %}
+    <div class="pick-row">
+      <span class="pick-no">DAY {{ "%02d" | format(day.day_no) }}</span>
+      <span class="pick-name">{{ day.theme or "自由安排" }}
+        {%- set stay = day["items"] | selectattr("type", "equalto", "住宿") | map(attribute="cost") | sum -%}
+        {%- if stay %}<small class="budget-stay">住宿 {{ money(stay) }}</small>{% endif -%}
+      </span>
+      <b class="pick-amt">{{ money(day.subtotal) }}</b>
     </div>
-    <div class="emergency-grid">
-    {% for e in trip.emergency %}
-      <div class="em-row">
-        <b>{{ e.label }}</b>
-        <div class="em-val">
-          {% if e.value %}<p>{{ e.value }}</p>{% endif %}
-          {% if e.tel %}<a class="tel" href="tel:{{ e.tel }}">{{ e.tel }}</a>{% endif %}
-        </div>
-      </div>
-    {% endfor %}
+  {% endfor %}
+  {% set booking_cost = bookings | sum(attribute="cost") %}
+  {% if booking_cost %}
+    <div class="pick-row">
+      <span class="pick-no">預付</span>
+      <span class="pick-name">機票、住宿等預先付款項目</span>
+      <b class="pick-amt">{{ money(booking_cost) }}</b>
     </div>
+  {% endif %}
+  </div>
+  <div class="budget-total">
+    <span>已排入合計{% if totals.over %} <span class="over-tag">超出預算 {{ money(totals.spent - totals.budget) }}</span>{% endif %}</span>
+    <b>{{ money(totals.spent) }}{{ fx_alt(totals.spent) }} / {{ money(totals.budget) }}</b>
+  </div>
+  <div class="per-person">
+    <span>每人分攤（{{ trip.travelers }} 人）</span>
+    <b>{{ money(totals.per_person) }}{{ fx_alt(totals.per_person) }}</b>
+  </div>
+  {% if totals.by_category %}
+  <div class="cat-bars">
+  {% for c in totals.by_category %}
+    <div class="cat-row">
+      <span>{{ c.label }}</span>
+      <span class="bar"><i style="width:{{ (c.amount / totals.spent * 100) | round(1) }}%"></i></span>
+      <span class="amt">{{ money(c.amount) }}</span>
+    </div>
+  {% endfor %}
+  </div>
+  {% endif %}
+  {% if totals.over %}
+  <p class="pick-note">已超出預算，出發前再檢視一次大項花費。</p>
+  {% else %}
+  <p class="pick-note">預算尚有 {{ money(totals.budget - totals.spent) }} 餘裕。</p>
+  {% endif %}
+  {% else %}
+  <div class="budget-total">
+    <span>預算</span>
+    <b>{{ money(totals.budget) }}{{ fx_alt(totals.budget) }}</b>
+  </div>
+  <p class="budget-empty">花費尚未填入。待各項報價／確認金額後再逐筆補上，這裡會自動顯示合計、每人分攤與類別占比。</p>
+  {% endif %}
   </div>
 </section>
-{% endif %}
 </div>{# /band-c #}
-<div class="band-gap gap-ce" aria-hidden="true"></div>
-
-{# ── 區塊 E：提醒 + 備忘 + 打包（出發前要看的都在同一帶） ── #}
+{# ── 區塊 E：提醒 + 打包（出發前要看的都在同一帶） ── #}
+{# 原本的「提醒」與「備忘」性質相同，合併成這一區；預設收起，點才展開 #}
 <div class="band band-e">
-{% if alerts %}
-<details class="section alerts-section" id="alerts">
+{% if notes %}
+<details class="section alerts-section" id="notes">
   <summary class="alerts-summary">
     <div class="section-heading">
       <h2>提醒</h2>
-      <p>查證後發現的意外資訊——設施異動、季節限定已結束、當地潛規則等，特別留意。（共 {{ alerts | length }} 則，可收合）</p>
+      <p>出發前該注意、該確認的事——設施異動、季節限定、訂位期限與當地潛規則。（共 {{ notes | length }} 則，點右側展開）</p>
     </div>
     <span class="alerts-toggle" aria-hidden="true">＋</span>
   </summary>
   <div class="alerts-body">
-    <div class="alert-grid">
-    {% for a in alerts %}
-      <div><span>⚠️</span>{{ a }}</div>
+    <div class="check-grid">
+    {% for n in notes %}
+      <div><span>{{ "%02d" | format(loop.index) }}</span>{{ n }}</div>
     {% endfor %}
     </div>
   </div>
 </details>
-{% endif %}
-
-{% if notes %}
-<section class="section{% if alerts %} section-far{% endif %}" id="notes">
-  <div class="section-heading">
-    <h2>備忘</h2>
-  </div>
-  <div class="check-grid">
-  {% for n in notes %}
-    <div><span>{{ "%02d" | format(loop.index) }}</span>{{ n }}</div>
-  {% endfor %}
-  </div>
-</section>
 {% endif %}
 
 {% if trip.packing %}
@@ -1139,7 +1098,7 @@ body.editing>#editor{display:block !important}
   window.addEventListener("beforeprint", function(){
     printedAll = true;
     daysEls.forEach(function(d){ d.classList.add("is-on"); });
-    var al = document.getElementById("alerts");
+    var al = document.getElementById("notes");
     if (al && al.tagName === "DETAILS") al.open = true;
   });
   window.addEventListener("afterprint", function(){
@@ -1280,7 +1239,7 @@ body.editing>#editor{display:block !important}
 
   // ── 固定頂列底色 + 深色花費色帶隨捲動展開 ──
   var head = document.querySelector(".sticky-nav");
-  var ov = document.getElementById("budget");
+  var ov = document.getElementById("emergency");
   // 底色展開掛在「帶」上；內容淡入改掛在「章節」上，
   // 這樣同一帶裡的第二個章節（備忘、打包）也會等捲到才出現，動畫一致
   var bands = [].slice.call(document.querySelectorAll(".band"));
@@ -1288,7 +1247,7 @@ body.editing>#editor{display:block !important}
   var fades = [].slice.call(document.querySelectorAll("main .section"));
   if (ov) fades.push(ov);
   // 依此刻位於頂列底下的那一帶，決定頂列底色
-  var navTinted = [].slice.call(document.querySelectorAll(".band, .band-gap"));
+  var navTinted = [].slice.call(document.querySelectorAll(".band"));
   // 使用者要求減少動態時完全不碰 --open/--fade，兩者的 CSS 預設值就是「已展開」
   var wantsMotion = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   function clamp01(v){ return v < 0 ? 0 : v > 1 ? 1 : v; }
@@ -1308,12 +1267,10 @@ body.editing>#editor{display:block !important}
         var el2 = navTinted[t], tr = el2.getBoundingClientRect();
         if (tr.top <= line2 && tr.bottom > line2){
           var st = getComputedStyle(el2);
-          if (el2.classList.contains("band-gap")){
-            // 帶間空白的底色是漸層，讀不到單一色值，改取兩端的變數
-            var half = (line2 - tr.top) / Math.max(1, tr.height);
-            tint = st.getPropertyValue(half < 0.5 ? "--from" : "--to").trim();
-          } else {
-            // band 的底色畫在 ::before 上，元素本身是透明的
+          // 帶的底色畫在 ::before 上（元素本身透明），且帶頭那一段是漸層，
+          // 讀 background-image 拿不到單一色值 —— 直接取 --band 這個變數
+          tint = st.getPropertyValue("--band").trim();
+          if (!tint) {
             tint = getComputedStyle(el2, "::before").backgroundColor;
             if (!tint || tint === "rgba(0, 0, 0, 0)") tint = st.backgroundColor;
           }
@@ -1494,7 +1451,7 @@ body.editing>#editor{display:block !important}
     var t = d.trip || {};
     if (t.fx && !(Number(t.fx.rate) > 0)) delete t.fx;
     ["emergency", "packing"].forEach(function(k){ if (Array.isArray(t[k]) && !t[k].length) delete t[k]; });
-    ["highlights", "alerts", "notes", "bookings"].forEach(function(k){ if (Array.isArray(d[k]) && !d[k].length) delete d[k]; });
+    ["notes", "bookings"].forEach(function(k){ if (Array.isArray(d[k]) && !d[k].length) delete d[k]; });
     return d;
   }
 
@@ -1651,14 +1608,8 @@ body.editing>#editor{display:block !important}
     }
   });
 
-  // 提醒
-  section("提醒（該注意的意外資訊）", false, function(body){
-    data.alerts = data.alerts || [];
-    body.appendChild(stringListEditor(data.alerts));
-  });
-
-  // 備忘
-  section("出發前備忘", false, function(body){
+  // 提醒（原本的提醒與備忘已合併成一份 notes）
+  section("提醒（出發前該注意、該確認的事）", false, function(body){
     data.notes = data.notes || [];
     body.appendChild(stringListEditor(data.notes));
   });
