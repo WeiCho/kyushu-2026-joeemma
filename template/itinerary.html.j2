@@ -223,7 +223,10 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
   padding:14px 16px 15px;text-align:left;
 }
 .js .card-live{
-  position:fixed;right:var(--gut);bottom:24px;z-index:35;margin:0;
+  /* 右緣對齊內容區右緣：章節是 max-width 1440 置中再加左右留白，
+     所以右邊要留「置中剩餘的一半 + 留白」，寬螢幕才不會比文字更靠邊 */
+  position:fixed;right:calc((100% - min(100%,1440px)) / 2 + var(--gut));
+  bottom:24px;z-index:35;margin:0;
   width:min(300px,calc(100% - var(--gut)*2));
   box-shadow:0 2px 14px rgba(45,37,25,.09);
 }
