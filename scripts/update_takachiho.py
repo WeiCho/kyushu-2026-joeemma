@@ -34,7 +34,7 @@ RE_NOTE = re.compile(r'<small class="note">(.*?)$', re.S)
 # 來源網站是日文，手冊要顯示中文。這裡做規則式轉換，不接翻譯 API：
 # Actions 不該依賴外部服務，而且營運狀態的用語就那幾種，規則涵蓋得住。
 # 轉不出來就不寫該欄位，樣板會自動退回顯示日文原文——寧可露出日文，也不要湊出錯的中文。
-TITLE_ZH = "高千穗峽　划船運行狀況"
+TITLE_ZH = "高千穗峽 划船狀況"   # 小卡一行放得下的長度
 
 # 狀態：整句對照。key 為出現在官網狀態字串裡的片段
 STATUS_ZH = (
@@ -73,18 +73,26 @@ def status_to_zh(status):
 
 
 def _hm(text):
-    """「2時間30分」→「2 小時 30 分」；「3時間」→「3 小時」。"""
+    """「2時間30分」→「3.5」小時用的數值；回傳已格式化的短字串。
+
+    小卡只有兩行，字要短：「3 小時 30 分」壓成「3.5 小時」。
+    """
     m = re.fullmatch(r"(\d+)時間(?:(\d+)分)?", text)
     if not m:
         return None
-    h, mi = m.group(1), m.group(2)
-    return f"{h} 小時 {mi} 分" if mi else f"{h} 小時"
+    h, mi = int(m.group(1)), int(m.group(2) or 0)
+    if mi == 0:
+        return f"{h}"
+    if mi == 30:
+        return f"{h}.5"
+    return f"{h}小時{mi}分"
 
 
 def detail_to_zh(detail):
-    """公告內文 → 最多兩行中文重點。抓不到任何一項就回傳 None。
+    """公告內文 → 兩行中文重點。抓不到任何一項就回傳 None。
 
-    只挑「當天還買不買得到票、要怎麼買」這兩件事——這是速查卡，不是公告全文。
+    這是速查卡不是公告全文：只挑「當天還買不買得到票、要怎麼買」，
+    而且每行都要短到能在窄卡片裡一行放完（約 20 個字），不靠樣板截字。
     """
     # 全形標點一併正規化。漏了「】」會讓等候時間抓不到，而那是最有用的一項
     text = (detail.replace("：", ":").replace("（", "(").replace("）", ")")
@@ -95,9 +103,9 @@ def detail_to_zh(detail):
     m = re.search(r"(\d{1,2})/(\d{1,2})\D{0,6}?(\d{1,2}:\d{2})?\s*(?:→|->)?\s*当日券完売", text)
     if m:
         when = f"（{m.group(3)}）" if m.group(3) else ""
-        tickets.append(f"當日券已完售{when}")
+        tickets.append(f"當日券完售{when}")
     elif "残りわずか" in text:
-        tickets.append("當日券所剩不多")
+        tickets.append("當日券剩不多")
 
     # 其他日期的餘票
     m = re.search(r"(\d{1,2})/(\d{1,2})\D{0,6}?約\s*(\d+)\s*枚", text)
@@ -105,31 +113,31 @@ def detail_to_zh(detail):
         board = ""
         m2 = re.search(r"(\d{1,2}:\d{2})以降の乗船", text)
         if m2:
-            board = f"、限 {m2.group(1)} 之後乘船"
-        tickets.append(f"{int(m.group(1))}/{int(m.group(2))} 約 {m.group(3)} 張{board}")
+            board = f"（{m2.group(1)} 後乘船）"
+        tickets.append(f"{int(m.group(1))}/{int(m.group(2))} 剩約 {m.group(3)} 張{board}")
 
     # 現場等候時間
     m = re.search(r"現在待ち時間\]?\s*([\d時間分]+)\s*(?:～|~|-)\s*([\d時間分]+)", text)
     if m:
         a, b = _hm(m.group(1)), _hm(m.group(2))
         if a and b:
-            tickets.append(f"現在等候 {a}～{b}")
+            tickets.append(f"等候 {a}–{b} 小時")
 
     # 怎麼買
     how = []
     m = re.search(r"当日の朝\s*(\d{1,2}:\d{2})\s*より", text)
     if m:
-        how.append(f"當日券僅當天早上 {m.group(1)} 起於現場販售")
+        how.append(f"當天 {m.group(1)} 現場售票")
     if "事前ネット予約のみ" in text:
-        how.append("事前預約只走網路")
-    if "電話でのご予約" in text and "承っており" in text:
-        how.append("不接受電話預約")
+        how.append("預約限網路")
+    elif "電話でのご予約" in text and "承っており" in text:
+        how.append("不收電話預約")
 
     lines = []
     if tickets:
-        lines.append("，".join(tickets) + "。")
+        lines.append("・".join(tickets))
     if how:
-        lines.append("，".join(how) + "。")
+        lines.append("，".join(how))
     return "\n".join(lines[:2]) or None
 
 

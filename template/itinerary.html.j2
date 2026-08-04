@@ -186,9 +186,10 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
   min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;
   padding:clamp(96px,14vh,140px) var(--gut) clamp(56px,10vh,110px);
 }
-.hero .eyebrow{
-  margin:0 0 clamp(14px,2.4vh,26px);font-family:var(--latin);font-size:14px;
-  letter-spacing:.14em;color:var(--muted);text-transform:uppercase;
+/* 手機：滿版高度＋大留白會讓標題被推到快一個畫面之後，改成貼著頂列開始 */
+@media (width<=560px){
+  /* 上留白只要夠讓標題不被固定頂列壓到就好 */
+  .hero{min-height:auto;padding:clamp(76px,11vh,104px) var(--gut) clamp(28px,5vh,48px)}
 }
 .hero h1{
   text-align:center;font-size:clamp(40px,10vw,112px);line-height:1.12;letter-spacing:.02em;
@@ -235,19 +236,18 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 }
 .js .card-live.is-out{pointer-events:none;visibility:hidden}
 .card-live .top{
-  display:flex;justify-content:space-between;align-items:baseline;gap:10px;
+  /* 窄螢幕放不下時，時間整段掉到下一行，標題保持完整不折 */
+  display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:2px 10px;
   padding-bottom:9px;border-bottom:.8px solid var(--line);
 }
-.card-live .who{
-  font-size:14.5px;letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
+/* 標題不截字：寧可換行也不要出現「…」 */
+.card-live .who{font-size:14.5px;letter-spacing:.04em}
 .card-live .who::before{content:"●";font-size:7px;vertical-align:3px;margin-right:.6em}
 .card-live .upd{font-family:var(--latin);font-size:12.5px;color:var(--muted);white-space:nowrap}
 .card-live .state{margin:11px 0 0;font-size:15.5px;line-height:1.65}
 .card-live .keys{
   margin:6px 0 0;font-size:14px;line-height:1.7;color:var(--muted);
-  /* 只留兩行，超出的收掉。這是速查卡，不是完整公告 */
-  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;
+  /* 不截字：內容由 scripts/update_takachiho.py 濃縮成兩行短句，這裡完整顯示 */
   white-space:pre-line;
 }
 .card-live a.who{text-decoration:none;border-bottom:.8px solid var(--line)}
@@ -497,10 +497,6 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 
 /* ── 花費 ── */
 .recommendation{padding-top:clamp(22px,3.6vh,44px)}
-.recommendation .eyebrow{
-  margin:0;font-family:var(--latin);font-size:13px;letter-spacing:.16em;color:var(--muted);
-}
-.recommendation h3{margin:6px 0 clamp(20px,3.4vh,38px);font-size:clamp(20px,2.2vw,26px);letter-spacing:.08em}
 /* 每天一列的明細表：編號、名稱、金額靠右。金額同欄右對齊才好直向比較 */
 .pick-grid{display:grid;gap:0}
 .pick-row{
@@ -581,13 +577,6 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 .now-dismiss{
   flex:0 0 auto;background:none;border:.8px solid currentColor;border-radius:4px;color:inherit;
   font:inherit;min-width:38px;min-height:38px;cursor:pointer;
-}
-
-/* ── 頁尾 ── */
-.footnote{
-  max-width:1440px;margin:0 auto;padding:clamp(48px,8vh,100px) var(--gut) clamp(36px,6vh,72px);
-  color:var(--muted);font-size:14px;line-height:1.8;
-  display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
 }
 
 /* ── 頁內編輯器（?edit=1）── */
@@ -703,7 +692,6 @@ body.editing>#editor{display:block !important}
   {%- endfor -%}
 {%- endfor -%}
 <header class="hero">
-  <p class="eyebrow">{{ trip.destination }}</p>
   <h1>{{ trip.title }}</h1>
   <p class="lead">{{ trip.num_days }} 天 {{ trip.travelers }} 人。每天去哪、怎麼去、花多少，都在這一頁。</p>
   <div class="hero-pills">
@@ -719,11 +707,12 @@ body.editing>#editor{display:block !important}
   <div class="card-live">
     <div class="top">
       {%- if ns.live.source %}
-      <a class="who" href="{{ ns.live.source }}" target="_blank" rel="noopener">{{ ns.live_title or ns.live_where }} ↗</a>
+      <a class="who" href="{{ ns.live.source }}" target="_blank" rel="noopener">{{ ns.live_title or ns.live_where }}&nbsp;↗</a>
       {%- else %}
       <span class="who">{{ ns.live_title or ns.live_where }}</span>
       {%- endif %}
-      {% if ns.live.updated %}<span class="upd">{{ ns.live.updated }}</span>{% endif %}
+      {# 卡片很窄，年份省略（旅程就這幾天，看月日時間就夠） #}
+      {%- if ns.live.updated %}<span class="upd">{{ ns.live.updated | replace(ns.live.updated[:5], "") if ns.live.updated[:2] == "20" and ns.live.updated[4] == "-" else ns.live.updated }}</span>{% endif %}
     </div>
     <p class="state">{{ ns.live.status_zh or ns.live.status }}</p>
     {% if ns.live.summary_zh or ns.live.detail %}
@@ -980,11 +969,6 @@ body.editing>#editor{display:block !important}
 {% endif %}
 </div>{# /band-e #}
 </main>
-
-<footer class="footnote">
-  <span>{{ trip.title }} · {{ trip.range_label }}</span>
-  <span>旅程手冊</span>
-</footer>
 
 <div class="now-bar" hidden>
   <div class="now-inner">
