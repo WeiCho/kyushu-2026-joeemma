@@ -309,7 +309,7 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 
 /* ── 區塊分帶 ──
    一個帶＝一種底色，相關的章節歸在同一帶：
-     A 緊急（深色）　B 行程　C 花費　E 提醒＋打包
+     A 緊急（深色）　B 行程　C 花費　E 提醒＋檢查
    帶與帶直接相接，不留空白段：換色在下一帶開頭的那一小段裡完成
    （--prev → --band 的漸層），所以既沒有硬邊，也不會出現一塊空的過場。 */
 /* 帶的底色不做左右展開：那會讓帶的第一個章節出現時露出兩側較窄的色塊，
@@ -323,7 +323,7 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
   background-image:linear-gradient(180deg,var(--prev,var(--band)) 0,var(--band) clamp(120px,20vh,260px));
 }
 .band>*{position:relative;z-index:1}
-/* 每個章節各自淡入，所以帶裡的第二個章節（打包）不會一開始就出現 */
+/* 每個章節各自淡入，所以帶裡的第二個章節（檢查）不會一開始就出現 */
 .section{opacity:var(--fade,1)}
 /* 上一帶的底色（--prev）就是上面那一帶的 --band，改色時兩處要一起改 */
 .band-b{--band:#f2f1ed; --prev:#f2f1ed}
@@ -589,14 +589,26 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 .check-grid>div:last-child{border-bottom:.8px solid var(--line)}
 .check-grid span{font-family:var(--latin);font-size:14px;color:var(--muted);flex:0 0 auto}
 
-/* ── 打包 ── */
-.packing{display:grid;gap:clamp(20px,3.4vh,40px)}
-.pack-group h3{font-size:16px;letter-spacing:.1em;color:var(--muted);margin-bottom:10px}
+/* ── 檢查（出發前清單）── */
+/* 一組一張卡並排；窄螢幕自動掉成一欄 */
+.packing{
+  display:grid;gap:clamp(14px,1.8vw,24px);
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,268px),1fr));
+  align-items:start;
+}
+.pack-group{
+  border:.8px solid var(--line);border-radius:4px;background:var(--card);
+  padding:clamp(14px,1.6vw,20px) clamp(16px,1.8vw,22px) clamp(6px,1vw,10px);
+}
+.pack-group h3{
+  font-size:15px;letter-spacing:.1em;color:var(--muted);
+  padding-bottom:clamp(8px,1.2vh,12px);border-bottom:.8px solid var(--line);
+}
 .pack-items{list-style:none;margin:0;padding:0;display:grid;gap:0}
-.pack-items li{border-top:.8px solid var(--line)}
-.pack-items li:last-child{border-bottom:.8px solid var(--line)}
+.pack-items li+li{border-top:.8px solid var(--line)}
 .pack-items label{
-  display:flex;align-items:center;gap:14px;min-height:52px;font-size:16px;cursor:pointer;
+  display:flex;align-items:center;gap:14px;min-height:52px;font-size:15.5px;
+  line-height:1.7;cursor:pointer;
 }
 .pack-items input{width:20px;height:20px;accent-color:var(--ink);flex:0 0 auto}
 .pack-items input:checked+span{color:var(--muted);text-decoration:line-through}
@@ -790,7 +802,7 @@ body.editing>#editor{display:block !important}
     <a href="#itinerary">行程</a>
     <a href="#budget">花費</a>
     {%- if notes %}<a href="#notes">提醒</a>{% endif %}
-    {%- if trip.packing %}<a href="#packing">打包</a>{% endif %}
+    {%- if trip.packing %}<a href="#packing">檢查</a>{% endif %}
   </div>
   <div class="nav-tools">
     <button class="tools-toggle" id="tools-toggle" type="button"
@@ -963,7 +975,7 @@ body.editing>#editor{display:block !important}
   </div>
 </section>
 </div>{# /band-c #}
-{# ── 區塊 E：提醒 + 打包（出發前要看的都在同一帶） ── #}
+{# ── 區塊 E：提醒 + 檢查（出發前要看的都在同一帶） ── #}
 {# 原本的「提醒」與「備忘」性質相同，合併成這一區；預設收起，點才展開 #}
 <div class="band band-e">
 {% if notes %}
@@ -988,7 +1000,7 @@ body.editing>#editor{display:block !important}
 {% if trip.packing %}
 <section class="section" id="packing">
   <div class="section-heading">
-    <h2>打包</h2>
+    <h2>檢查</h2>
     <p>出發前一項一項勾，勾選狀態會記在這台裝置。</p>
   </div>
   <div class="packing">
@@ -1376,7 +1388,7 @@ body.editing>#editor{display:block !important}
   var head = document.querySelector(".sticky-nav");
   var ov = document.getElementById("emergency");
   // 底色展開掛在「帶」上；內容淡入改掛在「章節」上，
-  // 這樣同一帶裡的第二個章節（備忘、打包）也會等捲到才出現，動畫一致
+  // 這樣同一帶裡的第二個章節（檢查）也會等捲到才出現，動畫一致
   var bands = [].slice.call(document.querySelectorAll(".band"));
   if (ov) bands.push(ov);
   var fades = [].slice.call(document.querySelectorAll("main .section"));
@@ -1443,7 +1455,7 @@ body.editing>#editor{display:block !important}
   });
   syncScroll();
 
-  // 打包清單勾選狀態存 localStorage（依本頁路徑分隔）
+  // 檢查清單勾選狀態存 localStorage（依本頁路徑分隔）
   var packBoxes = document.querySelectorAll("input[data-pack]");
   packBoxes.forEach(function(box){
     var key = "pack:" + location.pathname + ":" + box.getAttribute("data-pack");
@@ -1727,8 +1739,8 @@ body.editing>#editor{display:block !important}
     }, "＋ 新增緊急聯絡", function(){ return {label: "", value: "", tel: ""}; }));
   });
 
-  // 打包清單
-  section("打包清單", false, function(body){
+  // 檢查清單（trip.packing）
+  section("檢查清單", false, function(body){
     var t = data.trip = data.trip || {};
     var pk = t.packing;
     if (pk && pk.length && typeof pk[0] === "string") {
