@@ -738,12 +738,14 @@ body.editing>#editor{display:block !important}
       {%- set _ = ns.live_cards.append({
         "title": ls.title_zh or item.name, "url": ls.source,
         "state": ls.status_zh or ls.status, "date": upd,
-        "tag": item.live_tag, "body": ls.summary_zh or ls.detail}) -%}
+        "tag": item.live_tag, "body": ls.summary_zh or ls.detail,
+        "hours": none}) -%}
     {%- elif item.card -%}
       {%- set _ = ns.note_cards.append({
         "title": item.card.title or item.name, "url": item.card.url,
         "state": item.card.text, "date": item.card.date,
-        "tag": item.card.tag, "body": item.card["body"]}) -%}
+        "tag": item.card.tag, "body": item.card["body"],
+        "hours": item.card.hours}) -%}
     {%- endif -%}
   {%- endfor -%}
 {%- endfor -%}
@@ -761,7 +763,7 @@ body.editing>#editor{display:block !important}
   {%- if cards %}
   <div class="card-deck" id="card-deck">
     {%- for c in cards %}
-    <article class="card-live" data-i="{{ loop.index0 }}">
+    <article class="card-live" data-i="{{ loop.index0 }}"{% if c.hours %} data-hours='{{ c.hours | tojson }}'{% endif %}>
       <div class="top">
         {%- if c.url %}
         <a class="who" href="{{ c.url }}" target="_blank" rel="noopener">{{ c.title }}&nbsp;↗</a>
@@ -1357,6 +1359,37 @@ body.editing>#editor{display:block !important}
     liveCard.addEventListener("pointerleave", endDrag);
     layout(0);
   }
+
+  // ── 有 data-hours 的卡片：依日本時間顯示「正常營業／休息」 ──
+  // 手冊是靜態頁、可能放好幾天才打開，所以不在產生階段算，改在瀏覽器算。
+  deckCards.forEach(function(card){
+    var raw = card.getAttribute("data-hours");
+    if (!raw) return;
+    var spec;
+    try { spec = JSON.parse(raw); } catch (err) { return; }
+    var stateEl = card.querySelector(".state");
+    if (!stateEl || !stateEl.firstChild || stateEl.firstChild.nodeType !== 3) return;
+    var label = stateEl.firstChild;
+    function toMin(hhmm){
+      var p = String(hhmm).split(":");
+      return (parseInt(p[0], 10) || 0) * 60 + (parseInt(p[1], 10) || 0);
+    }
+    function open(){
+      // 取日本當地時間：把 toLocaleString 的結果再解析回 Date
+      var d = new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Tokyo"}));
+      var mmdd = ("0" + (d.getMonth() + 1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2);
+      if ((spec.closed || []).indexOf(mmdd) > -1) return false;
+      var mins = d.getHours() * 60 + d.getMinutes();
+      var ranges = (spec.open || {})[String(d.getDay())] || [];
+      for (var i = 0; i < ranges.length; i++) {
+        if (mins >= toMin(ranges[i][0]) && mins < toMin(ranges[i][1])) return true;
+      }
+      return false;
+    }
+    function paint(){ label.nodeValue = open() ? "正常營業" : "休息"; }
+    paint();
+    setInterval(paint, 60000);
+  });
 
   // ── 固定頂列底色 + 深色花費色帶隨捲動展開 ──
   var head = document.querySelector(".sticky-nav");
