@@ -361,7 +361,7 @@ def enrich(data):
             pending.append({
                 "where": f"訂位「{booking['name']}」",
                 "reason": reason,
-                "anchor": "bookings",
+                "anchor": "budget",
             })
         # 疑似重複：與某行程項目名稱相近且金額相同
         if booking["cost"] and booking.get("status") != "confirmed":
@@ -372,7 +372,7 @@ def enrich(data):
                     pending.append({
                         "where": f"訂位「{booking['name']}」",
                         "reason": f"與行程項目「{iname}」金額相同、名稱相近，疑似重複計價",
-                        "anchor": "bookings",
+                        "anchor": "budget",
                     })
                     break
         bookings.append(booking)
