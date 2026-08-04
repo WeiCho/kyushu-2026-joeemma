@@ -218,7 +218,10 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 /* 浮在右下角（取自 3jigen.jp 的 Pick Up 卡）。
    沒有 JS 時退回文流內的一般卡片，不會變成蓋住內容的浮層 */
 .card-live{
-  width:min(320px,100%);margin:clamp(26px,4.5vh,48px) auto 0;
+  /* 內容區固定 210×125（--live-box），外面再加 16 內距與 .8 邊框 */
+  --live-box:calc(210px + 32px + 1.6px);
+  width:min(var(--live-box),100%);margin:clamp(26px,4.5vh,48px) auto 0;
+  min-height:calc(125px + 32px + 1.6px);
   background:var(--card);border:.8px solid var(--line);border-radius:4px;
   padding:16px;text-align:left;   /* 四邊等寬，卡片內不做左右差 */
 }
@@ -227,7 +230,7 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
      所以右邊要留「置中剩餘的一半 + 留白」，寬螢幕才不會比文字更靠邊 */
   position:fixed;right:calc((100% - min(100%,1440px)) / 2 + var(--gut));
   bottom:24px;z-index:35;margin:0;
-  width:min(300px,calc(100% - var(--gut)*2));
+  width:min(var(--live-box),calc(100% - var(--gut)*2));
   box-shadow:0 2px 14px rgba(45,37,25,.09);
 }
 @media (prefers-reduced-motion:no-preference){
@@ -240,7 +243,7 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
   .js .card-live.is-out{opacity:0;transform:translateY(16px)}
 }
 .js .card-live.is-out{pointer-events:none;visibility:hidden}
-.card-live .top{padding-bottom:9px;border-bottom:.8px solid var(--line)}
+.card-live .top{padding-bottom:7px;border-bottom:.8px solid var(--line)}
 /* 標題不截字：寧可換行也不要出現「…」 */
 .card-live .who{font-size:14.5px;letter-spacing:.04em}
 .card-live .who::before{content:"●";font-size:7px;vertical-align:3px;margin-right:.6em}
@@ -249,14 +252,14 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
   margin-left:.7em;font-family:var(--latin);font-size:12.5px;color:var(--muted);
   white-space:nowrap;
 }
-.card-live .state{margin:11px 0 0;font-size:15.5px;line-height:1.65}
+.card-live .state{margin:9px 0 0;font-size:15.5px;line-height:1.65}
 /* 手動標記（如訂位開賣日），跟在日期後面，用暖色點出來 */
 .card-live .live-tag{
   margin-left:.5em;padding:1px 7px;border:.8px solid var(--warm);border-radius:4px;
   color:var(--warm);font-size:12px;letter-spacing:.04em;white-space:nowrap;
 }
 .card-live .keys{
-  margin:6px 0 0;font-size:14px;line-height:1.7;color:var(--muted);
+  margin:4px 0 0;font-size:14px;line-height:1.7;color:var(--muted);
   /* 不截字：內容由 scripts/update_takachiho.py 濃縮成兩行短句，這裡完整顯示 */
   white-space:pre-line;
 }
