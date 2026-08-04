@@ -590,24 +590,18 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 .check-grid span{font-family:var(--latin);font-size:14px;color:var(--muted);flex:0 0 auto}
 
 /* ── 檢查（出發前清單）── */
-/* 一組一張卡並排；窄螢幕自動掉成一欄 */
+/* 幾組並排，但不做成卡片：沿用全站的「無底色＋細線分隔」 */
 .packing{
-  display:grid;gap:clamp(14px,1.8vw,24px);
+  display:grid;gap:clamp(20px,3vh,40px) clamp(28px,4vw,72px);
   grid-template-columns:repeat(auto-fit,minmax(min(100%,268px),1fr));
   align-items:start;
 }
-.pack-group{
-  border:.8px solid var(--line);border-radius:4px;background:var(--card);
-  padding:clamp(14px,1.6vw,20px) clamp(16px,1.8vw,22px) clamp(6px,1vw,10px);
-}
-.pack-group h3{
-  font-size:15px;letter-spacing:.1em;color:var(--muted);
-  padding-bottom:clamp(8px,1.2vh,12px);border-bottom:.8px solid var(--line);
-}
+.pack-group h3{font-size:16px;letter-spacing:.1em;color:var(--muted);margin-bottom:10px}
 .pack-items{list-style:none;margin:0;padding:0;display:grid;gap:0}
-.pack-items li+li{border-top:.8px solid var(--line)}
+.pack-items li{border-top:.8px solid var(--line)}
+.pack-items li:last-child{border-bottom:.8px solid var(--line)}
 .pack-items label{
-  display:flex;align-items:center;gap:14px;min-height:52px;font-size:15.5px;
+  display:flex;align-items:center;gap:14px;min-height:52px;font-size:16px;
   line-height:1.7;cursor:pointer;
 }
 .pack-items input{width:20px;height:20px;accent-color:var(--ink);flex:0 0 auto}
