@@ -220,7 +220,7 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 .card-live{
   width:min(320px,100%);margin:clamp(26px,4.5vh,48px) auto 0;
   background:var(--card);border:.8px solid var(--line);border-radius:4px;
-  padding:14px 16px 15px;text-align:left;
+  padding:16px;text-align:left;   /* 四邊等寬，卡片內不做左右差 */
 }
 .js .card-live{
   /* 右緣對齊內容區右緣：章節是 max-width 1440 置中再加左右留白，
