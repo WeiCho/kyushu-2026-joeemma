@@ -248,13 +248,13 @@
           "map_query": "高千穂峡",
           "next_transit": "包車 → 流水麵午餐（步行/短程）",
           "live_status": {
-            "date_label": "8/8[Sat]",
-            "status": "河川増水の為、終日営業休止",
-            "updated": "2026-08-08 AM08:06",
-            "detail": "【当日券残り枚数】8/8(土)事前ネット予約のお客様につきましては全額返金対応しております。「営業休止」「予約キャンセル」メールをご確認ください。Closed all day due to river flooding. We are offering full refunds to customers who made advance reservations online. Please check the email we sent you.\n※第１御塩井駐車場はボート専用の駐車場ではございません。\n■電話でのご予約は承っておりません。\n■事前ネット予約のみ(2週間前から2日前の午前9時まで)\n※キャンセル待ちは承っておりません。\n■営業状況は毎朝8時頃に更新しております。\n※当日朝の状況確認後の判断となりますので、更新時間は前後いたします。",
+            "date_label": "8/9[Sun]",
+            "status": "通常営業 open",
+            "updated": "2026-08-09 AM07:57",
+            "detail": "【当日券残り枚数】8/9(日)～8/10(月)事前ネット予約で完売の為、当日券の販売はありません。※キャンセル待ちは承っておりません。All tickets have been sold out via advance online booking. No tickets will be available for purchase on the day. ※ We do not accept requests for a waiting list.\n※第１御塩井駐車場はボート専用の駐車場ではございません。\n■電話でのご予約は承っておりません。\n■事前ネット予約のみ(2週間前から2日前の午前9時まで)\n※キャンセル待ちは承っておりません。\n■営業状況は毎朝8時頃に更新しております。\n※当日朝の状況確認後の判断となりますので、更新時間は前後いたします。",
             "source": "https://takachiho-kanko.info/",
             "title_zh": "高千穗峽 划船狀況",
-            "status_zh": "水位上漲，營運",
+            "status_zh": "正常營運",
             "summary_zh": "預約限網路"
           },
           "live_tag": "10/2 搶"
