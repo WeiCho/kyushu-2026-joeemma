@@ -13,6 +13,7 @@ import html
 import json
 import re
 import sys
+import time
 import urllib.error
 import urllib.request
 from datetime import datetime, timedelta, timezone
@@ -22,6 +23,9 @@ SOURCE = "https://takachiho-kanko.info/"
 ITEM_KEYWORD = "高千穗峽"
 JST = timezone(timedelta(hours=9))
 UA = "Mozilla/5.0 (compatible; kyushu-handbook-bot/1.0; +https://github.com/WeiCho/kyushu-2026-joeemma)"
+TIMEOUT = 30      # 秒；官網平常 2 秒內就回來，逾時幾乎都是 runner 端的線路問題
+RETRIES = 3
+RETRY_WAIT = 10   # 秒，逐次遞增（10、20）
 
 # 官網 <div class="box_boat"> 區塊的結構（2026-08 確認）
 RE_BLOCK = re.compile(r'<div class="box_boat">(.*?)</small>', re.S)
@@ -156,9 +160,20 @@ def clean(raw):
 
 
 def fetch(url):
+    """抓官網原始碼。GitHub Actions runner 連日本主機偶爾會逾時，重試幾次再放棄。"""
     req = urllib.request.Request(url, headers={"User-Agent": UA})
-    with urllib.request.urlopen(req, timeout=30) as resp:
-        return resp.read().decode("utf-8", "replace")
+    last = None
+    for attempt in range(1, RETRIES + 1):
+        try:
+            with urllib.request.urlopen(req, timeout=TIMEOUT) as resp:
+                return resp.read().decode("utf-8", "replace")
+        except (urllib.error.URLError, TimeoutError, OSError) as exc:
+            last = exc
+            if attempt < RETRIES:
+                wait = RETRY_WAIT * attempt
+                print(f"⚠ 第 {attempt} 次抓取失敗（{exc}），{wait} 秒後重試", file=sys.stderr)
+                time.sleep(wait)
+    raise last
 
 
 def parse(page):
@@ -225,7 +240,7 @@ def main():
     try:
         page = fetch(SOURCE)
     except (urllib.error.URLError, TimeoutError, OSError) as exc:
-        fail(f"抓不到 {SOURCE}：{exc}")
+        fail(f"抓不到「{SOURCE}」：{exc}")
 
     parsed = parse(page)
     month, day = parsed.pop("_md")
