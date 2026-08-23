@@ -1,4 +1,10 @@
 {%- macro money(v) -%}{{ trip.currency }}{{ "{:,.0f}".format(v) }}{%- endmacro -%}
+{#- 銜接引子：交代下一區「為何是下一區」，整行可點。
+    只用在確實有邏輯關係的兩處；緊急→行程那一跳沒有邏輯關係，
+    刻意不放，交給該區既有的深→淺色彩轉場撐住 -#}
+{%- macro handoff(lead, anchor, label) -%}
+<div class="handoff"><a href="#{{ anchor }}">{{ lead }}<b>{{ label }}&nbsp;→</b></a></div>
+{%- endmacro -%}
 {%- set TYPE_META = {
   "景點": {"icon": "🏛", "cls": "t-see"},
   "餐廳": {"icon": "🍜", "cls": "t-eat"},
@@ -61,7 +67,10 @@
 
   --w:600;              /* 實測全站字重 */
   --gut:clamp(18px,4.2vw,64px);
-  --sec:clamp(88px,15vh,200px);   /* 章節上下留白，也決定帶與帶之間的呼吸 */
+  --sec:clamp(72px,11vh,140px);   /* 章節上下留白，也決定帶與帶之間的呼吸 */
+  /* 緊急區下緣淡出的高度。刻意與 --sec 脫鉤：留白是節奏，漸層是質感，
+     兩者共用同一個變數的話，調節奏就會把那道轉場一起縮短、露出硬邊 */
+  --em-fade:170px;
   --ease:cubic-bezier(.16,1,.3,1);
 }
 
@@ -113,6 +122,17 @@ a:focus-visible,button:focus-visible,summary:focus-visible{
 h1,h2,h3,h4{font-weight:var(--w);margin:0}
 .lat{font-family:var(--latin)}
 
+/* 跳過導覽：整頁 46 個焦點，原本前四個是封面浮卡（裝飾性浮層）。
+   平常收在畫面外，取得焦點才滑進來；外觀沿用全站既有的邊框與圓角 */
+.skip{
+  position:fixed;left:var(--gut);top:12px;z-index:60;
+  display:inline-flex;align-items:center;min-height:44px;padding:0 18px;
+  background:var(--card);border:.8px solid var(--line);border-radius:4px;
+  text-decoration:none;font-size:15px;letter-spacing:.06em;
+  transform:translateY(-200%);transition:transform .25s var(--ease);
+}
+.skip:focus{transform:none}
+
 .wrap{max-width:1440px;margin:0 auto;padding-inline:var(--gut)}
 
 /* ── 固定頂列（無字標，導覽靠右）── */
@@ -133,11 +153,15 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 .nav-links{display:flex;gap:clamp(14px,2.2vw,30px);overflow-x:auto;scrollbar-width:none}
 .nav-links::-webkit-scrollbar{display:none}
 .sticky-nav a{
+  /* 點擊區撐足 44px：實測原本只有 32×27，是全頁最小的目標，
+     而且位在手機最難按的右上角。頂列左側大半是空的，加高不影響版面 */
+  display:inline-flex;align-items:center;min-height:44px;
   text-decoration:none;font-size:16px;letter-spacing:.06em;line-height:1.5;
-  white-space:nowrap;padding:2px 0;position:relative;
+  white-space:nowrap;padding:10px 0;position:relative;
 }
 .sticky-nav a::after{
-  content:"";position:absolute;left:0;right:100%;bottom:0;height:.8px;background:currentColor;
+  /* 底線跟著文字走，不要跟著加高後的點擊區跑到下緣 */
+  content:"";position:absolute;left:0;right:100%;bottom:9px;height:.8px;background:currentColor;
   transition:right .5s var(--ease);
 }
 .sticky-nav a:hover::after,.sticky-nav a:focus-visible::after,
@@ -178,7 +202,7 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 @media (width<=760px){
   .sticky-nav a{font-size:15px}
   .nav-links{gap:16px}
-  .nav-tool{min-width:34px;min-height:34px;font-size:13px}
+  .nav-tool{min-width:38px;min-height:38px;font-size:13px}
 }
 
 /* ── Hero ── */
@@ -234,7 +258,7 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
   /* 右緣對齊內容區右緣：章節是 max-width 1440 置中再加左右留白，
      所以右邊要留「置中剩餘的一半 + 留白」，寬螢幕才不會比文字更靠邊 */
   position:fixed;right:calc((100% - min(100%,1440px)) / 2 + var(--gut));
-  bottom:24px;z-index:35;margin:0;display:block;
+  bottom:calc(24px + var(--nowbar-h, 0px));z-index:35;margin:0;display:block;
   width:min(var(--live-box),calc(100% - var(--gut)*2));
   height:var(--live-h);
   touch-action:pan-y;   /* 左右手勢留給換卡，上下仍可正常捲頁 */
@@ -258,10 +282,10 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
   display:grid;place-items:center;
 }
 .js .deck-dots button::before{
-  content:"";width:5px;height:5px;border-radius:50%;background:var(--line);
+  content:"";width:5px;height:5px;border-radius:50%;background:var(--muted);opacity:.7;
   transition:background .3s var(--ease);
 }
-.js .deck-dots button[aria-current="true"]::before{background:var(--muted)}
+.js .deck-dots button[aria-current="true"]::before{background:var(--ink);opacity:1}
 @media (prefers-reduced-motion:no-preference){
   .js .card-deck{
     opacity:0;transform:translateY(16px);
@@ -303,6 +327,31 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 .section-heading p{
   margin:6px 0 0;color:var(--muted);font-size:15px;letter-spacing:.04em;line-height:1.8;
 }
+/* ── 銜接引子（.handoff）與頁尾收束（.coda）──
+   兩者都只用全站唯一的 0.8px 細線與既有的下劃線動效，不引入新視覺 */
+.handoff{margin-top:clamp(40px,6vh,72px);border-top:.8px solid var(--line);display:flex;justify-content:flex-end}
+.handoff a{
+  position:relative;display:inline-flex;align-items:baseline;gap:1em;
+  padding:19px 0;min-height:44px;   /* 點擊區撐足 44 */
+  text-decoration:none;color:var(--muted);font-size:15px;letter-spacing:.06em;
+}
+.handoff a b{font-weight:var(--w);color:var(--ink)}
+/* 與導覽列同一手：底線由左往右長出來 */
+.handoff a::after{
+  content:"";position:absolute;left:0;right:100%;bottom:13px;height:.8px;background:currentColor;
+  transition:right .5s var(--ease);
+}
+.handoff a:hover::after,.handoff a:focus-visible::after{right:0}
+
+.coda{max-width:1440px;margin:0 auto;padding-inline:var(--gut)}
+.coda>div{
+  border-top:.8px solid var(--line);
+  padding:clamp(40px,6vh,72px) 0 clamp(48px,8vh,96px);
+  display:flex;justify-content:space-between;align-items:baseline;gap:14px;flex-wrap:wrap;
+}
+.coda .d{font-size:14px;letter-spacing:.08em;color:var(--muted)}
+.coda .t{font-size:15.5px;letter-spacing:.1em}
+
 .heading-row{
   display:flex;justify-content:space-between;align-items:flex-start;gap:20px;flex-wrap:wrap;
 }
@@ -364,7 +413,7 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
   background-image:
     /* 下緣淡出的高度用固定長度（＝底部留白），不用百分比：
        這一區內容多、整塊很高時，百分比會蓋到最後幾列 */
-    linear-gradient(0deg,var(--fade-to) 0%,var(--fade-to-0) calc(var(--sec) * .85)),
+    linear-gradient(0deg,var(--fade-to) 0%,var(--fade-to-0) var(--em-fade)),
     radial-gradient(120% 78% at 16% 4%,rgba(255,244,226,.12) 0%,rgba(255,244,226,0) 60%),
     linear-gradient(180deg,#3a3126 0%,#4c4133 46%,#6b5c46 100%);
   clip-path:inset(0 var(--open));
@@ -373,7 +422,8 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 #emergency .ov-inner{max-width:1440px;margin:0 auto;padding-inline:var(--gut)}
 /* 深色底上的欄位表：直線與次要文字都改白色系，否則會看不見 */
 #emergency .em-head h2,#emergency .emergency-grid p{color:#fff}
-#emergency .em-head p,#emergency .emergency-grid b{color:rgba(255,255,255,.72)}
+/* .72 對漸層最亮端 #6b5c46 只有 4.27:1，未達 AA */
+#emergency .em-head p,#emergency .emergency-grid b{color:rgba(255,255,255,.86)}
 #emergency .emergency-grid{border-left-color:var(--hair-dark)}
 #emergency .emergency-grid a.tel{color:#fff;border-bottom-color:var(--hair-dark)}
 
@@ -403,7 +453,7 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
   transition:background .35s var(--ease),color .35s var(--ease),opacity .35s var(--ease);
 }
 .arw:hover:not(:disabled){background:var(--ink);color:var(--paper)}
-.arw:disabled{opacity:.26;cursor:default}
+.arw:disabled{opacity:.5;cursor:default}   /* .26 算出來 1.68:1，非文字元件要 3:1 */
 .daybar .th{
   flex:0 1 auto;min-width:0;text-align:center;
   font-size:clamp(16px,1.6vw,20px);line-height:1.6;letter-spacing:.06em;
@@ -486,7 +536,11 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 }
 .stop .go span{border-bottom:.8px solid var(--line);margin-left:.4em}
 /* 今日模式：已過的行程壓低，但不隱藏 */
-.stop.past{opacity:.42}
+/* 已過行程：原本只用 opacity:.42 傳達，算出來只有 2.45:1，而且語意單靠明暗。
+   改成「時間加刪除線 + 名稱降為次要字」，兩個訊號、且都達 AA */
+.stop.past{opacity:1}
+.stop.past>time{text-decoration:line-through;text-decoration-thickness:.8px}
+.stop.past h4,.stop.past h4 a,.stop.past .desc,.stop.past .meta{color:var(--muted)}
 
 /* 行程內的即時狀態區 */
 .live-status{
@@ -695,10 +749,13 @@ body.editing>#editor{display:block !important}
   :root[data-theme]{
     --paper:#fff;--ink:#2d2519;--line:#c9c7bf;--card:#fff;--muted:#5b554d;--warm:#8c2f22;
   }
-  .sticky-nav,.now-bar,.pending-banner,.day-tools,.daybar,.loc,.go{display:none}
+  .sticky-nav,.now-bar,.pending-banner,.day-tools,.daybar,.loc,.go,.handoff,.skip{display:none}
   .band::before{background:#fff !important}
   .section{opacity:1 !important}
+  /* 紙本印的是「計畫」不是「進度」，不帶今日狀態 */
   .stop.past{opacity:1}
+  .stop.past>time{text-decoration:none}
+  .stop.past h4,.stop.past h4 a{color:var(--ink)}
   .hero{min-height:0;padding:24px 0}
   .hero .drop,.card-deck{display:none}
   /* 換日是螢幕上的行為；紙本必須印出全部天數 */
@@ -754,6 +811,7 @@ body.editing>#editor{display:block !important}
   {%- endfor -%}
 {%- endfor -%}
 {%- set cards = ns.live_cards + ns.note_cards -%}
+<a class="skip" href="#itinerary">跳至行程</a>
 <header class="hero">
   <h1>{{ trip.title }}</h1>
   <p class="lead">{{ trip.num_days }} 天 {{ trip.travelers }} 人。每天去哪、怎麼去、花多少，都在這一頁。</p>
@@ -857,6 +915,9 @@ body.editing>#editor{display:block !important}
 <section class="section" id="itinerary">
   <div class="section-heading">
     <h2>行程</h2>
+    {#- 其餘三區的 h2 底下都有一行說明，只有這裡沒有，讀起來像另一份文件。
+        順帶把「一次只顯示一天」這個看不見的機制講出來 -#}
+    <p>一天一頁。用下方箭頭或鍵盤左右鍵翻日。</p>
   </div>
 
   <div class="days">
@@ -914,6 +975,8 @@ body.editing>#editor{display:block !important}
     <span class="th" id="day-theme"></span>
     <button class="arw" id="day-next" type="button" aria-label="後一天">→</button>
   </div>
+
+  {{ handoff("六天實際要花多少", "budget", "花費") }}
 </section>
 
 </div>{# /band-b #}
@@ -967,6 +1030,10 @@ body.editing>#editor{display:block !important}
   <p class="budget-empty">花費尚未填入。待各項報價／確認金額後再逐筆補上，這裡會自動顯示合計與每人分攤。</p>
   {% endif %}
   </div>
+
+  {%- if notes or trip.packing %}
+  {{ handoff("出發前還有事要確認", ("notes" if notes else "packing"), ("提醒 · 檢查" if notes and trip.packing else ("提醒" if notes else "檢查"))) }}
+  {%- endif %}
 </section>
 </div>{# /band-c #}
 {# ── 區塊 E：提醒 + 檢查（出發前要看的都在同一帶） ── #}
@@ -1021,6 +1088,16 @@ body.editing>#editor{display:block !important}
   </div>
 </section>
 {% endif %}
+
+{#- 收尾：頁面原本在最後一個勾選框之後直接結束，像被裁掉。
+    留在帶內吃同一個底色，只靠細線與字級差異區隔——為了首尾呼應再切一次
+    底色，等於為了修辭犧牲連續性，而連續性正是要修的問題本身 -#}
+<div class="coda">
+  <div>
+    <span class="d lat">{{ trip.range_label }}</span>
+    <span class="t">{{ trip.title }}</span>
+  </div>
+</div>
 </div>{# /band-e #}
 </main>
 
@@ -1189,9 +1266,12 @@ body.editing>#editor{display:block !important}
     try { if (localStorage.getItem(dismissKey) === "1") return; } catch (e) {}
     bar.hidden = false;
     document.body.style.paddingBottom = bar.offsetHeight + "px";
+    // 浮卡也要讓開：兩者都是 fixed 且都貼底，浮條 z-45 會蓋掉浮卡底部
+    document.documentElement.style.setProperty("--nowbar-h", bar.offsetHeight + "px");
     bar.querySelector(".now-dismiss").addEventListener("click", function(){
       bar.hidden = true;
       document.body.style.paddingBottom = "";
+      document.documentElement.style.removeProperty("--nowbar-h");
       Array.prototype.forEach.call(dayEl.querySelectorAll(".stop.past"), function(s){
         s.classList.remove("past");
       });
@@ -1282,18 +1362,22 @@ body.editing>#editor{display:block !important}
 
   var deckCards = liveCard ? [].slice.call(liveCard.querySelectorAll(".card-live")) : [];
   if (deckCards.length > 1) {
-    var cur = 0, dots = [];
+    var deckCur = 0, dots = [];
     // 疊法：最上面那張正常顯示，後面的往上縮一階，只露出邊
     function layout(dx){
       var n = deckCards.length;
       deckCards.forEach(function(card, i){
-        var pos = (i - cur + n) % n;
+        var pos = (i - deckCur + n) % n;
         var depth = Math.min(pos, 2);
         card.style.setProperty("--dy", (-7 * depth) + "px");
         card.style.setProperty("--sc", (1 - 0.035 * depth).toFixed(3));
         card.style.setProperty("--op", pos === 0 ? "1" : (depth === 1 ? ".78" : ".5"));
         card.style.setProperty("--z", String(n - depth));
         card.setAttribute("aria-hidden", pos === 0 ? "false" : "true");
+        // aria-hidden 的卡片仍然可以 Tab 到，讀屏與鍵盤會不一致 —— 一併移出 Tab 序
+        Array.prototype.forEach.call(card.querySelectorAll("a"), function(lk){
+          if (pos === 0) lk.removeAttribute("tabindex"); else lk.setAttribute("tabindex","-1");
+        });
         // 拖曳中只有最上面那張跟著手指走
         if (pos === 0 && dx) {
           card.style.transform = "translate3d(" + dx + "px,0,0)";
@@ -1301,10 +1385,10 @@ body.editing>#editor{display:block !important}
           card.style.transform = "";
         }
       });
-      dots.forEach(function(d, i){ d.setAttribute("aria-current", i === cur ? "true" : "false"); });
+      dots.forEach(function(d, i){ d.setAttribute("aria-current", i === deckCur ? "true" : "false"); });
     }
     function go(step){
-      cur = (cur + step + deckCards.length) % deckCards.length;
+      deckCur = (deckCur + step + deckCards.length) % deckCards.length;
       layout(0);
     }
 
@@ -1315,7 +1399,7 @@ body.editing>#editor{display:block !important}
       var b = document.createElement("button");
       b.type = "button";
       b.setAttribute("aria-label", "顯示第 " + (i + 1) + " 張卡");
-      b.addEventListener("click", function(){ cur = i; layout(0); });
+      b.addEventListener("click", function(){ deckCur = i; layout(0); });
       dotWrap.appendChild(b);
       dots.push(b);
     });
@@ -1434,7 +1518,10 @@ body.editing>#editor{display:block !important}
     for (var j = 0; j < fades.length; j++){
       var fe = fades[j], fd = fe.getBoundingClientRect();
       var fp = clamp01((vh - fd.top) / (vh * 0.65));
-      fe.style.setProperty("--fade", clamp01((fp - 0.35) / 0.35).toFixed(3));
+      // 0.08 而非 0.35：章節頂端一進到畫面就開始亮（95%），72% 時全亮。
+      // 用 0.35 的話要等頂端降到 77% 才開始，畫面底部會固定有 22.75% 是
+      // 「有內容但看不見」，捲動時讀起來就是一段一段斷開的
+      fe.style.setProperty("--fade", clamp01((fp - 0.08) / 0.35).toFixed(3));
     }
   }
   // 直接同步，不繞 requestAnimationFrame：rAF 在分頁切到背景時不會回呼，
