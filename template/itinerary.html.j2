@@ -85,7 +85,6 @@
   --sec:clamp(72px,11vh,140px);   /* 章節上下留白，也決定帶與帶之間的呼吸 */
   /* 緊急區下緣淡出的高度。刻意與 --sec 脫鉤：留白是節奏，漸層是質感，
      兩者共用同一個變數的話，調節奏就會把那道轉場一起縮短、露出硬邊 */
-  --em-fade:170px;
   --ease:cubic-bezier(.16,1,.3,1);
 }
 
@@ -173,8 +172,6 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
   padding:clamp(12px,2.2vh,20px) var(--gut);
 }
 .sticky-nav.stuck{background-color:var(--nav-bg,var(--paper))}
-/* 進入深色花費區時整條反白 */
-.sticky-nav.stuck.on-dark{background-color:#241d13;color:#fff}
 .nav-links{display:flex;gap:clamp(14px,2.2vw,30px);overflow-x:auto;scrollbar-width:none}
 .nav-links::-webkit-scrollbar{display:none}
 .sticky-nav a{
@@ -217,7 +214,6 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
   box-shadow:0 2px 14px rgba(45,37,25,.09);
 }
 .js .tools-menu[hidden]{display:none}
-.sticky-nav.on-dark .tools-menu{background:#241d13;border-color:var(--hair-dark)}
 .nav-tool{
   min-width:38px;min-height:38px;border-radius:4px;border:.8px solid currentColor;
   background:transparent;color:inherit;font:inherit;font-size:14px;cursor:pointer;
@@ -261,7 +257,6 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
   }
   .js .drawer-links a{font-size:15px;min-height:40px;padding:6px 4px;white-space:nowrap}
   .js .drawer-links a::after{display:none}   /* 抽屜裡不需要底線動畫 */
-  .sticky-nav.on-dark .drawer-links{border-color:var(--hair-dark)}
   /* 抽屜變寬一點，四條連結才不會擠成一條窄柱 */
   .js .tools-menu{min-width:132px}
   .js .tools-menu .nav-tool{width:100%}
@@ -472,35 +467,37 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
   --open:0%;
   --fade:1;
 }
-/* 上緣直接切齊，不做漸層（依指示）；只有下緣溶進下一帶的底色。
-   淡出色要用「與下一帶同色但 alpha 0」，用 transparent 會透出灰邊 */
-#emergency{--fade-to:#f2f1ed; --fade-to-0:rgba(242,241,237,0)}
-:root[data-theme="dark"] #emergency{--fade-to:#1b1610; --fade-to-0:rgba(27,22,16,0)}
+/* 底色改採 kobe-yakult.co.jp 頁尾「Contact Us」那種區塊：純色、圓角、四周內縮，
+   不再是滿版漸層。原本的三層漸層（下緣淡出＋左上放射光暈＋垂直深→淺）全部拿掉——
+   圓角色塊是「一塊放在紙上的東西」，有明確的邊，沒有溶進下一區這回事。
+   附帶好處：白字對比從漸層最亮端的 6.47:1 提升到 12.75:1。 */
+#emergency{--em-inset:clamp(12px,3vw,50px)}
 #emergency::before{
-  content:"";position:absolute;inset:0;z-index:0;
-  /* 比先前淡一階：整塊偏中性的暖褐，白字仍有足夠對比 */
-  background-color:#4a3f31;
-  background-image:
-    /* 下緣淡出的高度用固定長度（＝底部留白），不用百分比：
-       這一區內容多、整塊很高時，百分比會蓋到最後幾列 */
-    linear-gradient(0deg,var(--fade-to) 0%,var(--fade-to-0) var(--em-fade)),
-    radial-gradient(120% 78% at 16% 4%,rgba(255,244,226,.12) 0%,rgba(255,244,226,0) 60%),
-    linear-gradient(180deg,#3a3126 0%,#4c4133 46%,#6b5c46 100%);
-  clip-path:inset(0 var(--open));
+  content:"";position:absolute;z-index:0;
+  /* 左右內縮成一塊，上下切齊區塊自身的留白 */
+  inset:0 var(--em-inset);
+  /* 純色，不疊任何漸層。#3a3126 是原漸層的最深端，等同 kobe-yakult 的
+     #303030 在這套暖色系裡的對應值（兩者對白字都是 13:1 上下） */
+  background-color:#3a3126;
+  /* 圓角要寫進 clip-path 而不是 border-radius：橫向展開動畫用的就是 clip-path，
+     兩者並用時 clip-path 會把 border-radius 切成方角 */
+  clip-path:inset(0 var(--open) round 15px);
 }
 #emergency>*{position:relative;z-index:1;opacity:var(--fade)}
-#emergency .ov-inner{max-width:1440px;margin:0 auto;padding-inline:var(--gut)}
+/* 色塊內縮後，內容的左右留白要從「視窗邊緣」改成「色塊邊緣」起算，
+   否則文字會貼著圓角邊。kobe-yakult 的作法也是色塊內縮 50 再加 50 內距 */
+#emergency .ov-inner{max-width:1440px;margin:0 auto;padding-inline:calc(var(--gut) + var(--em-inset))}
 /* 深色底上的欄位表：直線與次要文字都改白色系，否則會看不見 */
 #emergency .em-head h2,#emergency .emergency-grid p{color:#fff}
-/* .72 對漸層最亮端 #6b5c46 只有 4.27:1，未達 AA */
+/* 底色改純色 #3a3126 後，.86 對它是 9.87:1，餘裕比先前的漸層大得多 */
 #emergency .em-head p,#emergency .emergency-grid b{color:rgba(255,255,255,.86)}
 #emergency .emergency-grid{border-left-color:var(--hair-dark)}
 #emergency .emergency-grid a.tel{color:#fff;border-bottom-color:var(--hair-dark)}
 /* 卡片：深底上「淺一階」，不用純白卡——這一區的深色是全頁唯一的，
    捲動時靠它一眼認出「緊急在這裡」，壓六張白卡會把那個辨識度洗掉 */
 #emergency .em-card{color:#fff}
-/* .86 是這一區既有的次要文字濃度：對漸層最亮端 #6b5c46 實測 5.30:1 過 AA。
-   先前寫的 .6 只有 3.50:1，比註解裡記錄過、當時被否決的 .72（4.27:1）還低 */
+/* .86 是這一區既有的次要文字濃度。底色改純色後對比大幅放寬（9.87:1），
+   但仍沿用 .86 與同區其他次要文字一致 */
 #emergency .em-sub{color:rgba(255,255,255,.86)}
 #emergency .em-name{border-top-color:var(--hair-dark)}
 
@@ -1757,11 +1754,10 @@ body.editing>#editor{display:block !important}
   function syncScroll(){
     if (head) head.classList.toggle("stuck", window.scrollY > 40);
     if (liveCard) liveCard.classList.toggle("is-out", window.scrollY > 120);
-    if (head && ov){
-      var d0 = ov.getBoundingClientRect();
-      var line = head.getBoundingClientRect().bottom;
-      head.classList.toggle("on-dark", d0.top < line - 6 && d0.bottom > line);
-    }
+    // 緊急區改成內縮圓角色塊之後，頂列不再跟著反白：
+    // 內縮色塊的前提是「頁面底色一路通到視窗邊緣」，頂列若整條變深，
+    // 會在色塊頂端左右各多伸出一截、形成缺角。改成讓深色塊從淺色頂列
+    // 底下捲過去（kobe-yakult 的作法），底色交給下面的 --nav-bg 邏輯決定。
     // 頂列底色：取此刻壓在頂列底下的那一塊背景，讓它跟著背景走
     if (head){
       var line2 = head.getBoundingClientRect().bottom;
