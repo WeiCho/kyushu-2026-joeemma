@@ -256,13 +256,10 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 .hero-figure{grid-column:2;margin:0}
 .hero-figure img{
   /* 照 giftee：精確 2:3、無圓角。用視窗寬定尺寸（實測 giftee 約佔 22vw），
-     再用 svh 封頂，避免矮螢幕上照片把 figcaption 推到摺線下 */
+     再用 svh 封頂，矮螢幕上照片才不會頂破封面的一個畫面 */
   display:block;width:clamp(240px,23vw,340px);height:auto;
   aspect-ratio:2/3;max-height:72svh;object-fit:cover;
   /* 不加任何濾鏡：深色照片壓在米白紙上正是這個版面的特徵，不是缺陷 */
-}
-.hero-figure figcaption{
-  margin-top:10px;font-size:12px;letter-spacing:.04em;color:var(--muted);
 }
 .hero h1{
   /* giftee 實測：字距 0.4em、字重 400（Regular）、字級只有 21px。
@@ -869,10 +866,11 @@ body.editing>#editor{display:block !important}
   </div>
 
   {# 照片內嵌成 data: URI，見 _hero_image.j2 的說明 #}
+  {#- 不放出處行：Pexels 授權不強制標註，而這份只有家人會看。
+      來源與授權記在 _hero_image.j2 的註解裡 -#}
   <figure class="hero-figure">
     <img src="{% include '_hero_image.j2' %}" width="800" height="1200"
          alt="高千穗峽真名井瀑布，一艘小船划過瀑布下方">
-    <figcaption>攝影：睿豪 周 / Pexels</figcaption>
   </figure>
 
   {%- if cards %}
