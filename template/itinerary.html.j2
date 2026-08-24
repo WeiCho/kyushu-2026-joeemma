@@ -96,7 +96,6 @@
 }
 :root[data-theme="dark"] .cta .o,
 :root[data-theme="dark"] .now-go{background:var(--ink);color:var(--paper)}
-:root[data-theme="dark"] .sticky-nav.stuck{background:var(--paper)}
 :root[data-theme="dark"] .card-live{background:var(--card)}
 
 /* ── 長輩模式（放大關鍵閱讀文字 + 更高對比）── */
@@ -160,18 +159,26 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 .wrap{max-width:1440px;margin:0 auto;padding-inline:var(--gut)}
 
 /* ── 固定頂列（無字標，導覽靠右）── */
-/* 滿版一整行，不留左右空白；底色由 JS 取「此刻在頂列底下的那一帶」的顏色，
-   所以捲動時它會跟著背景走，不需要分隔線就融進畫面 */
+/* 照 sukima.tokyo.jp：導覽永遠固定在同一個位置、永遠透明、沒有底色 bar。
+   壓在深色塊上時只翻文字顏色（見 .over-dark），不做任何底色或版型切換 */
 .sticky-nav{
   position:fixed;inset:0 0 auto;z-index:40;width:100%;
-  transition:background-color .35s var(--ease),color .35s var(--ease);
+  pointer-events:none;   /* 透明的滿版容器不該擋住底下的內容 */
 }
+/* 面板也要收事件，否則點到它的內距會被當成「點外面」而關掉選單 */
+.sticky-nav a,.sticky-nav button,.sticky-nav .tools-menu{pointer-events:auto}
 .sticky-nav>.nav-inner{
   max-width:1440px;margin:0 auto;
   display:flex;justify-content:flex-end;align-items:center;gap:clamp(12px,2vw,28px);
   padding:clamp(12px,2.2vh,20px) var(--gut);
 }
-.sticky-nav.stuck{background-color:var(--nav-bg,var(--paper))}
+/* 不用 mix-blend-mode：它只有掛在 .sticky-nav 本身才會對頁面生效（position:fixed
+   會建立堆疊脈絡、隔離子元素的混色），而掛在 nav 上會把工具選單那塊實心紙色面板
+   一起反相成灰藍、圖示消失。改成只在導覽真的壓到深色塊時翻文字顏色——
+   沒有底色、沒有 bar、位置完全不動 */
+.sticky-nav.over-dark{color:#fff}
+/* 選單面板有自己的紙色底，不能跟著翻白 */
+.sticky-nav.over-dark .tools-menu{color:var(--ink)}
 .nav-links{display:flex;gap:clamp(14px,2.2vw,30px);overflow-x:auto;scrollbar-width:none}
 .nav-links::-webkit-scrollbar{display:none}
 .sticky-nav a{
@@ -221,21 +228,27 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 }
 .nav-tool:hover{opacity:1}
 
-/* ── 封面上的導覽：照 giftee，垂直排列疊在右上、透明無底 ── */
-/* .stuck 由 JS 在 scrollY>40 時加上，所以 :not(.stuck) 幾乎等同「還在封面」。
-   只在有三欄空間時垂直排；窄螢幕維持原本的水平列 */
+/* ── 垂直導覽：從頭到尾都是這個樣子，不隨捲動改變 ── */
+/* 對齊 1440 版心而不是視窗邊緣（sukima 是貼邊）：封面的構圖建立在版心上，
+   標語左緣、照片置中、導覽右緣是同一組對稱，貼邊會在寬螢幕上脫節 */
 @media (width>860px){
-  .sticky-nav:not(.stuck)>.nav-inner{
+  .sticky-nav>.nav-inner{
     flex-direction:column;align-items:flex-end;gap:clamp(6px,1.2vh,14px);
     padding-top:clamp(40px,7vh,64px);
   }
-  .sticky-nav:not(.stuck) .nav-links{
+  .sticky-nav .nav-links{
     flex-direction:column;align-items:flex-end;gap:clamp(2px,.6vh,8px);
     overflow:visible;   /* 垂直排列時橫向捲動沒有意義，且會裁掉底線動畫 */
   }
-  /* 垂直排時 44px 的點擊區會把五條拉得太開，收成 36px 仍高於指尖下限 */
-  .sticky-nav:not(.stuck) a{min-height:36px;padding:6px 0}
-  .sticky-nav:not(.stuck) a::after{bottom:5px}
+  /* 垂直排時 44px 會把五條拉得太開，滑鼠操作收成 36px */
+  .sticky-nav a{min-height:36px;padding:6px 0}
+  .sticky-nav a::after{bottom:5px}
+  /* 但觸控裝置（例如寬度落在桌機版型的平板）要回到 44×44。
+     往左加內距而不是往右，文字的右緣對齊才不會被推走 */
+  @media (pointer:coarse){
+    .sticky-nav a{min-height:44px;padding:10px 0 10px 12px}
+    .sticky-nav a::after{bottom:9px;left:12px}
+  }
 }
 
 @media (width<=860px){
@@ -471,7 +484,13 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
    不再是滿版漸層。原本的三層漸層（下緣淡出＋左上放射光暈＋垂直深→淺）全部拿掉——
    圓角色塊是「一塊放在紙上的東西」，有明確的邊，沒有溶進下一區這回事。
    附帶好處：白字對比從漸層最亮端的 6.47:1 提升到 12.75:1。 */
-#emergency{--em-inset:clamp(12px,3vw,50px)}
+/* 內縮量：有上限的固定值。曾經試過綁在版心邊距上（讓導覽永遠避開色塊），
+   但那個值會隨視窗寬無上限成長——1920 下算出 371px，卡片被壓到 83px、
+   名稱折三行，整區崩掉。
+   改成相反的策略：導覽不閃避，而是永遠完整落在色塊「內」，重疊交給
+   .over-dark 翻文字顏色處理。3.4vw 恆小於 --gut 的 4.2vw，所以導覽的
+   左右緣都在色塊裡，不會發生「一半在深底一半在淺底」的半截字 */
+#emergency{--em-inset:clamp(16px,3.4vw,72px)}
 #emergency::before{
   content:"";position:absolute;z-index:0;
   /* 左右內縮成一塊，上下切齊區塊自身的留白 */
@@ -481,7 +500,7 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
   background-color:#3a3126;
   /* 圓角要寫進 clip-path 而不是 border-radius：橫向展開動畫用的就是 clip-path，
      兩者並用時 clip-path 會把 border-radius 切成方角 */
-  clip-path:inset(0 var(--open) round 15px);
+  clip-path:inset(0 var(--open) round 20px);
 }
 #emergency>*{position:relative;z-index:1;opacity:var(--fade)}
 /* 色塊內縮後，內容的左右留白要從「視窗邊緣」改成「色塊邊緣」起算，
@@ -648,7 +667,7 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
   /* 照 c-morinosato 的左右比例（實測左 400／右 600）。左欄比原本寬得多，
      因為它現在裝的是「標題＋副標＋說明」三層，而不只是一個標題；
      右欄則剛好容得下三張 183px 卡片加間距 */
-  .em-wrap{grid-template-columns:minmax(260px,1fr) minmax(0,1.35fr);gap:0}
+    .em-wrap{grid-template-columns:minmax(260px,1fr) minmax(0,1.35fr);gap:0}
 }
 .em-head h2{font-size:clamp(30px,4.4vw,56px);line-height:1.2;letter-spacing:.04em}
 /* 羅馬拼音副標：c-morinosato 用它在標題下墊一層，字距拉開、字級很小 */
@@ -663,7 +682,9 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
   list-style:none;margin:0;padding:0;
   display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(10px,1.4vw,20px);
 }
-@media (width>=900px){
+/* 三欄的門檻拉到 1150：900–1150 這段硬排三欄的話卡片只剩 133–160px、
+   名稱全部折兩行；改排兩欄可以拿到 240px 以上 */
+@media (width>=1150px){
   .em-cards{
     grid-template-columns:repeat(3,minmax(0,1fr));
     /* 寫在 base 規則之後：同特異度時後者勝，寫在前面會被上面的 padding:0 蓋掉 */
@@ -1746,38 +1767,40 @@ body.editing>#editor{display:block !important}
   if (ov) bands.push(ov);
   var fades = [].slice.call(document.querySelectorAll("main .section"));
   if (ov) fades.push(ov);
-  // 依此刻位於頂列底下的那一帶，決定頂列底色
-  var navTinted = [].slice.call(document.querySelectorAll(".band"));
   // 使用者要求減少動態時完全不碰 --open/--fade，兩者的 CSS 預設值就是「已展開」
   var wantsMotion = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   function clamp01(v){ return v < 0 ? 0 : v > 1 ? 1 : v; }
+  // 緊急色塊左右內縮的實際 px。用 calc() 定義，讀不到數值，
+  // 所以量 ::before 的 used value，並只在載入與改變視窗大小時重算
+  var emInset = 0;
+  // 導覽實際佔位的兩個元素（連結群、工具鍵）
+  var navInk = head ? [head.querySelector(".nav-links"), head.querySelector(".nav-tools")] : null;
+  if (navInk && (!navInk[0] || !navInk[1])) navInk = null;
+  function measureInset(){
+    if (!ov) return;
+    emInset = parseFloat(getComputedStyle(ov, "::before").left) || 0;
+  }
+  measureInset();
+  window.addEventListener("resize", measureInset);
+
   function syncScroll(){
-    if (head) head.classList.toggle("stuck", window.scrollY > 40);
+    // 導覽改成永遠透明、位置固定之後，原本每次捲動都要跑一輪
+    // getBoundingClientRect + getComputedStyle 的「取背景色」迴圈整個不需要了，
+    // .stuck 這個 class 也沒有任何規則在用。
     if (liveCard) liveCard.classList.toggle("is-out", window.scrollY > 120);
-    // 緊急區改成內縮圓角色塊之後，頂列不再跟著反白：
-    // 內縮色塊的前提是「頁面底色一路通到視窗邊緣」，頂列若整條變深，
-    // 會在色塊頂端左右各多伸出一截、形成缺角。改成讓深色塊從淺色頂列
-    // 底下捲過去（kobe-yakult 的作法），底色交給下面的 --nav-bg 邏輯決定。
-    // 頂列底色：取此刻壓在頂列底下的那一塊背景，讓它跟著背景走
-    if (head){
-      var line2 = head.getBoundingClientRect().bottom;
-      var tint = "";
-      for (var t = 0; t < navTinted.length; t++){
-        var el2 = navTinted[t], tr = el2.getBoundingClientRect();
-        if (tr.top <= line2 && tr.bottom > line2){
-          var st = getComputedStyle(el2);
-          // 帶的底色畫在 ::before 上（元素本身透明），且帶頭那一段是漸層，
-          // 讀 background-image 拿不到單一色值 —— 直接取 --band 這個變數
-          tint = st.getPropertyValue("--band").trim();
-          if (!tint) {
-            tint = getComputedStyle(el2, "::before").backgroundColor;
-            if (!tint || tint === "rgba(0, 0, 0, 0)") tint = st.backgroundColor;
-          }
-          break;
-        }
-      }
-      // 找不到就沿用上一個顏色，不要跳回預設值造成閃色
-      if (tint && tint !== "rgba(0, 0, 0, 0)") head.style.setProperty("--nav-bg", tint);
+    // 導覽壓在深色塊上時只翻文字顏色。桌機上色塊內縮量綁著導覽的版心，
+    // 兩者永遠分開、這裡一律 false；真正會用到的是手機版（色塊近乎滿版）。
+    // 寫成 rect 判斷而不是寫死斷點，之後版面再動也不會失效
+    if (head && ov && navInk){
+      var er = ov.getBoundingClientRect();
+      // 用實際看得見的連結與工具鍵，不能用 .sticky-nav——它是 width:100% 的
+      // 透明容器，橫向永遠和色塊重疊，判斷會恆為 true
+      var a = navInk[0].getBoundingClientRect(), b = navInk[1].getBoundingClientRect();
+      var nT = Math.min(a.top, b.top), nB = Math.max(a.bottom, b.bottom);
+      var nL = Math.min(a.left, b.left), nR = Math.max(a.right, b.right);
+      var overlap = er.top < nB && er.bottom > nT &&
+                    (er.left + emInset) < nR && (er.right - emInset) > nL;
+      head.classList.toggle("over-dark", overlap);
     }
 
     if (!wantsMotion) return;
