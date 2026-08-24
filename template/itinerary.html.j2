@@ -1,4 +1,19 @@
 {%- macro money(v) -%}{{ trip.currency }}{{ "{:,.0f}".format(v) }}{%- endmacro -%}
+{#- 緊急卡片的圖示。24×24、stroke 2、round cap/join、吃 currentColor，
+    所以深淺色與列印都自動跟著走，也不需要外部檔（單檔可攜）。
+    順序對應 trip.emergency：警察／救護／外交部／駐辦／包車／保險 -#}
+{%- macro em_icon(i) -%}
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+{%- if i == 0 -%}<path d="M12 3 4 6v6c0 4.5 3.2 7.6 8 9 4.8-1.4 8-4.5 8-9V6z"/>
+{%- elif i == 1 -%}<circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/>
+{%- elif i == 2 -%}<circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><ellipse cx="12" cy="12" rx="4" ry="9"/>
+{%- elif i == 3 -%}<path d="M3 21h18M4 10h16M12 3 3 8h18zM7 10v11M11 10v11M15 10v11M19 10v11"/>
+{%- elif i == 4 -%}<path d="M3 16V9a1 1 0 0 1 1-1h8l4 4h3a1 1 0 0 1 1 1v3"/><path d="M3 16h2M9 16h6M19 16h2"/><circle cx="7" cy="16.5" r="2"/><circle cx="17" cy="16.5" r="2"/>
+{%- else -%}<path d="M12 3a9 9 0 0 1 9 9H3a9 9 0 0 1 9-9z"/><path d="M12 12v6a3 3 0 0 0 6 0"/>
+{%- endif -%}
+</svg>
+{%- endmacro -%}
 {#- 銜接引子：交代下一區「為何是下一區」，整行可點。
     只用在確實有邏輯關係的兩處；緊急→行程那一跳沒有邏輯關係，
     刻意不放，交給該區既有的深→淺色彩轉場撐住 -#}
@@ -101,6 +116,16 @@
 [data-theme-size="large"] .emergency-grid p,
 [data-theme-size="large"] .pending-banner li{font-size:17px}
 [data-theme-size="large"] .emergency-grid a.tel{font-size:18px}
+/* 緊急卡片與彈窗也要跟著放大：會開大字模式的人，正是最需要看清電話的人。
+   卡片原本用固定 aspect-ratio 定高，字級一放大長名稱會折三行撐破，
+   所以大字模式改用 min-height 讓卡片自己長高 */
+[data-theme-size="large"] .em-card{aspect-ratio:auto;min-height:215px}
+[data-theme-size="large"] .em-name{font-size:17px}
+[data-theme-size="large"] .em-dlg h3{font-size:21px}
+[data-theme-size="large"] .em-dlg .em-desc{font-size:17px}
+[data-theme-size="large"] .em-meta{font-size:16px}
+[data-theme-size="large"] .em-tel{font-size:30px}
+[data-theme-size="large"] .em-todo-tag{font-size:15px}
 [data-theme-size="large"] .pack-items label{font-size:18px}
 /* 放大後行高照 1.8 會塞不下幾項，整體收緊一級 */
 [data-theme-size="large"] body{line-height:1.7}
@@ -471,6 +496,13 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 #emergency .em-head p,#emergency .emergency-grid b{color:rgba(255,255,255,.86)}
 #emergency .emergency-grid{border-left-color:var(--hair-dark)}
 #emergency .emergency-grid a.tel{color:#fff;border-bottom-color:var(--hair-dark)}
+/* 卡片：深底上「淺一階」，不用純白卡——這一區的深色是全頁唯一的，
+   捲動時靠它一眼認出「緊急在這裡」，壓六張白卡會把那個辨識度洗掉 */
+#emergency .em-card{color:#fff}
+/* .86 是這一區既有的次要文字濃度：對漸層最亮端 #6b5c46 實測 5.30:1 過 AA。
+   先前寫的 .6 只有 3.50:1，比註解裡記錄過、當時被否決的 .72（4.27:1）還低 */
+#emergency .em-sub{color:rgba(255,255,255,.86)}
+#emergency .em-name{border-top-color:var(--hair-dark)}
 
 /* ── 提醒（原本的提醒與備忘合併成這一區，可收合、預設收起）── */
 /* 區塊銜接不畫橫線，改用底色與進場動畫區分 */
@@ -608,22 +640,120 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 /* ── 緊急資訊 ── */
 /* 版式參考 3jigen.jp 的 Company：左側大標題、中間一條直線、右側欄位表。
    列與列之間刻意不畫橫線（依指示），改用行距分隔 */
-.em-wrap{display:grid;grid-template-columns:minmax(0,1fr);gap:clamp(24px,4vh,44px)}
+/* max-width 1160 是反推出來的：右欄 = 183×3 + 20×2 間距 + 78 內距 = 667，
+   左欄 = 667 / 1.35 = 494，合計 1161。內容區有 1312 寬，不收窄的話卡片會被
+   撐成 238px——那就不是 c-morinosato 的卡了。收窄後置中，兩邊各留約 76px */
+.em-wrap{
+  display:grid;grid-template-columns:minmax(0,1fr);gap:clamp(24px,4vh,44px);
+  max-width:1160px;margin-inline:auto;
+}
 @media (width>=900px){
-  /* 左欄只放標題，右邊留給欄位表：欄名與內容都要能一行放完，
-     所以左欄壓窄、直線與右欄之間的留白也收斂 */
-  .em-wrap{grid-template-columns:minmax(200px,.55fr) minmax(0,2fr);gap:0}
-  .emergency-grid{border-left:.8px solid var(--line);padding-left:clamp(32px,5vw,86px)}
+  /* 照 c-morinosato 的左右比例（實測左 400／右 600）。左欄比原本寬得多，
+     因為它現在裝的是「標題＋副標＋說明」三層，而不只是一個標題；
+     右欄則剛好容得下三張 183px 卡片加間距 */
+  .em-wrap{grid-template-columns:minmax(260px,1fr) minmax(0,1.35fr);gap:0}
 }
 .em-head h2{font-size:clamp(30px,4.4vw,56px);line-height:1.2;letter-spacing:.04em}
+/* 羅馬拼音副標：c-morinosato 用它在標題下墊一層，字距拉開、字級很小 */
+.em-head .em-sub{
+  margin:6px 0 0;font-family:var(--latin);font-size:12px;letter-spacing:.28em;
+  color:var(--muted);
+}
 .em-head p{margin:12px 0 0;color:var(--muted);font-size:15px;line-height:1.8}
+
+/* ── 緊急卡片網格 ── */
+.em-cards{
+  list-style:none;margin:0;padding:0;
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(10px,1.4vw,20px);
+}
+@media (width>=900px){
+  .em-cards{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    /* 寫在 base 規則之後：同特異度時後者勝，寫在前面會被上面的 padding:0 蓋掉 */
+    border-left:.8px solid var(--line);padding-left:clamp(32px,5vw,86px);
+  }
+  #emergency .em-cards{border-left-color:var(--hair-dark)}
+}
+.em-card{
+  /* 183×215 是量 c-morinosato 的結果；用 aspect-ratio 讓它在窄欄自動等比縮 */
+  width:100%;aspect-ratio:183/215;min-height:150px;
+  display:grid;grid-template-rows:1fr auto;justify-items:stretch;
+  gap:10px;padding:18px 16px 14px;
+  background:rgba(255,255,255,.06);border:.8px solid var(--hair-dark);border-radius:10px;
+  color:inherit;font:inherit;cursor:pointer;text-align:center;
+  transition:background-color .3s var(--ease),transform .3s var(--ease);
+}
+/* 淺色區塊裡（例如列印預覽外的一般情境）用紙色系，深色區塊才用半透明白 */
+:root:not([data-theme="dark"]) .em-card{background:rgba(255,255,255,.06)}
+.em-card:hover{background:rgba(255,255,255,.11)}
+.em-card:active{transform:scale(.985)}
+.em-icn{
+  align-self:center;display:grid;place-items:center;
+  width:clamp(56px,7vw,74px);aspect-ratio:1;border-radius:50%;
+  background:rgba(255,255,255,.08);
+}
+.em-icn svg{width:52%;height:52%}
+.em-name{
+  /* 左對齊（照 c-morinosato），右邊留 22px 給箭頭。卡內可用寬因此是
+     183 − 32 內距 − 22 = 129px，而最長的「台北駐福岡辦事處」在 15px 下是
+     120px，剛好單行放得下；再大一級就會撞上箭頭 */
+  align-self:end;width:100%;padding:10px 22px 0 0;
+  border-top:.8px solid var(--hair-dark);
+  font-size:15px;letter-spacing:.04em;line-height:1.45;text-align:left;
+}
+/* 箭頭疊在名稱那一列的右端，不另外佔一列（卡片高度是固定比例，省得下的每一 px 都要省） */
+.em-card{position:relative}
+.em-go{position:absolute;right:14px;bottom:12px;font-size:13px;opacity:.6}
+
+/* ── 緊急彈窗 ── */
+.em-dlg{
+  width:min(420px,calc(100vw - 2*var(--gut)));padding:0;
+  background:var(--card);color:var(--ink);
+  border:.8px solid var(--line);border-radius:10px;
+}
+.em-dlg::backdrop{background:rgba(20,16,11,.55)}
+.em-dlg-in{padding:clamp(20px,3.4vw,28px)}
+.em-dlg h3{font-size:19px;line-height:1.5;letter-spacing:.03em}
+.em-dlg .em-desc{margin:10px 0 0;font-size:15px;line-height:1.85;color:var(--muted)}
+.em-meta{margin:14px 0 0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 14px;font-size:14px}
+.em-meta dt{color:var(--muted);letter-spacing:.06em;white-space:nowrap}
+.em-meta dd{margin:0;line-height:1.7}
+.em-tel{
+  display:flex;align-items:center;min-height:52px;margin-top:16px;
+  font-family:var(--latin);font-size:26px;letter-spacing:.06em;
+  text-decoration:none;border-bottom:.8px solid var(--line);
+}
+/* 待填：一條和號碼等寬的虛線，之後把號碼填進來版面不會跳 */
+.em-tel.is-todo{gap:12px;border-bottom-style:none;color:var(--muted);cursor:default}
+.em-todo-line{
+  flex:0 0 auto;width:9ch;border-bottom:1.4px dashed var(--line);
+  /* 9ch 約等於 13 碼號碼在 --latin 下的寬度 */
+}
+.em-todo-tag{font-family:var(--sans);font-size:13px;letter-spacing:.08em}
+.em-close{
+  margin-top:20px;width:100%;min-height:44px;
+  background:var(--pine);color:var(--paper);border:0;border-radius:4px;
+  font:inherit;font-size:15px;letter-spacing:.08em;cursor:pointer;
+}
+
+/* 沒有 JS 時 <dialog> 預設 display:none，緊急資訊會整份消失。
+   退回成一般區塊，直接顯示在卡片下方——這是全頁唯一不能沒有的內容 */
+.em-dlg:not([open]){display:block;position:static;margin:12px 0 0;width:auto}
+.js .em-dlg:not([open]){display:none}
+.em-close{display:none}
+.js .em-close{display:block}
+/* 沒有 JS 時卡片點了沒反應，把它降成純標示、不假裝可按 */
+.em-card{}
+html:not(.js) .em-card{cursor:default}
+
+.em-print{display:none}
+
+/* 保留原本的三欄文字列樣式：螢幕上不用，列印時整套接手 */
 .emergency-grid{display:grid;gap:clamp(14px,2.2vh,26px)}
 .em-row{display:grid;grid-template-columns:minmax(0,1fr);gap:2px}
 @media (width>=560px){
-  /* 欄名欄寬足夠放「外交部旅外急難救助專線」這種長標，避免折行 */
   .em-row{grid-template-columns:minmax(11.5em,13em) minmax(0,1fr);gap:clamp(16px,2.4vw,34px);align-items:baseline}
 }
-/* 欄名與內容都盡量一行：容不下時才折 */
 .emergency-grid b,.emergency-grid p{text-wrap:pretty}
 @media (width>=900px){ .emergency-grid b{white-space:nowrap} }
 .emergency-grid b{font-size:15.5px;letter-spacing:.06em;color:var(--muted)}
@@ -818,13 +948,31 @@ body.editing>#editor{display:block !important}
   #emergency .em-head p,#emergency .emergency-grid b{color:var(--muted)}
   #emergency .emergency-grid{border-left-color:var(--line)}
   #emergency .emergency-grid a.tel{border-bottom-color:var(--line)}
+  /* 紙上換成三欄文字列：卡片網格是為了掃視與點擊，這兩件事在紙上都不存在，
+     而六張卡各自展開五個欄位會把這一區從一頁撐成兩三頁 */
+  .em-cards,.em-dlg{display:none !important}
+  .em-print{display:block}
+  .em-wrap{grid-template-columns:minmax(0,1fr) !important;gap:16px}
+  .em-print .emergency-grid{border-left:0;padding-left:0}
+  /* 列印用的是完整全名（「外交部旅外國人急難救助全球免付費專線」18 字），
+     螢幕版的 nowrap 會讓它壓到右邊的說明欄，紙上必須允許折行 */
+  .em-print .emergency-grid b{white-space:normal}
+  /* 紙上沒得點，這句操作提示是廢話；後半句「境內撥號不需國碼」仍然有用所以留著 */
+  .em-hint{display:none}
+  .em-print-todo{color:var(--muted)}
+  .em-row{break-inside:avoid}
   /* 提醒螢幕上預設收起，紙本由 beforeprint 展開；這裡只收掉多餘留白與「＋」 */
   .alerts-summary{padding-top:24px}
   .alerts-toggle{display:none}
   a{text-decoration:none;color:inherit}
   body{background:#fff}
 }
-@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  /* 只拿掉位移，保留底色變化：reduced-motion 要的是不要動，不是不要回饋 */
+  .em-card{transition:background-color .3s var(--ease)}
+  .em-card:active{transform:none}
+}
 </style>
 </head>
 <body>
@@ -947,19 +1095,68 @@ body.editing>#editor{display:block !important}
 {% if trip.emergency %}
 <section id="emergency">
   <div class="ov-inner">
-    {# 版式參考 3jigen.jp 的 Company：左側大標題、中間一條直線、右側欄位表，列間不畫橫線 #}
+    {# 版式參考 c-morinosato.com 的「診療案內」：左欄標題＋副標＋說明，右欄圖示卡片網格。
+       卡片上只放名稱，說明與電話進彈窗——慌亂時網格要能一眼掃完，細節點開再看。
+       原本的文字列版型保留在下方，只在列印時出現（見 @media print 的說明）。 #}
     <div class="em-wrap">
       <div class="em-head">
         <h2>緊急</h2>
-        <p>手機點電話可直接撥號。</p>
+        <p class="em-sub">EMERGENCY</p>
+        <p><span class="em-hint">點任一項目看說明與電話。</span>日本境內撥號不需國碼。</p>
       </div>
+
+      <ul class="em-cards">
+      {% for e in trip.emergency %}
+        <li>
+          <button type="button" class="em-card" data-em="{{ loop.index0 }}"
+                  aria-haspopup="dialog" aria-controls="em-dlg-{{ loop.index0 }}">
+            <span class="em-icn">{{ em_icon(loop.index0) }}</span>
+            <span class="em-name">{{ e.label }}</span>
+            <span class="em-go" aria-hidden="true">→</span>
+          </button>
+        </li>
+      {% endfor %}
+      </ul>
+    </div>
+
+    {# 彈窗：原生 <dialog>，焦點鎖定與 Escape 由瀏覽器負責。
+       沒有 JS 時 <dialog> 會被 CSS 改回一般區塊直接顯示——緊急資訊是全頁
+       唯一不能因為 JS 沒跑就消失的內容。 #}
+    {% for e in trip.emergency %}
+    <dialog class="em-dlg" id="em-dlg-{{ loop.index0 }}" aria-labelledby="em-dlg-t-{{ loop.index0 }}">
+      <div class="em-dlg-in">
+        <h3 id="em-dlg-t-{{ loop.index0 }}">{{ e.name or e.label }}</h3>
+        {% if e.desc %}<p class="em-desc">{{ e.desc }}</p>{% endif %}
+        {%- if e.address or e.hours %}
+        <dl class="em-meta">
+          {%- if e.address %}<dt>地址</dt><dd>{{ e.address }}</dd>{% endif %}
+          {%- if e.hours %}<dt>服務時間</dt><dd>{{ e.hours }}</dd>{% endif %}
+        </dl>
+        {%- endif %}
+        {% if e.tel %}
+        <a class="em-tel" href="tel:{{ e.tel }}">{{ e.tel }}</a>
+        {% else %}
+        {# 虛線佔位：保留 13 碼號碼的寬度，之後填進來版面不會跳 #}
+        <p class="em-tel is-todo"><span class="em-todo-line"></span><span class="em-todo-tag">待填</span></p>
+        {% endif %}
+        <button type="button" class="em-close" data-em-close aria-label="關閉">關閉</button>
+      </div>
+    </dialog>
+    {% endfor %}
+
+    {# 只在紙上出現：卡片網格是為了掃視與點擊而設計，這兩件事在紙上都不存在，
+       而六張卡各自展開五個欄位會把這一區撐成兩三頁。原本的三欄文字列最省紙。 #}
+    <div class="em-print">
       <div class="emergency-grid">
       {% for e in trip.emergency %}
         <div class="em-row">
-          <b>{{ e.label }}</b>
+          <b>{{ e.name or e.label }}</b>
           <div class="em-val">
-            {% if e.value %}<p>{{ e.value }}</p>{% endif %}
-            {% if e.tel %}<a class="tel" href="tel:{{ e.tel }}">{{ e.tel }}</a>{% endif %}
+            {% if e.desc %}<p>{{ e.desc }}</p>{% endif %}
+            {% if e.hours %}<p>服務時間：{{ e.hours }}</p>{% endif %}
+            {% if e.address %}<p>{{ e.address }}</p>{% endif %}
+            {% if e.tel %}<a class="tel" href="tel:{{ e.tel }}">{{ e.tel }}</a>
+            {% else %}<p class="em-print-todo">電話：＿＿＿＿＿＿＿＿＿＿（出發前補上）</p>{% endif %}
           </div>
         </div>
       {% endfor %}
@@ -1408,6 +1605,28 @@ body.editing>#editor{display:block !important}
       if (e.key === "Escape" && !toolsMenu.hidden) { setTools(false); toolsToggle.focus(); }
     });
   }
+
+  // ── 緊急卡片彈窗 ──
+  // 用原生 <dialog>.showModal()：焦點鎖定、Escape 關閉、背景 inert 都由瀏覽器負責，
+  // 不用自己寫 focus trap。舊瀏覽器沒有 showModal 就退回錨點行為（內容仍在頁面上）
+  [].slice.call(document.querySelectorAll(".em-card")).forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var dlg = document.getElementById(btn.getAttribute("aria-controls"));
+      if (!dlg) return;
+      if (typeof dlg.showModal === "function") { dlg.showModal(); }
+      else { dlg.setAttribute("open", ""); dlg.scrollIntoView({block: "nearest"}); }
+    });
+  });
+  [].slice.call(document.querySelectorAll("[data-em-close]")).forEach(function (b) {
+    b.addEventListener("click", function () {
+      var dlg = b.closest("dialog");
+      if (dlg) { if (typeof dlg.close === "function") dlg.close(); else dlg.removeAttribute("open"); }
+    });
+  });
+  // 點背景關閉：<dialog> 的點擊事件在 backdrop 上也會觸發，且 target 會是 dialog 本身
+  [].slice.call(document.querySelectorAll(".em-dlg")).forEach(function (dlg) {
+    dlg.addEventListener("click", function (e) { if (e.target === dlg) dlg.close(); });
+  });
 
   // ── 封面浮卡：載入時浮出，開始往下捲就退場；多張時疊成一疊，往左滑換下一張 ──
   var liveCard = document.getElementById("card-deck");
