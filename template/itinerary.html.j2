@@ -199,43 +199,91 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
   display:grid;place-items:center;opacity:.75;
 }
 .nav-tool:hover{opacity:1}
-@media (width<=760px){
+
+/* ── 封面上的導覽：照 giftee，垂直排列疊在右上、透明無底 ── */
+/* .stuck 由 JS 在 scrollY>40 時加上，所以 :not(.stuck) 幾乎等同「還在封面」。
+   只在有三欄空間時垂直排；窄螢幕維持原本的水平列 */
+@media (width>860px){
+  .sticky-nav:not(.stuck)>.nav-inner{
+    flex-direction:column;align-items:flex-end;gap:clamp(6px,1.2vh,14px);
+    padding-top:clamp(40px,7vh,64px);
+  }
+  .sticky-nav:not(.stuck) .nav-links{
+    flex-direction:column;align-items:flex-end;gap:clamp(2px,.6vh,8px);
+    overflow:visible;   /* 垂直排列時橫向捲動沒有意義，且會裁掉底線動畫 */
+  }
+  /* 垂直排時 44px 的點擊區會把五條拉得太開，收成 36px 仍高於指尖下限 */
+  .sticky-nav:not(.stuck) a{min-height:36px;padding:6px 0}
+  .sticky-nav:not(.stuck) a::after{bottom:5px}
+}
+
+@media (width<=860px){
   .sticky-nav a{font-size:15px}
   .nav-links{gap:16px}
   .nav-tool{min-width:38px;min-height:38px;font-size:13px}
+  /* 手機：列上只留「緊急」，其餘四條移進抽屜（見 .drawer-links） */
+  .nav-links a:not(.nav-urgent){display:none}
+  .sticky-nav>.nav-inner{justify-content:flex-end;gap:14px}
+  .nav-links:empty{display:none}
+}
+/* 抽屜裡的導覽：桌機不存在（列上已經有了），手機才顯示，
+   和底下三顆工具鍵用一條細線分成「去哪裡」與「怎麼看」兩組 */
+.drawer-links{display:none}
+@media (width<=860px){
+  .js .drawer-links{
+    display:flex;flex-direction:column;align-items:stretch;
+    margin:0 0 8px;padding-bottom:8px;border-bottom:.8px solid var(--line);
+  }
+  .js .drawer-links a{font-size:15px;min-height:40px;padding:6px 4px;white-space:nowrap}
+  .js .drawer-links a::after{display:none}   /* 抽屜裡不需要底線動畫 */
+  .sticky-nav.on-dark .drawer-links{border-color:var(--hair-dark)}
+  /* 抽屜變寬一點，四條連結才不會擠成一條窄柱 */
+  .js .tools-menu{min-width:132px}
+  .js .tools-menu .nav-tool{width:100%}
 }
 
 /* ── Hero ── */
+/* 照 giftee.co.jp 的封面：三欄——標語靠左、照片水平置中、導覽疊在右上。
+   照片是唯一的視覺主角，標語刻意用小字＋極寬字距退到背景。
+   1fr auto 1fr 的兩側等寬，照片才會真的落在視窗正中，而不是版心正中 */
 .hero{
-  min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:100svh;display:grid;align-content:center;align-items:center;
+  grid-template-columns:1fr auto 1fr;
+  max-width:1440px;margin-inline:auto;
   padding:clamp(96px,14vh,140px) var(--gut) clamp(56px,10vh,110px);
 }
-/* 手機：滿版高度＋大留白會讓標題被推到快一個畫面之後，改成貼著頂列開始 */
-@media (width<=560px){
-  /* 封面仍佔滿一個畫面（下一區的深色塊不該提前露出）。
-     上留白收窄、下留白加大，整組內容因此落在略高於正中的位置，
-     底部也留得下浮在右下角的即時小卡。垂直線維持原本的短線段 */
-  .hero{padding:clamp(76px,11vh,104px) var(--gut) clamp(150px,22vh,220px)}
+.hero-copy{grid-column:1;justify-self:start;text-align:left}
+.hero-figure{grid-column:2;margin:0}
+.hero-figure img{
+  /* 照 giftee：精確 2:3、無圓角。用視窗寬定尺寸（實測 giftee 約佔 22vw），
+     再用 svh 封頂，避免矮螢幕上照片把 figcaption 推到摺線下 */
+  display:block;width:clamp(240px,23vw,340px);height:auto;
+  aspect-ratio:2/3;max-height:72svh;object-fit:cover;
+  /* 不加任何濾鏡：深色照片壓在米白紙上正是這個版面的特徵，不是缺陷 */
+}
+.hero-figure figcaption{
+  margin-top:10px;font-size:12px;letter-spacing:.04em;color:var(--muted);
 }
 .hero h1{
-  text-align:center;font-size:clamp(40px,10vw,112px);line-height:1.12;letter-spacing:.02em;
-  font-weight:700;text-wrap:balance;
+  /* giftee 實測：字距 0.4em、字重 400（Regular）、字級只有 21px。
+     字級不照抄——它的主角是自家拍的照片，標語只是註腳；這裡的標題本身
+     才是記憶點，縮到 21px 會被一張借來的風景照壓掉 */
+  text-align:left;font-size:clamp(28px,3.2vw,44px);
+  letter-spacing:.4em;font-weight:400;line-height:1.7;
 }
-.hero .lead{
-  margin:clamp(18px,3.2vh,36px) auto 0;max-width:34em;text-align:center;
-  font-size:clamp(15.5px,1.2vw,19px);line-height:1.95;
-}
-.hero-pills{
-  display:flex;flex-wrap:wrap;justify-content:center;gap:8px;
-  margin-top:clamp(20px,3.4vh,38px);
-}
-.hero-pills span{
-  display:inline-flex;align-items:center;height:34px;padding:0 15px;
-  border:.8px solid var(--line);border-radius:4px;font-size:14px;letter-spacing:.06em;
-}
-.hero .drop{
-  width:.8px;background:var(--ink);height:clamp(40px,7vh,90px);
-  margin-top:clamp(24px,4vh,52px);
+
+/* 沒有三欄空間就疊起來。giftee 手機版（≤991px）也是 flex-direction:column，
+   標語在上、照片在下，而且標語貼近頂部（實測距頂 77px）不置中 */
+@media (width<=860px){
+  .hero{
+    grid-template-columns:1fr;align-content:start;
+    gap:clamp(28px,5vh,48px);
+    padding:clamp(76px,11vh,104px) var(--gut) clamp(40px,6vh,72px);
+  }
+  .hero-copy,.hero-figure{grid-column:1;justify-self:start}
+  .hero h1{font-size:clamp(26px,6.4vw,40px);letter-spacing:.3em}
+  /* 標語靠上之後，剩下的高度全部給照片——照片成為手機封面的主體 */
+  .hero-figure img{width:auto;height:min(52svh,460px);max-height:none}
 }
 
 /* ── 封面浮卡（可疊多張，往左滑換下一張）── */
@@ -756,8 +804,9 @@ body.editing>#editor{display:block !important}
   .stop.past{opacity:1}
   .stop.past>time{text-decoration:none}
   .stop.past h4,.stop.past h4 a{color:var(--ink)}
-  .hero{min-height:0;padding:24px 0}
-  .hero .drop,.card-deck{display:none}
+  .hero{min-height:0;padding:24px 0;grid-template-columns:1fr}
+  /* 紙本不印封面照：整版滿版照片吃墨，而且紙上要的是資訊不是氣氛 */
+  .card-deck,.hero-figure{display:none}
   /* 換日是螢幕上的行為；紙本必須印出全部天數 */
   .js .day:not(.is-on){display:block}
   .day{break-inside:auto;padding-top:18px}
@@ -813,14 +862,18 @@ body.editing>#editor{display:block !important}
 {%- set cards = ns.live_cards + ns.note_cards -%}
 <a class="skip" href="#itinerary">跳至行程</a>
 <header class="hero">
-  <h1>{{ trip.title }}</h1>
-  <p class="lead">{{ trip.num_days }} 天 {{ trip.travelers }} 人。每天去哪、怎麼去、花多少，都在這一頁。</p>
-  <div class="hero-pills">
-    <span>{{ trip.range_label }}</span>
-    <span>{{ trip.num_days }} 天</span>
-    <span>{{ trip.travelers }} 人</span>
-    <span>預算 {{ money(trip.budget) }}</span>
+  {#- 封面照 giftee.co.jp：左欄只有標語，沒有說明句、沒有 pills、沒有引導線。
+      標語用小字＋極寬字距＋Regular 字重，刻意退到背景、把視覺讓給照片 -#}
+  <div class="hero-copy">
+    <h1>{{ trip.title }}</h1>
   </div>
+
+  {# 照片內嵌成 data: URI，見 _hero_image.j2 的說明 #}
+  <figure class="hero-figure">
+    <img src="{% include '_hero_image.j2' %}" width="800" height="1200"
+         alt="高千穗峽真名井瀑布，一艘小船划過瀑布下方">
+    <figcaption>攝影：睿豪 周 / Pexels</figcaption>
+  </figure>
 
   {%- if cards %}
   <div class="card-deck" id="card-deck">
@@ -843,14 +896,14 @@ body.editing>#editor{display:block !important}
     {%- endfor %}
   </div>
   {%- endif %}
-
-  <div class="drop"></div>
 </header>
 
 <nav class="sticky-nav" aria-label="快速跳轉">
   <div class="nav-inner">
+  {#- 「緊急」永遠留在列上、不收進抽屜：人在日本出事時要立刻按到，
+      多一層漢堡就是多一次點擊。其餘四條在手機版收進抽屜 -#}
   <div class="nav-links">
-    {% if trip.emergency %}<a href="#emergency">緊急</a>{% endif %}
+    {% if trip.emergency %}<a class="nav-urgent" href="#emergency">緊急</a>{% endif %}
     <a href="#itinerary">行程</a>
     <a href="#budget">花費</a>
     {%- if notes %}<a href="#notes">提醒</a>{% endif %}
@@ -862,6 +915,14 @@ body.editing>#editor{display:block !important}
       <i></i><i></i><i></i>
     </button>
     <div class="tools-menu" id="tools-menu">
+      {#- 手機版把導覽併進同一個抽屜，避免列上出現兩個一模一樣的漢堡鍵。
+          桌機 display:none，所以不會被 Tab 走到，焦點數不變 -#}
+      <div class="drawer-links">
+        <a href="#itinerary">行程</a>
+        <a href="#budget">花費</a>
+        {%- if notes %}<a href="#notes">提醒</a>{% endif %}
+        {%- if trip.packing %}<a href="#packing">檢查</a>{% endif %}
+      </div>
       <button class="nav-tool" type="button" data-toggle="edit" aria-label="編輯行程資料">✎</button>
       <button class="nav-tool" type="button" data-toggle="theme" aria-pressed="false" aria-label="切換深色模式">🌙</button>
       <button class="nav-tool" type="button" data-toggle="size" aria-pressed="false" aria-label="切換大字模式">A⁺</button>
