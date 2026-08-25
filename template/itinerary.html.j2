@@ -581,6 +581,8 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
   font-size:clamp(17px,1.6vw,21px);line-height:1.7;letter-spacing:.06em;margin:16px 0 0;
 }
 .day-weather{margin:14px 0 0;font-size:14px;line-height:1.8;color:var(--muted)}
+/* 預報來源：比天氣本身再淡一階，換行自己站一行，不跟氣溫擠在一起 */
+.wx-src{display:block;font-size:12px;letter-spacing:.04em;opacity:.72}
 /* 當日小提醒：跟天氣同一種灰，字級一樣，只用行距分開 */
 .day-note{margin:6px 0 0;font-size:14px;line-height:1.8;color:var(--muted)}
 .day-tools{margin-top:16px}
@@ -1189,15 +1191,13 @@ body.editing>#editor{display:block !important}
 <section class="section" id="itinerary">
   <div class="section-heading">
     <h2>行程</h2>
-    {#- 其餘三區的 h2 底下都有一行說明，只有這裡沒有，讀起來像另一份文件。
-        順帶把「一次只顯示一天」這個看不見的機制講出來 -#}
-    <p>一天一頁。用下方箭頭或鍵盤左右鍵翻日。</p>
   </div>
 
   <div class="days">
   {% for day in days %}
     <section class="day" id="day-{{ day.day_no }}" data-date="{{ day.date }}"
-             data-theme-text="{{ day.theme or '自由安排' }}"
+             {# 換日列上顯示的名字。主題那句在左欄已經有了，這裡只要「翻到第幾天」 #}
+             data-theme-text="DAY {{ day.day_no }}"
              aria-label="Day {{ day.day_no }} {{ day.date_label }}">
       <div class="day-grid">
         <div class="day-aside">
@@ -1205,8 +1205,14 @@ body.editing>#editor{display:block !important}
             <small>{{ day.date_label }} · {{ day.weekday }}</small>
           </b>
           <h3>{{ day.theme or "自由安排" }}</h3>
-          {#- 左欄只留「當地氣候 + 當日小提醒」，整串景點鏈右邊的時間軸就看得到 -#}
-          {% if day.weather %}<p class="day-weather">{{ day.weather }}</p>{% endif %}
+          {#- 左欄只留「當地氣候 + 當日小提醒」，整串景點鏈右邊的時間軸就看得到。
+              weather_live 是氣象廳預報（scripts/update_weather.py 每天更新），只在
+              行程進入 7 天預報範圍後才有；還沒有就顯示 trip.json 原本的氣候描述 -#}
+          {% if day.weather_live %}
+          <p class="day-weather">{{ day.weather_live.text }}
+            <span class="wx-src">氣象廳{% if day.weather_live.scope %} {{ day.weather_live.scope }}{% endif %} · {{ day.weather_live.updated }} 發布</span>
+          </p>
+          {% elif day.weather %}<p class="day-weather">{{ day.weather }}</p>{% endif %}
           {% if day.note %}<p class="day-note">{{ day.note }}</p>{% endif %}
           {% if day.route_url %}
           <div class="day-tools">

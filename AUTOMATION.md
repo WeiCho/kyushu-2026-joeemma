@@ -50,8 +50,9 @@ python3 render.py .        # 讀 ./trip.json → 產出 行程表.html + PWA 檔
 
 | 項目 | 值 |
 |---|---|
-| Workflow | `.github/workflows/takachiho.yml` |
+| Workflow | `.github/workflows/takachiho.yml`（同一個 job 也順便更新天氣，見第 3 節） |
 | 腳本 | `scripts/update_takachiho.py`（只用 Python 標準庫） |
+| 名稱 | 「行程每日更新（划船狀態・天氣預報）」（檔名仍是 takachiho.yml，保留 Actions 歷史） |
 | 時間 | 每天 **09:04 JST**（cron `4 0 * 8,9,10 *`，UTC），只在 8・9・10 月執行 |
 | 手動執行 | Actions 頁面 → 「高千穗峽划船狀態每日更新」→ Run workflow |
 | 產物 | 只 commit `trip.json`；HTML/PWA 由同一個 job 重新 render 後直接部署 Pages |
@@ -76,8 +77,42 @@ python3 render.py .        # 讀 ./trip.json → 產出 行程表.html + PWA 檔
 
 ---
 
+## 3. 已完成：每日天氣預報（氣象廳 JMA）
+
+行程左欄原本寫死一句「福岡市區 16–24°C，入夜微涼」，現在改抓**氣象廳官方預報**顯示在同一個位置。
+
+| 項目 | 值 |
+|---|---|
+| 腳本 | `scripts/update_weather.py`（只用 Python 標準庫） |
+| 來源 | `https://www.jma.go.jp/bosai/forecast/data/forecast/{府縣code}.json`（無金鑰、無流量限制） |
+| 執行 | 併在 `takachiho.yml` 裡，每天 09:04 JST 跟划船狀態一起跑 |
+| 寫入欄位 | `days[].weather_live` = `{"text": "福岡 18–24°C・多雲時晴・降雨 30%", "updated": "10/14 17:00", "scope": "週間預報"（只有第 4～7 天才有）}` |
+
+### 每天抓哪一區：`days[].weather_area`
+```json
+"weather_area": {"office": "400000", "area": "400010", "spot": "82182", "label": "福岡"}
+```
+- `office` 府縣預報區（福岡 400000／熊本 430000／大分 440000／宮崎 450000）
+- `area` 一次細分區（福岡地方 400010、北九州地方 400020、阿蘇地方 430020、大分中部 440010、宮崎北部山沿い 450040…）
+- `spot` 溫度觀測點（福岡 82182、八幡 82056、阿蘇乙姫 86111、大分 83216、高千穗 87041…）
+- `label` 手冊上顯示的地名，想改文字只改這裡
+
+各縣有哪些區碼，直接開上面那個 JSON 看 `areas[].area`。
+
+### 行為
+- 氣象廳只給到 **7 天後**：前 3 天用細分區預報（地區細），第 4～7 天退回府縣層級的週間預報，並在 `weather_live.scope` 標「週間預報」，手冊上會顯示出來，不會讓人誤以為是當地精確數字。
+- 行程還在 7 天外（現在就是）→ 印「還在預報範圍外」、**不寫檔**、離開碼 0。樣板自動退回顯示 `days[].weather` 那句靜態描述。
+- 抓取失敗 → 離開碼 1。這步在 workflow 裡設了 `continue-on-error`，天氣掛掉不會連帶擋掉划船狀態的更新。
+- 天氣代碼→中文對照在腳本最上面的 `TELOP_ZH`；查不到的代碼用百位數退回「晴／多雲／雨／雪」。
+
+### 模板
+`template/itinerary.html.j2` 搜 `day-weather`：`weather_live` 有值就顯示預報 + 一行來源（`.wx-src`），沒有就顯示 `weather`。
+
+---
+
 ## 摘要給接手者
 - `live_status` 功能已上線。
 - 每日更新改用 GitHub Actions（`takachiho.yml`），2026-08-02 起每天 09:04 JST 自動跑，無待辦。
+- 同一個 workflow 也更新天氣預報（`scripts/update_weather.py`）；行程進入 10/8 之後才會真的抓到值，在那之前顯示 trip.json 原本的靜態氣候描述。
 - Claude 雲端 routine 已停用（該環境連不到來源網站）。
 - 行程結束（10/20）或 10 月底可刪掉 workflow。

@@ -1,4 +1,4 @@
-name: 高千穗峽划船狀態每日更新
+name: 行程每日更新（划船狀態・天氣預報）
 
 on:
   schedule:
@@ -32,6 +32,11 @@ jobs:
       - name: 抓取官網並更新 trip.json
         run: python scripts/update_takachiho.py trip.json
 
+      # 天氣抓不到不該連帶擋掉划船狀態的更新，所以這步失敗只亮紅字、不中斷 job
+      - name: 抓氣象廳預報並更新 trip.json
+        continue-on-error: true
+        run: python scripts/update_weather.py trip.json
+
       - name: Commit & push
         id: commit
         env:
@@ -42,11 +47,29 @@ jobs:
             echo "trip.json 無變化，不 commit"
             exit 0
           fi
+          git show HEAD:trip.json > /tmp/trip.prev.json
           msg=$(python - <<'PY'
           import json
-          s = json.load(open("trip.json", encoding="utf-8"))
-          it = [i for d in s["days"] for i in d["items"] if "高千穗峽" in i.get("name", "")][0]["live_status"]
-          print(f"chore: 高千穗峽划船運行狀態每日更新（{it['date_label']} {it['status']}）")
+
+          def boat(doc):
+              for day in doc["days"]:
+                  for item in day["items"]:
+                      if "高千穗峽" in item.get("name", ""):
+                          return item.get("live_status")
+              return None
+
+          new = json.load(open("trip.json", encoding="utf-8"))
+          prev = json.load(open("/tmp/trip.prev.json", encoding="utf-8"))
+          bits = []
+          b = boat(new)
+          if b and b != boat(prev):
+              bits.append(f"划船 {b['date_label']} {b['status']}")
+          old_wx = {d["date"]: d.get("weather_live") for d in prev["days"]}
+          n = sum(1 for d in new["days"]
+                  if d.get("weather_live") and d["weather_live"] != old_wx.get(d["date"]))
+          if n:
+              bits.append(f"天氣預報 {n} 天")
+          print("chore: 每日更新（" + "、".join(bits or ["trip.json"]) + "）")
           PY
           )
           git config user.name "github-actions[bot]"

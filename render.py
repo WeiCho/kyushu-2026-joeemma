@@ -117,7 +117,8 @@ def validate(data):
         raise TripError("trip.json 頂層必須是物件")
 
     trip = _require(data, "trip", "trip.json")
-    for key in ("title", "destination", "currency"):
+    # destination 是選用的：封面拿掉那一行之後，trip.json 可以整個不寫
+    for key in ("title", "currency"):
         _require(trip, key, "trip")
     if "budget" not in trip:
         raise TripError("trip 缺少必填欄位「budget」")
@@ -297,8 +298,10 @@ def enrich(data):
         end_label = f"{end.year}.{end_label}"
     trip["range_label"] = f"{start.year}.{start.month:02d}.{start.day:02d} – {end_label}"
     if not trip.get("hero_word"):
-        # hero 浮水印：取目的地最後一段（「日本・東京」→「東京」），最多 4 字
-        segment = re.split(r"[・·,，/\s]+", str(trip["destination"]).strip())[-1]
+        # hero 浮水印：取目的地最後一段（「日本・東京」→「東京」），最多 4 字。
+        # 沒寫 destination 就退回標題
+        source = str(trip.get("destination") or trip["title"]).strip()
+        segment = re.split(r"[・·,，/\s]+", source)[-1]
         trip["hero_word"] = segment[:4] or str(trip["title"])[:4]
 
     days = []
