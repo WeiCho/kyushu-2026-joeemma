@@ -17,8 +17,8 @@
 {#- 銜接引子：交代下一區「為何是下一區」，整行可點。
     只用在確實有邏輯關係的兩處；緊急→行程那一跳沒有邏輯關係，
     刻意不放，交給該區既有的深→淺色彩轉場撐住 -#}
-{%- macro handoff(lead, anchor, label) -%}
-<div class="handoff"><a href="#{{ anchor }}">{{ lead }}<b>{{ label }}&nbsp;→</b></a></div>
+{%- macro handoff(lead) -%}
+<div class="handoff">{{ lead }}</div>
 {%- endmacro -%}
 {%- set TYPE_META = {
   "景點": {"icon": "🏛", "cls": "t-see"},
@@ -406,25 +406,22 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
   margin:6px 0 0;color:var(--muted);font-size:15px;letter-spacing:.04em;line-height:1.8;
 }
 /* ── 銜接引子（.handoff）與頁尾收束（.coda）──
-   兩者都只用全站唯一的 0.8px 細線與既有的下劃線動效，不引入新視覺 */
-.handoff{margin-top:clamp(40px,6vh,72px);border-top:.8px solid var(--line);display:flex;justify-content:flex-end}
-.handoff a{
-  position:relative;display:inline-flex;align-items:baseline;gap:1em;
-  padding:19px 0;min-height:44px;   /* 點擊區撐足 44 */
-  text-decoration:none;color:var(--muted);font-size:15px;letter-spacing:.06em;
+   不畫線也不鋪色塊：靠一段大留白把上下兩區斷開，捲到時大字才浮出來。
+   下一區的標題就在不到一屏之外，所以這裡只提問、不寫區名，也不做連結 */
+.handoff{
+  padding:clamp(80px,14vh,160px) 0;
+  text-align:center;color:var(--ink);
+  font-size:clamp(26px,7vw,32px);letter-spacing:.06em;line-height:1.5;
+  text-wrap:balance;              /* 窄螢幕折行時左右兩行長度自動配平 */
+  /* 與各章節同一套 --fade：預設 1，所以沒有 JS 或要求減少動態時直接是實心 */
+  opacity:var(--fade,1);
+  transform:translateY(calc((1 - var(--fade,1)) * 12px));
 }
-.handoff a b{font-weight:var(--w);color:var(--ink)}
-/* 與導覽列同一手：底線由左往右長出來 */
-.handoff a::after{
-  content:"";position:absolute;left:0;right:100%;bottom:13px;height:.8px;background:currentColor;
-  transition:right .5s var(--ease);
-}
-.handoff a:hover::after,.handoff a:focus-visible::after{right:0}
 
 .coda{max-width:1440px;margin:0 auto;padding-inline:var(--gut)}
 .coda>div{
-  border-top:.8px solid var(--line);
-  padding:clamp(40px,6vh,72px) 0 clamp(48px,8vh,96px);
+  /* 收束同樣不用線，改以留白撐開 */
+  padding:clamp(64px,10vh,120px) 0 clamp(48px,8vh,96px);
   display:flex;justify-content:space-between;align-items:baseline;gap:14px;flex-wrap:wrap;
 }
 .coda .d{font-size:14px;letter-spacing:.08em;color:var(--muted)}
@@ -1256,7 +1253,7 @@ body.editing>#editor{display:block !important}
     <button class="arw" id="day-next" type="button" aria-label="後一天">→</button>
   </div>
 
-  {{ handoff("六天實際要花多少", "budget", "花費") }}
+  {{ handoff("六天實際要花多少") }}
 </section>
 
 </div>{# /band-b #}
@@ -1312,7 +1309,7 @@ body.editing>#editor{display:block !important}
   </div>
 
   {%- if notes or trip.packing %}
-  {{ handoff("出發前還有事要確認", ("notes" if notes else "packing"), ("提醒 · 檢查" if notes and trip.packing else ("提醒" if notes else "檢查"))) }}
+  {{ handoff("出發前還有事要確認") }}
   {%- endif %}
 </section>
 </div>{# /band-c #}
@@ -1771,7 +1768,7 @@ body.editing>#editor{display:block !important}
   // 這樣同一帶裡的第二個章節（檢查）也會等捲到才出現，動畫一致
   var bands = [].slice.call(document.querySelectorAll(".band"));
   if (ov) bands.push(ov);
-  var fades = [].slice.call(document.querySelectorAll("main .section"));
+  var fades = [].slice.call(document.querySelectorAll("main .section, main .handoff"));
   if (ov) fades.push(ov);
   // 使用者要求減少動態時完全不碰 --open/--fade，兩者的 CSS 預設值就是「已展開」
   var wantsMotion = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
