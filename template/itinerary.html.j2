@@ -18,7 +18,7 @@
     只用在確實有邏輯關係的兩處；緊急→行程那一跳沒有邏輯關係，
     刻意不放，交給該區既有的深→淺色彩轉場撐住 -#}
 {%- macro handoff(lead) -%}
-<div class="handoff">{{ lead }}</div>
+<div class="handoff"><span>{{ lead }}</span></div>
 {%- endmacro -%}
 {%- set TYPE_META = {
   "景點": {"icon": "🏛", "cls": "t-see"},
@@ -409,14 +409,28 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
    不畫線也不鋪色塊：靠一段大留白把上下兩區斷開，捲到時大字才浮出來。
    下一區的標題就在不到一屏之外，所以這裡只提問、不寫區名，也不做連結 */
 .handoff{
-  padding:clamp(80px,14vh,160px) 0;
-  text-align:center;color:var(--ink);
+  /* 留白綁「視窗寬度」而非 vh：綁 vh 的話手機（螢幕高）反而比桌機留得多。
+     這是全站唯一不綁 --sec/vh 的間距，刻意的例外 */
+  --pad:clamp(64px,12vw,220px);
+  /* 下一個章節自己有 --sec 的上留白。--pad 比它大就在下方補差額、比它小就用負 margin
+     把它拉回來，兩者一正一負只會有一個生效，效果是下方永遠剛好等於 --pad */
+  padding:var(--pad) 0 max(0px, calc(var(--pad) - var(--sec)));
+  margin-bottom:min(0px, calc(var(--pad) - var(--sec)));
+  display:flex;align-items:center;justify-content:center;
+  gap:clamp(8px,2.5vw,28px);
+  color:var(--ink);
   font-size:clamp(26px,7vw,32px);letter-spacing:.06em;line-height:1.5;
-  text-wrap:balance;              /* 窄螢幕折行時左右兩行長度自動配平 */
   /* 與各章節同一套 --fade：預設 1，所以沒有 JS 或要求減少動態時直接是實心 */
   opacity:var(--fade,1);
   transform:translateY(calc((1 - var(--fade,1)) * 12px));
 }
+/* 標題兩側的短線。用偽元素，螢幕閱讀器只會讀到那句話。
+   flex:1 讓線在窄螢幕自動縮短甚至歸零——版面吃緊時先犧牲裝飾，字永遠單行 */
+.handoff::before,.handoff::after{
+  content:"";flex:1 1 0;min-width:0;max-width:clamp(28px,6vw,72px);
+  height:.8px;background:var(--line);
+}
+.handoff span{flex:0 1 auto;text-align:center;text-wrap:balance}
 
 .coda{max-width:1440px;margin:0 auto;padding-inline:var(--gut)}
 .coda>div{
