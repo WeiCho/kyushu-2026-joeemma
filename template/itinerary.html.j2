@@ -336,14 +336,16 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
   /* 右緣對齊內容區右緣：章節是 max-width 1440 置中再加左右留白，
      所以右邊要留「置中剩餘的一半 + 留白」，寬螢幕才不會比文字更靠邊 */
   position:fixed;right:calc((100% - min(100%,1440px)) / 2 + var(--gut));
-  bottom:calc(24px + var(--nowbar-h, 0px));z-index:35;margin:0;display:block;
+  bottom:calc(24px + var(--nowbar-h, 0px));z-index:35;margin:0;
   width:min(var(--live-box),calc(100% - var(--gut)*2));
-  height:var(--live-h);
+  /* 卡片全部疊在同一個 grid 格子裡，容器高度就等於「最高的那張」。
+     早期寫死 height 讓卡片 position:absolute，內容多一行就會溢出卡片外 */
+  display:grid;grid-template:1fr/1fr;align-items:start;
   touch-action:pan-y;   /* 左右手勢留給換卡，上下仍可正常捲頁 */
 }
 /* 疊在一起：只有最上面那張完全顯示，後面的往上縮一點露出邊 */
 .js .card-deck .card-live{
-  position:absolute;inset:0;margin:0;
+  position:relative;grid-area:1/1;margin:0;
   box-shadow:0 2px 14px rgba(45,37,25,.09);
   transform:translate3d(0,var(--dy,0),0) scale(var(--sc,1));
   opacity:var(--op,1);z-index:var(--z,1);
@@ -367,7 +369,8 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 @media (prefers-reduced-motion:no-preference){
   .js .card-deck{
     opacity:0;transform:translateY(16px);
-    transition:opacity .55s var(--ease),transform .55s var(--ease);
+    /* height：換到文字較長的卡時，卡片高度平順長出來而不是瞬間跳 */
+    transition:opacity .55s var(--ease),transform .55s var(--ease),height .42s var(--ease);
   }
   .js .card-deck.is-in{opacity:1;transform:none}
   /* 開始往下捲就退場 */
@@ -1699,6 +1702,10 @@ body.editing>#editor{display:block !important}
         }
       });
       dots.forEach(function(d, i){ d.setAttribute("aria-current", i === deckCur ? "true" : "false"); });
+      // 每張卡文字長短不同：容器高度跟著最上面那張走。
+      // 卡片是 align-items:start 的疊層，offsetHeight 讀到的就是它自己的內容高
+      var h = deckCards[deckCur].offsetHeight;
+      if (h) liveCard.style.height = h + "px";
     }
     function go(step){
       deckCur = (deckCur + step + deckCards.length) % deckCards.length;
@@ -1748,6 +1755,11 @@ body.editing>#editor{display:block !important}
     liveCard.addEventListener("pointercancel", endDrag);
     liveCard.addEventListener("pointerleave", endDrag);
     layout(0);
+    // 換行數會隨寬度與字型載入而變，兩者都重量一次
+    window.addEventListener("resize", function(){ layout(0); });
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(function(){ layout(0); });
+    }
   }
 
   // ── 有 data-hours 的卡片：看「今天（日本時間）有沒有營業」──
