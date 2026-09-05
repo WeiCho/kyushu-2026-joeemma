@@ -634,16 +634,15 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
   .day-grid{grid-template-columns:minmax(280px,.95fr) minmax(0,1.85fr);gap:clamp(44px,6vw,120px)}
   .day-aside{border-right:.8px solid var(--line);padding-right:clamp(22px,2.8vw,52px)}
 }
-.day-no{
-  display:block;font-family:var(--latin);font-size:clamp(48px,7vw,100px);line-height:.95;
-  letter-spacing:.01em;
+/* 左欄的大字。字級刻意停在 31px、低於區塊大標的 38px：主題最長的一天有
+   24 個字，再大就會在窄欄裡疊成四五行，把天氣與導航鍵推到摺線以下 */
+.day-name{
+  font-size:clamp(23px,2.6vw,31px);line-height:1.45;letter-spacing:.04em;
+  text-wrap:balance;
 }
-.day-no small{
-  display:block;font-family:var(--latin);font-size:15px;letter-spacing:.1em;
-  margin-top:8px;color:var(--muted);
-}
-.day-aside h3{
-  font-size:clamp(17px,1.6vw,21px);line-height:1.7;letter-spacing:.06em;margin:16px 0 0;
+.day-date{
+  margin:12px 0 0;font-family:var(--latin);font-size:15px;letter-spacing:.1em;
+  color:var(--muted);
 }
 .day-weather{margin:14px 0 0;font-size:14px;line-height:1.8;color:var(--muted)}
 /* 預報來源：比天氣本身再淡一階，換行自己站一行，不跟氣溫擠在一起 */
@@ -1281,10 +1280,10 @@ body.editing>#editor{display:block !important}
              aria-label="Day {{ day.day_no }} {{ day.date_label }}">
       <div class="day-grid">
         <div class="day-aside">
-          <b class="day-no">{{ "%02d" | format(day.day_no) }}
-            <small>{{ day.date_label }} · {{ day.weekday }}</small>
-          </b>
-          <h3>{{ day.theme or "自由安排" }}</h3>
+          {#- 上方的跳日列已經把「現在是第幾天」講得很清楚，左欄的大字改讓給
+              當天在做什麼；日期退成標題下的一行小字 -#}
+          <h3 class="day-name">{{ day.theme or "自由安排" }}</h3>
+          <p class="day-date">{{ day.date_label }} · {{ day.weekday }}</p>
           {#- 左欄只留「當地氣候 + 當日小提醒」，整串景點鏈右邊的時間軸就看得到。
               weather_live 是氣象廳預報（scripts/update_weather.py 每天更新），只在
               行程進入 7 天預報範圍後才有；還沒有就顯示 trip.json 原本的氣候描述 -#}
