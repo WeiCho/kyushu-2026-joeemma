@@ -547,6 +547,57 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 .alerts-section .section-heading{margin-bottom:0}
 .alerts-body{padding-top:clamp(20px,3.4vh,40px)}
 
+/* ── 每日行程：跳日列 ── */
+/* 六格等分排一行，任何天數都不會有一格特別寬；天數多到擠不下才換行。
+   不用 grid-template-columns:repeat(6,...)：天數是資料決定的，寫死 6 會在
+   行程加減一天時破版 */
+.daypick{
+  display:flex;flex-wrap:wrap;gap:8px;
+  margin-top:calc(clamp(28px,5vh,60px) * -.35);   /* 標題下方，比章節留白再靠近一點 */
+}
+.dp{
+  /* 上限 136px：桌機版心近 1400px，六格均分會變成 212px 的大方塊，
+     選中格那面墨色在這種留白很多的版面上太重。有上限之後整列往左收，
+     左緣跟「行程」大標與底下的大字日期切齊；手機寬度不夠時才回到均分 */
+  flex:1 1 0;min-width:52px;max-width:136px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+  min-height:64px;padding:8px 4px;border-radius:4px;
+  /* 透明框先佔位，選中時才換色——不這樣的話選中會把格子撐大 1.6px，
+     整列跟著抖一下 */
+  border:.8px solid transparent;
+  text-decoration:none;color:var(--muted);
+  transition:background .35s var(--ease),color .35s var(--ease),border-color .35s var(--ease);
+  position:relative;
+}
+.dp b{font-family:var(--latin);font-size:clamp(19px,2.2vw,26px);line-height:1;letter-spacing:.02em;font-weight:400}
+/* 日期小字不加 opacity：淡掉後 12px 的對比會掉到 4.5:1 以下。
+   靠字級和 currentColor 分層就夠 */
+.dp small{font-family:var(--latin);font-size:12px;letter-spacing:.06em;line-height:1;white-space:nowrap}
+.dp small i{font-style:normal;margin-left:.35em}
+.dp:hover{color:var(--ink);border-color:var(--line)}
+/* 選中：實心反白。六格一排時線框的粗細差在手機上幾乎看不出來，
+   要讓「現在在第幾天」用餘光就認得，只有翻色夠力 */
+.dp[aria-current]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+/* 今日：右上角一點。用「今日」兩個字會撐破等分的格寬 */
+.dp.is-today::after{
+  content:"";position:absolute;top:7px;right:7px;width:5px;height:5px;border-radius:50%;
+  background:var(--warm);
+}
+/* 反白格上 --warm 對墨底只有 1.9:1，非文字元件要 3:1，改用紙色 */
+.dp[aria-current].is-today::after{background:var(--paper)}
+/* 手機一律走緊縮尺寸。門檻壓在 460 而不是 400：430（Pro Max）、412（Pixel）
+   這一段用基準值算出來是 6×52+5×8=352，比扣掉版心留白後的可用寬還多，會掉成兩行。
+   320px（SE 一代、摺疊機外螢幕）則靠 40 的下限與 5 的間距守住一行六格 */
+@media (width<460px){
+  .daypick{gap:5px}
+  .dp{min-width:40px;min-height:58px;padding:6px 2px;gap:4px}
+  .dp small{font-size:11px;letter-spacing:.02em}
+}
+/* 400 以下連星期都塞不進去，先讓位——日期本身比較好認 */
+@media (width<400px){
+  .dp small i{display:none}
+}
+
 /* ── 每日行程：左右換日 ── */
 /* 換日列：放在當天內容之後，不畫上下線 */
 .daybar{
@@ -958,7 +1009,7 @@ body.editing>#editor{display:block !important}
   :root[data-theme]{
     --paper:#fff;--ink:#2d2519;--line:#c9c7bf;--card:#fff;--muted:#5b554d;--warm:#8c2f22;
   }
-  .sticky-nav,.now-bar,.pending-banner,.day-tools,.daybar,.loc,.go,.handoff,.skip{display:none}
+  .sticky-nav,.now-bar,.pending-banner,.day-tools,.daybar,.daypick,.loc,.go,.handoff,.skip{display:none}
   .band::before{background:#fff !important}
   .section{opacity:1 !important}
   /* 紙本印的是「計畫」不是「進度」，不帶今日狀態 */
@@ -1207,6 +1258,21 @@ body.editing>#editor{display:block !important}
     <h2>行程</h2>
   </div>
 
+  {# 跳日列：六天一次攤在眼前，直接點到要看的那天。
+     底下的 .daybar 是「看完一天翻下一頁」，這裡是「我現在就要第四天」，
+     兩者服務的動作不同，所以並存。用 <a href="#day-N"> 而不是 tablist：
+     全域左右鍵已經綁在換日上，tab 的 roving 焦點會跟它搶按鍵；
+     而且錨點天生可分享、沒 JS 也還能跳。 #}
+  <nav class="daypick" aria-label="選擇日期">
+  {% for day in days %}
+    <a class="dp" href="#day-{{ day.day_no }}"
+       aria-label="Day {{ day.day_no }} {{ day.date_label }} {{ day.weekday }}">
+      <b>{{ "%02d" | format(day.day_no) }}</b>
+      <small>{{ day.date_short }}<i>{{ day.weekday_short }}</i></small>
+    </a>
+  {% endfor %}
+  </nav>
+
   <div class="days">
   {% for day in days %}
     <section class="day" id="day-{{ day.day_no }}" data-date="{{ day.date }}"
@@ -1438,6 +1504,7 @@ body.editing>#editor{display:block !important}
   var prevBtn = document.getElementById("day-prev");
   var nextBtn = document.getElementById("day-next");
   var themeEl = document.getElementById("day-theme");
+  var pickEls = Array.prototype.slice.call(document.querySelectorAll(".daypick .dp"));
   var cur = 0;
 
   function showDay(n, focus){
@@ -1455,6 +1522,13 @@ body.editing>#editor{display:block !important}
         themeEl.appendChild(badge);
       }
     }
+    // 跳日列跟著標出當前那天；今日的點也在這裡上（todayMode 會在標記
+    // 完 .today 之後再呼叫一次 showDay，所以順序不會漏）
+    pickEls.forEach(function(a, k){
+      if (k === cur) a.setAttribute("aria-current", "page");
+      else a.removeAttribute("aria-current");
+      a.classList.toggle("is-today", !!(daysEls[k] && daysEls[k].classList.contains("today")));
+    });
     if (prevBtn) prevBtn.disabled = (cur === 0);
     if (nextBtn) nextBtn.disabled = (cur === daysEls.length - 1);
     // 換日後回到「行程」章節的頂端。按鈕在頁面下方，不捲回去的話
@@ -1480,6 +1554,19 @@ body.editing>#editor{display:block !important}
     }
     return -1;
   }
+  pickEls.forEach(function(a, k){
+    a.addEventListener("click", function(e){
+      // 修飾鍵按著是「開新分頁」，別攔
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.button) return;
+      // 不讓瀏覽器自己跳錨點：那個跳法是瞬移到 section 的位置，
+      // 跟 showDay 的捲動會互相打斷
+      e.preventDefault();
+      showDay(k, true);
+      // replaceState 不塞歷史。六格點來點去若每次都進歷史，
+      // 「上一頁」會變成要按六次才離得開這頁
+      if (history.replaceState) history.replaceState(null, "", "#day-" + (k + 1));
+    });
+  });
   if (prevBtn) prevBtn.addEventListener("click", function(){ showDay(cur - 1, true); });
   if (nextBtn) nextBtn.addEventListener("click", function(){ showDay(cur + 1, true); });
   document.addEventListener("keydown", function(e){

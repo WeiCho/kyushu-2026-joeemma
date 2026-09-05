@@ -345,6 +345,10 @@ def enrich(data):
             "items": items,
             "weekday": WEEKDAYS[d.weekday()],
             "date_label": f"{d.month}月{d.day}日",
+            # 跳日列的格子只有 55px 上下，塞不下「10月15日 · 週四」，
+            # 另備一組短寫：10/15 與單字的「四」
+            "date_short": f"{d.month}/{d.day}",
+            "weekday_short": WEEKDAYS[d.weekday()][-1],
             "subtotal": subtotal,
             "day_no": day_no,
             "route_url": route_url,
