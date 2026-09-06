@@ -182,6 +182,20 @@ def validate(data):
     if not isinstance(alerts, list):
         raise TripError("alerts 必須是字串陣列")
 
+    transit = data.get("transit") or []
+    if not isinstance(transit, list):
+        raise TripError("transit 必須是陣列")
+    for t_idx, t in enumerate(transit, 1):
+        _require(t, "route", f"transit 第 {t_idx} 段")
+
+    transit_links = data.get("transit_links") or []
+    if not isinstance(transit_links, list):
+        raise TripError("transit_links 必須是陣列")
+    for l_idx, link in enumerate(transit_links, 1):
+        ctx = f"transit_links 第 {l_idx} 項"
+        _require(link, "label", ctx)
+        _require(link, "url", ctx)
+
     highlights = data.get("highlights") or []
     if not isinstance(highlights, list):
         raise TripError("highlights 必須是陣列")
@@ -396,6 +410,8 @@ def enrich(data):
         "bookings": bookings,
         "notes": data.get("notes") or [],
         "alerts": data.get("alerts") or [],
+        "transit": data.get("transit") or [],
+        "transit_links": data.get("transit_links") or [],
         "highlights": data.get("highlights") or [],
         "pending": pending,
         "totals": {
