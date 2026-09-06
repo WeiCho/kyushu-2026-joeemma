@@ -516,7 +516,15 @@
           "note": "逛街同區域解決；想吃屋台可到天神或中洲，記得屋台每人須點一杯飲料、吃完盡快結帳",
           "duration": "1.5h",
           "map_query": "博多 天神 グルメ",
-          "next_transit": "地鐵／計程車 → 住宿"
+          "next_transit": "地鐵／計程車 → 住宿",
+          "card": {
+            "title": "藥院燒肉 NIKUICHI",
+            "url": "https://www.tablecheck.com/en/yakiniku-nikuichi/reserve/message",
+            "text": "尚未訂位",
+            "date": "10/19 晚餐",
+            "tag": "9/14 開訂",
+            "body": "TableCheck 線上訂位：10/19（一）18:00、7 人\n約 9/14（一）開放預約，開放當天就要訂"
+          }
         },
         {
           "time": "21:00",
