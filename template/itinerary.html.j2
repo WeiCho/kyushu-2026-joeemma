@@ -912,6 +912,8 @@ html:not(.js) .em-card{cursor:default}
 .tr-head{display:flex;flex-wrap:wrap;gap:4px clamp(12px,2vw,26px);align-items:baseline}
 .tr-when{font-family:var(--latin);font-size:14px;color:var(--muted);flex:0 0 auto}
 .tr-route{font-size:17px;line-height:1.6}
+a.tr-route{color:inherit;text-decoration:none;border-bottom:.8px solid var(--line)}
+a.tr-route:hover{border-color:currentColor}
 .tr-meta{margin:clamp(10px,1.6vh,16px) 0 0;display:grid;gap:5px}
 .tr-meta>div{display:flex;gap:clamp(10px,1.8vw,22px);align-items:baseline;
   font-size:15px;line-height:1.8}
@@ -1438,7 +1440,12 @@ body.editing>#editor{display:block !important}
       <div class="transit-row">
         <div class="tr-head">
           {%- if t.when %}<span class="tr-when">{{ t.when }}</span>{% endif %}
+          {#- 有 url 的段落把標題本身做成連結（時刻表、官方說明頁），一律開新分頁 -#}
+          {%- if t.url %}
+          <a class="tr-route" href="{{ t.url }}" target="_blank" rel="noopener">{{ t.route }}&nbsp;↗</a>
+          {%- else %}
           <b class="tr-route">{{ t.route }}</b>
+          {%- endif %}
         </div>
         <dl class="tr-meta">
           {%- if t.line %}
