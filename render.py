@@ -187,6 +187,12 @@ def validate(data):
         raise TripError("transit 必須是陣列")
     for t_idx, t in enumerate(transit, 1):
         _require(t, "route", f"transit 第 {t_idx} 段")
+        # day 是選填：填了就歸到那一天的分頁，沒填代表「全程通用」
+        if "day" in t and t["day"] is not None:
+            if not isinstance(t["day"], int) or not 1 <= t["day"] <= len(data["days"]):
+                raise TripError(
+                    f"transit 第 {t_idx} 段的 day 必須是 1～{len(data['days'])} 的整數"
+                )
 
     transit_links = data.get("transit_links") or []
     if not isinstance(transit_links, list):
@@ -398,6 +404,13 @@ def enrich(data):
                     break
         bookings.append(booking)
 
+    # 交通按天分組：有 day 的掛到那天（交通區跟行程一樣一次只顯示一天），
+    # 沒有 day 的是「全程通用」，永遠顯示在分頁下方
+    transit = data.get("transit") or []
+    transit_common = [t for t in transit if not t.get("day")]
+    for day in days:
+        day["transit"] = [t for t in transit if t.get("day") == day["day_no"]]
+
     budget = trip["budget"]
     travelers = trip["travelers"] or 1
     by_category = sorted(
@@ -410,7 +423,8 @@ def enrich(data):
         "bookings": bookings,
         "notes": data.get("notes") or [],
         "alerts": data.get("alerts") or [],
-        "transit": data.get("transit") or [],
+        "transit": transit,
+        "transit_common": transit_common,
         "transit_links": data.get("transit_links") or [],
         "highlights": data.get("highlights") or [],
         "pending": pending,

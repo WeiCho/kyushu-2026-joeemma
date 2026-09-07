@@ -927,6 +927,25 @@ a.tr-route:hover{border-color:currentColor}
   gap:10px clamp(16px,2.6vw,32px);font-size:14.5px}
 .transit-links a{color:inherit;text-decoration:none;border-bottom:.8px solid var(--line)}
 .transit-links a:hover{border-color:currentColor}
+/* 交通按天分頁：跳日列沿用行程那一套，這裡只補分頁面板本身 */
+.tdays{overflow-anchor:none}
+.tday{padding-top:clamp(24px,4vh,48px)}
+/* 沒有 JS 時所有天照常顯示；有 JS 才切換（與 .day 同一個規則寫法） */
+.js .tday:not(.is-on){display:none}
+.tday-date{
+  margin:0 0 clamp(16px,2.4vh,26px);font-family:var(--latin);font-size:15px;
+  letter-spacing:.1em;color:var(--muted);
+}
+/* 主題那句是中文，跟著拉丁字級走會太小，另外給一階 */
+.tday-date span{font-family:inherit;font-size:14.5px;letter-spacing:.04em}
+.tday-none{margin:0;font-size:15.5px;line-height:1.9;color:var(--muted)}
+/* 沒有區間的那幾天在跳日列上淡一階，但仍可點——「這天不用自己搭」也要看得到 */
+.dp.is-thin:not([aria-current]){opacity:.55}
+.transit-common{margin-top:clamp(34px,5vh,58px)}
+.transit-common h3{
+  font-size:15px;letter-spacing:.1em;color:var(--muted);
+  margin:0 0 clamp(12px,1.8vh,18px);font-weight:400;
+}
 
 /* ── 檢查（出發前清單）── */
 /* 幾組並排，但不做成卡片：沿用全站的「無底色＋細線分隔」 */
@@ -1045,7 +1064,7 @@ body.editing>#editor{display:block !important}
   /* 紙本不印封面照：整版滿版照片吃墨，而且紙上要的是資訊不是氣氛 */
   .card-deck,.hero-figure{display:none}
   /* 換日是螢幕上的行為；紙本必須印出全部天數 */
-  .js .day:not(.is-on){display:block}
+  .js .day:not(.is-on),.js .tday:not(.is-on){display:block}
   .day{break-inside:auto;padding-top:18px}
   .day+.day{border-top:.8px solid var(--line);margin-top:18px}
   .stop{break-inside:avoid}
@@ -1373,10 +1392,75 @@ body.editing>#editor{display:block !important}
 <section class="section" id="transit">
   <div class="section-heading">
     <h2>交通</h2>
-    <p>要自己搭車的市區區間——哪條線、往哪個方向、幾號出口。包車那幾天不列。（共 {{ transit | length }} 段）</p>
+    <p>要自己搭車的市區區間——哪條線、往哪個方向、幾號出口。跟行程一樣一次看一天；包車那幾天沒有這種區間。（共 {{ transit | length }} 段）</p>
   </div>
+
+  {# 跳日列與行程那一列同一套（.daypick/.dp），只是換一組錨點。
+     沒有要自己搭車的那幾天照樣列出來——「這天不用自己搭」本身就是要知道的事，
+     把格子藏掉會讓人以為漏寫了 #}
+  <nav class="daypick" aria-label="選擇交通日期">
+  {% for day in days %}
+    <a class="dp{% if not day.transit %} is-thin{% endif %}" href="#transit-day-{{ day.day_no }}"
+       aria-label="Day {{ day.day_no }} {{ day.date_label }} {{ day.weekday }}{% if not day.transit %}（不用自己搭車）{% endif %}">
+      <b>{{ "%02d" | format(day.day_no) }}</b>
+      <small>{{ day.date_short }}<i>{{ day.weekday_short }}</i></small>
+    </a>
+  {% endfor %}
+  </nav>
+
+  <div class="tdays">
+  {% for day in days %}
+    <section class="tday" id="transit-day-{{ day.day_no }}" data-date="{{ day.date }}"
+             data-theme-text="DAY {{ day.day_no }}"
+             aria-label="Day {{ day.day_no }} {{ day.date_label }} 的交通">
+      <p class="tday-date">{{ day.date_label }} · {{ day.weekday }}　<span>{{ day.theme or "自由安排" }}</span></p>
+      {% if day.transit %}
+      <div class="transit-list">
+      {% for t in day.transit %}
+      <div class="transit-row">
+        <div class="tr-head">
+          {%- if t.when %}<span class="tr-when">{{ t.when }}</span>{% endif %}
+          {#- 有 url 的段落把標題本身做成連結（時刻表、官方說明頁），一律開新分頁 -#}
+          {%- if t.url %}
+          <a class="tr-route" href="{{ t.url }}" target="_blank" rel="noopener">{{ t.route }}&nbsp;↗</a>
+          {%- else %}
+          <b class="tr-route">{{ t.route }}</b>
+          {%- endif %}
+        </div>
+        <dl class="tr-meta">
+          {%- if t.line %}
+          <div><dt>路線</dt><dd>
+            {%- if t.line_color %}<i class="tr-dot" style="--lc:{{ t.line_color }}"></i>{% endif %}{{ t.line }}</dd></div>
+          {%- endif %}
+          {%- if t.platform %}<div><dt>方向</dt><dd>{{ t.platform }}</dd></div>{% endif %}
+          {%- if t.time %}<div><dt>時間</dt><dd>{{ t.time }}</dd></div>{% endif %}
+          {%- if t.fare %}<div><dt>票價</dt><dd>{{ t.fare }}</dd></div>{% endif %}
+          {%- if t.exit %}<div><dt>出口</dt><dd>{{ t.exit }}</dd></div>{% endif %}
+          {%- if t.warn %}<div class="tr-warn"><dt>注意</dt><dd>{{ t.warn }}</dd></div>{% endif %}
+        </dl>
+      </div>
+      {% endfor %}
+      </div>
+      {% else %}
+      <p class="tday-none">這天沒有要自己搭車的區間。</p>
+      {% endif %}
+    </section>
+  {% endfor %}
+  </div>
+
+  <div class="daybar">
+    <button class="arw" id="tr-prev" type="button" aria-label="前一天">←</button>
+    <span class="th" id="tr-theme"></span>
+    <button class="arw" id="tr-next" type="button" aria-label="後一天">→</button>
+  </div>
+
+  {%- if transit_common %}
+  {# 不綁在哪一天的（付款方式之類），放在分頁下方常駐——它每天都適用，
+     藏進某一天的分頁就等於六天有五天看不到 #}
+  <div class="transit-common">
+    <h3>全程通用</h3>
     <div class="transit-list">
-    {% for t in transit %}
+    {% for t in transit_common %}
       <div class="transit-row">
         <div class="tr-head">
           {%- if t.when %}<span class="tr-when">{{ t.when }}</span>{% endif %}
@@ -1401,14 +1485,17 @@ body.editing>#editor{display:block !important}
       </div>
     {% endfor %}
     </div>
-    {%- if transit_links %}
-    {# 路線圖與時刻表一律開新分頁：那些圖在這一頁裡展開只會又大又糊 #}
-    <div class="transit-links">
-      {%- for l in transit_links %}
-      <a href="{{ l.url }}" target="_blank" rel="noopener">{{ l.label }}&nbsp;↗</a>
-      {%- endfor %}
-    </div>
-    {%- endif %}
+  </div>
+  {%- endif %}
+
+  {%- if transit_links %}
+  {# 路線圖與時刻表一律開新分頁：那些圖在這一頁裡展開只會又大又糊 #}
+  <div class="transit-links">
+    {%- for l in transit_links %}
+    <a href="{{ l.url }}" target="_blank" rel="noopener">{{ l.label }}&nbsp;↗</a>
+    {%- endfor %}
+  </div>
+  {%- endif %}
   {{ handoff("六天實際要花多少") }}
 </section>
 </div>{# /band-c #}
@@ -1559,7 +1646,7 @@ body.editing>#editor{display:block !important}
   var prevBtn = document.getElementById("day-prev");
   var nextBtn = document.getElementById("day-next");
   var themeEl = document.getElementById("day-theme");
-  var pickEls = Array.prototype.slice.call(document.querySelectorAll(".daypick .dp"));
+  var pickEls = Array.prototype.slice.call(document.querySelectorAll("#itinerary .daypick .dp"));
   var cur = 0;
 
   function showDay(n, focus){
@@ -1661,6 +1748,69 @@ body.editing>#editor{display:block !important}
     printedAll = false;
     showDay(cur);   // 列印完把畫面收回單日
   });
+
+  // ── 交通區的換日：與行程同一套操作，但各自記各自的那一天 ──
+  // 兩區距離很遠，硬要同步反而會出現「在交通區翻到 Day 5、捲回行程卻也被翻走」
+  // 這種沒人要求的連動。全域左右鍵仍然只服務行程區，不在這裡再綁一次。
+  (function(){
+    var panes = [].slice.call(document.querySelectorAll("#transit .tday"));
+    if (!panes.length) return;
+    var picks = [].slice.call(document.querySelectorAll("#transit .daypick .dp"));
+    var pv = document.getElementById("tr-prev");
+    var nx = document.getElementById("tr-next");
+    var th = document.getElementById("tr-theme");
+    var at = 0;
+
+    function show(n, focus){
+      at = Math.max(0, Math.min(panes.length - 1, n));
+      panes.forEach(function(el, k){ el.classList.toggle("is-on", k === at); });
+      if (th){
+        th.textContent = panes[at].getAttribute("data-theme-text") || "";
+        if (panes[at].classList.contains("today")){
+          var b = document.createElement("span");
+          b.className = "today-badge";
+          b.textContent = "今日";
+          th.appendChild(b);
+        }
+      }
+      picks.forEach(function(a, k){
+        if (k === at) a.setAttribute("aria-current", "page");
+        else a.removeAttribute("aria-current");
+        a.classList.toggle("is-today", !!(panes[k] && panes[k].classList.contains("today")));
+      });
+      if (pv) pv.disabled = (at === 0);
+      if (nx) nx.disabled = (at === panes.length - 1);
+      // 換完捲回交通區頂端，否則會停在下一天的中段
+      if (focus){
+        var sec = document.getElementById("transit");
+        var head = document.querySelector(".sticky-nav");
+        var off = head ? head.getBoundingClientRect().height : 0;
+        window.scrollTo({
+          top: Math.max(0, sec.getBoundingClientRect().top + window.scrollY - off - 8),
+          behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"
+        });
+      }
+    }
+    picks.forEach(function(a, k){
+      a.addEventListener("click", function(e){
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.button) return;
+        e.preventDefault();   // 錨點瞬移跟這裡的捲動會互相打斷
+        show(k, true);
+      });
+    });
+    if (pv) pv.addEventListener("click", function(){ show(at - 1, true); });
+    if (nx) nx.addEventListener("click", function(){ show(at + 1, true); });
+
+    // 開頁時直接停在今天那一格（行程區也是這個行為）
+    var start = 0;
+    var now = new Date();
+    var pad = function(n){ return String(n).padStart(2, "0"); };
+    var today = now.getFullYear() + "-" + pad(now.getMonth() + 1) + "-" + pad(now.getDate());
+    panes.forEach(function(el, k){
+      if (el.getAttribute("data-date") === today){ el.classList.add("today"); start = k; }
+    });
+    show(start);
+  })();
 
   // ── 今日模式：依裝置時鐘標出今天、灰階已過行程、浮出「下一站」 ──
   function todayMode(now){
