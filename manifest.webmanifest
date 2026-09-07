@@ -1,0 +1,17 @@
+{
+  "name": "多三公斤回台",
+  "short_name": "多三公斤",
+  "start_url": "./行程表.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f7f3ea",
+  "theme_color": "#f7f3ea",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
