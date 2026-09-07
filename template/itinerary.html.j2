@@ -938,9 +938,6 @@ a.tr-route:hover{border-color:currentColor}
 }
 /* 主題那句是中文，跟著拉丁字級走會太小，另外給一階 */
 .tday-date span{font-family:inherit;font-size:14.5px;letter-spacing:.04em}
-.tday-none{margin:0;font-size:15.5px;line-height:1.9;color:var(--muted)}
-/* 沒有區間的那幾天在跳日列上淡一階，但仍可點——「這天不用自己搭」也要看得到 */
-.dp.is-thin:not([aria-current]){opacity:.55}
 /* 全程通用那句：跟在說明後面自己站一行。字級與顏色沿用說明，
    只多推開一點行距——它和上一句是同一層資訊，不該看起來像註腳 */
 .tr-note{margin-top:10px}
@@ -1390,18 +1387,17 @@ body.editing>#editor{display:block !important}
 <section class="section" id="transit">
   <div class="section-heading">
     <h2>交通</h2>
-    <p>要自己搭車的市區區間——哪條線、往哪個方向、幾號出口。跟行程一樣一次看一天；包車那幾天沒有這種區間。（共 {{ transit | length }} 段）</p>
+    <p>要自己搭車的市區區間——哪條線、往哪個方向、幾號出口。跟行程一樣一次看一天，只列有要自己搭車的日期。（共 {{ transit | length }} 段）</p>
     {#- 不綁哪一天的一句話：每天都適用，掛在大標下才六天都看得到 -#}
     {% if transit_note %}<p class="tr-note">{{ transit_note }}</p>{% endif %}
   </div>
 
-  {# 跳日列與行程那一列同一套（.daypick/.dp），只是換一組錨點。
-     沒有要自己搭車的那幾天照樣列出來——「這天不用自己搭」本身就是要知道的事，
-     把格子藏掉會讓人以為漏寫了 #}
+  {# 跳日列與行程那一列同一套（.daypick/.dp），只是換一組錨點，
+     而且只放有區間的那幾天——格數因此比行程少，日號不一定連號 #}
   <nav class="daypick" aria-label="選擇交通日期">
-  {% for day in days %}
-    <a class="dp{% if not day.transit %} is-thin{% endif %}" href="#transit-day-{{ day.day_no }}"
-       aria-label="Day {{ day.day_no }} {{ day.date_label }} {{ day.weekday }}{% if not day.transit %}（不用自己搭車）{% endif %}">
+  {% for day in transit_days %}
+    <a class="dp" href="#transit-day-{{ day.day_no }}"
+       aria-label="Day {{ day.day_no }} {{ day.date_label }} {{ day.weekday }}">
       <b>{{ "%02d" | format(day.day_no) }}</b>
       <small>{{ day.date_short }}<i>{{ day.weekday_short }}</i></small>
     </a>
@@ -1409,12 +1405,11 @@ body.editing>#editor{display:block !important}
   </nav>
 
   <div class="tdays">
-  {% for day in days %}
+  {% for day in transit_days %}
     <section class="tday" id="transit-day-{{ day.day_no }}" data-date="{{ day.date }}"
              data-theme-text="DAY {{ day.day_no }}"
              aria-label="Day {{ day.day_no }} {{ day.date_label }} 的交通">
       <p class="tday-date">{{ day.date_label }} · {{ day.weekday }}　<span>{{ day.theme or "自由安排" }}</span></p>
-      {% if day.transit %}
       <div class="transit-list">
       {% for t in day.transit %}
       <div class="transit-row">
@@ -1441,9 +1436,6 @@ body.editing>#editor{display:block !important}
       </div>
       {% endfor %}
       </div>
-      {% else %}
-      <p class="tday-none">這天沒有要自己搭車的區間。</p>
-      {% endif %}
     </section>
   {% endfor %}
   </div>

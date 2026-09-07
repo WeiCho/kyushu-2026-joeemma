@@ -404,10 +404,12 @@ def enrich(data):
                     break
         bookings.append(booking)
 
-    # 交通按天分組：交通區跟行程一樣一次只顯示一天
+    # 交通按天分組：交通區跟行程一樣一次只顯示一天，但只列有要自己搭車的那幾天
+    # （包車或機場接送的日子沒有區間可寫，留一格空的只會讓人多點一次）
     transit = data.get("transit") or []
     for day in days:
         day["transit"] = [t for t in transit if t.get("day") == day["day_no"]]
+    transit_days = [day for day in days if day["transit"]]
 
     budget = trip["budget"]
     travelers = trip["travelers"] or 1
@@ -422,6 +424,7 @@ def enrich(data):
         "notes": data.get("notes") or [],
         "alerts": data.get("alerts") or [],
         "transit": transit,
+        "transit_days": transit_days,
         # 不綁哪一天的一句話（付款方式），放在交通大標下當說明
         "transit_note": data.get("transit_note") or "",
         "transit_links": data.get("transit_links") or [],

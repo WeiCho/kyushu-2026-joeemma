@@ -909,9 +909,6 @@ a.tr-route:hover{border-color:currentColor}
 }
 /* 主題那句是中文，跟著拉丁字級走會太小，另外給一階 */
 .tday-date span{font-family:inherit;font-size:14.5px;letter-spacing:.04em}
-.tday-none{margin:0;font-size:15.5px;line-height:1.9;color:var(--muted)}
-/* 沒有區間的那幾天在跳日列上淡一階，但仍可點——「這天不用自己搭」也要看得到 */
-.dp.is-thin:not([aria-current]){opacity:.55}
 /* 全程通用那句：跟在說明後面自己站一行。字級與顏色沿用說明，
    只多推開一點行距——它和上一句是同一層資訊，不該看起來像註腳 */
 .tr-note{margin-top:10px}
@@ -2275,7 +2272,7 @@ body.editing>#editor{display:block !important}
 <section class="section" id="transit">
   <div class="section-heading">
     <h2>交通</h2>
-    <p>要自己搭車的市區區間——哪條線、往哪個方向、幾號出口。跟行程一樣一次看一天；包車那幾天沒有這種區間。（共 9 段）</p><p class="tr-note">信用卡／Apple Pay 感應乗車，同一張卡同一裝置當天三線累計 ¥640 為上限</p>
+    <p>要自己搭車的市區區間——哪條線、往哪個方向、幾號出口。跟行程一樣一次看一天，只列有要自己搭車的日期。（共 9 段）</p><p class="tr-note">信用卡／Apple Pay 感應乗車，同一張卡同一裝置當天三線累計 ¥640 為上限</p>
   </div>
 
   
@@ -2285,18 +2282,6 @@ body.editing>#editor{display:block !important}
        aria-label="Day 1 10月15日 週四">
       <b>01</b>
       <small>10/15<i>四</i></small>
-    </a>
-  
-    <a class="dp is-thin" href="#transit-day-2"
-       aria-label="Day 2 10月16日 週五（不用自己搭車）">
-      <b>02</b>
-      <small>10/16<i>五</i></small>
-    </a>
-  
-    <a class="dp is-thin" href="#transit-day-3"
-       aria-label="Day 3 10月17日 週六（不用自己搭車）">
-      <b>03</b>
-      <small>10/17<i>六</i></small>
     </a>
   
     <a class="dp" href="#transit-day-4"
@@ -2311,12 +2296,6 @@ body.editing>#editor{display:block !important}
       <small>10/19<i>一</i></small>
     </a>
   
-    <a class="dp is-thin" href="#transit-day-6"
-       aria-label="Day 6 10月20日 週二（不用自己搭車）">
-      <b>06</b>
-      <small>10/20<i>二</i></small>
-    </a>
-  
   </nav>
 
   <div class="tdays">
@@ -2325,7 +2304,6 @@ body.editing>#editor{display:block !important}
              data-theme-text="DAY 1"
              aria-label="Day 1 10月15日 的交通">
       <p class="tday-date">10月15日 · 週四　<span>抵達福岡</span></p>
-      
       <div class="transit-list">
       
       <div class="transit-row">
@@ -2347,32 +2325,12 @@ body.editing>#editor{display:block !important}
       </div>
       
       </div>
-      
-    </section>
-  
-    <section class="tday" id="transit-day-2" data-date="2026-10-16"
-             data-theme-text="DAY 2"
-             aria-label="Day 2 10月16日 的交通">
-      <p class="tday-date">10月16日 · 週五　<span>包車前往 高千穗峽、阿蘇</span></p>
-      
-      <p class="tday-none">這天沒有要自己搭車的區間。</p>
-      
-    </section>
-  
-    <section class="tday" id="transit-day-3" data-date="2026-10-17"
-             data-theme-text="DAY 3"
-             aria-label="Day 3 10月17日 的交通">
-      <p class="tday-date">10月17日 · 週六　<span>別府地獄與由布院山城童話（夜宿溫泉小鎮）</span></p>
-      
-      <p class="tday-none">這天沒有要自己搭車的區間。</p>
-      
     </section>
   
     <section class="tday" id="transit-day-4" data-date="2026-10-18"
              data-theme-text="DAY 4"
              aria-label="Day 4 10月18日 的交通">
       <p class="tday-date">10月18日 · 週日　<span>九州自然動物園，午後回福岡逛街、屋台收尾</span></p>
-      
       <div class="transit-list">
       
       <div class="transit-row">
@@ -2403,14 +2361,12 @@ body.editing>#editor{display:block !important}
       </div>
       
       </div>
-      
     </section>
   
     <section class="tday" id="transit-day-5" data-date="2026-10-19"
              data-theme-text="DAY 5"
              aria-label="Day 5 10月19日 的交通">
       <p class="tday-date">10月19日 · 週一　<span>糸島夫婦岩（直達巴士），午後天神逛街＋藥院燒肉</span></p>
-      
       <div class="transit-list">
       
       <div class="transit-row">
@@ -2450,16 +2406,6 @@ body.editing>#editor{display:block !important}
       </div>
       
       </div>
-      
-    </section>
-  
-    <section class="tday" id="transit-day-6" data-date="2026-10-20"
-             data-theme-text="DAY 6"
-             aria-label="Day 6 10月20日 的交通">
-      <p class="tday-date">10月20日 · 週二　<span>滿載而歸（早班機，時間偏緊）</span></p>
-      
-      <p class="tday-none">這天沒有要自己搭車的區間。</p>
-      
     </section>
   
   </div>
