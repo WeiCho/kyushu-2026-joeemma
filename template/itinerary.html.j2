@@ -941,11 +941,9 @@ a.tr-route:hover{border-color:currentColor}
 .tday-none{margin:0;font-size:15.5px;line-height:1.9;color:var(--muted)}
 /* 沒有區間的那幾天在跳日列上淡一階，但仍可點——「這天不用自己搭」也要看得到 */
 .dp.is-thin:not([aria-current]){opacity:.55}
-.transit-common{margin-top:clamp(34px,5vh,58px)}
-.transit-common h3{
-  font-size:15px;letter-spacing:.1em;color:var(--muted);
-  margin:0 0 clamp(12px,1.8vh,18px);font-weight:400;
-}
+/* 全程通用那句：跟在說明後面自己站一行。字級與顏色沿用說明，
+   只多推開一點行距——它和上一句是同一層資訊，不該看起來像註腳 */
+.tr-note{margin-top:10px}
 
 /* ── 檢查（出發前清單）── */
 /* 幾組並排，但不做成卡片：沿用全站的「無底色＋細線分隔」 */
@@ -1393,6 +1391,8 @@ body.editing>#editor{display:block !important}
   <div class="section-heading">
     <h2>交通</h2>
     <p>要自己搭車的市區區間——哪條線、往哪個方向、幾號出口。跟行程一樣一次看一天；包車那幾天沒有這種區間。（共 {{ transit | length }} 段）</p>
+    {#- 不綁哪一天的一句話：每天都適用，掛在大標下才六天都看得到 -#}
+    {% if transit_note %}<p class="tr-note">{{ transit_note }}</p>{% endif %}
   </div>
 
   {# 跳日列與行程那一列同一套（.daypick/.dp），只是換一組錨點。
@@ -1447,46 +1447,6 @@ body.editing>#editor{display:block !important}
     </section>
   {% endfor %}
   </div>
-
-  <div class="daybar">
-    <button class="arw" id="tr-prev" type="button" aria-label="前一天">←</button>
-    <span class="th" id="tr-theme"></span>
-    <button class="arw" id="tr-next" type="button" aria-label="後一天">→</button>
-  </div>
-
-  {%- if transit_common %}
-  {# 不綁在哪一天的（付款方式之類），放在分頁下方常駐——它每天都適用，
-     藏進某一天的分頁就等於六天有五天看不到 #}
-  <div class="transit-common">
-    <h3>全程通用</h3>
-    <div class="transit-list">
-    {% for t in transit_common %}
-      <div class="transit-row">
-        <div class="tr-head">
-          {%- if t.when %}<span class="tr-when">{{ t.when }}</span>{% endif %}
-          {#- 有 url 的段落把標題本身做成連結（時刻表、官方說明頁），一律開新分頁 -#}
-          {%- if t.url %}
-          <a class="tr-route" href="{{ t.url }}" target="_blank" rel="noopener">{{ t.route }}&nbsp;↗</a>
-          {%- else %}
-          <b class="tr-route">{{ t.route }}</b>
-          {%- endif %}
-        </div>
-        <dl class="tr-meta">
-          {%- if t.line %}
-          <div><dt>路線</dt><dd>
-            {%- if t.line_color %}<i class="tr-dot" style="--lc:{{ t.line_color }}"></i>{% endif %}{{ t.line }}</dd></div>
-          {%- endif %}
-          {%- if t.platform %}<div><dt>方向</dt><dd>{{ t.platform }}</dd></div>{% endif %}
-          {%- if t.time %}<div><dt>時間</dt><dd>{{ t.time }}</dd></div>{% endif %}
-          {%- if t.fare %}<div><dt>票價</dt><dd>{{ t.fare }}</dd></div>{% endif %}
-          {%- if t.exit %}<div><dt>出口</dt><dd>{{ t.exit }}</dd></div>{% endif %}
-          {%- if t.warn %}<div class="tr-warn"><dt>注意</dt><dd>{{ t.warn }}</dd></div>{% endif %}
-        </dl>
-      </div>
-    {% endfor %}
-    </div>
-  </div>
-  {%- endif %}
 
   {%- if transit_links %}
   {# 路線圖與時刻表一律開新分頁：那些圖在這一頁裡展開只會又大又糊 #}
@@ -1749,37 +1709,23 @@ body.editing>#editor{display:block !important}
     showDay(cur);   // 列印完把畫面收回單日
   });
 
-  // ── 交通區的換日：與行程同一套操作，但各自記各自的那一天 ──
-  // 兩區距離很遠，硬要同步反而會出現「在交通區翻到 Day 5、捲回行程卻也被翻走」
-  // 這種沒人要求的連動。全域左右鍵仍然只服務行程區，不在這裡再綁一次。
+  // ── 交通區的換日：只留跳日列，不做上下頁 ──
+  // 這一區一天最多四五段、六格全在眼前，直接點就到；再放一組左右鍵是重複的入口。
+  // 也各自記各自的那一天：兩區距離很遠，硬要同步反而會出現「在交通區翻到 Day 5、
+  // 捲回行程卻也被翻走」這種沒人要求的連動。
   (function(){
     var panes = [].slice.call(document.querySelectorAll("#transit .tday"));
     if (!panes.length) return;
     var picks = [].slice.call(document.querySelectorAll("#transit .daypick .dp"));
-    var pv = document.getElementById("tr-prev");
-    var nx = document.getElementById("tr-next");
-    var th = document.getElementById("tr-theme");
-    var at = 0;
 
     function show(n, focus){
-      at = Math.max(0, Math.min(panes.length - 1, n));
+      var at = Math.max(0, Math.min(panes.length - 1, n));
       panes.forEach(function(el, k){ el.classList.toggle("is-on", k === at); });
-      if (th){
-        th.textContent = panes[at].getAttribute("data-theme-text") || "";
-        if (panes[at].classList.contains("today")){
-          var b = document.createElement("span");
-          b.className = "today-badge";
-          b.textContent = "今日";
-          th.appendChild(b);
-        }
-      }
       picks.forEach(function(a, k){
         if (k === at) a.setAttribute("aria-current", "page");
         else a.removeAttribute("aria-current");
         a.classList.toggle("is-today", !!(panes[k] && panes[k].classList.contains("today")));
       });
-      if (pv) pv.disabled = (at === 0);
-      if (nx) nx.disabled = (at === panes.length - 1);
       // 換完捲回交通區頂端，否則會停在下一天的中段
       if (focus){
         var sec = document.getElementById("transit");
@@ -1798,8 +1744,6 @@ body.editing>#editor{display:block !important}
         show(k, true);
       });
     });
-    if (pv) pv.addEventListener("click", function(){ show(at - 1, true); });
-    if (nx) nx.addEventListener("click", function(){ show(at + 1, true); });
 
     // 開頁時直接停在今天那一格（行程區也是這個行為）
     var start = 0;

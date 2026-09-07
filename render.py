@@ -187,12 +187,12 @@ def validate(data):
         raise TripError("transit 必須是陣列")
     for t_idx, t in enumerate(transit, 1):
         _require(t, "route", f"transit 第 {t_idx} 段")
-        # day 是選填：填了就歸到那一天的分頁，沒填代表「全程通用」
-        if "day" in t and t["day"] is not None:
-            if not isinstance(t["day"], int) or not 1 <= t["day"] <= len(data["days"]):
-                raise TripError(
-                    f"transit 第 {t_idx} 段的 day 必須是 1～{len(data['days'])} 的整數"
-                )
+        # 交通區按天分頁，所以 day 是必填——沒填的話那一段不會出現在任何一頁上
+        day_no = _require(t, "day", f"transit 第 {t_idx} 段")
+        if not isinstance(day_no, int) or isinstance(day_no, bool)                 or not 1 <= day_no <= len(data["days"]):
+            raise TripError(
+                f"transit 第 {t_idx} 段的 day 必須是 1～{len(data['days'])} 的整數：{day_no!r}"
+            )
 
     transit_links = data.get("transit_links") or []
     if not isinstance(transit_links, list):
@@ -404,10 +404,8 @@ def enrich(data):
                     break
         bookings.append(booking)
 
-    # 交通按天分組：有 day 的掛到那天（交通區跟行程一樣一次只顯示一天），
-    # 沒有 day 的是「全程通用」，永遠顯示在分頁下方
+    # 交通按天分組：交通區跟行程一樣一次只顯示一天
     transit = data.get("transit") or []
-    transit_common = [t for t in transit if not t.get("day")]
     for day in days:
         day["transit"] = [t for t in transit if t.get("day") == day["day_no"]]
 
@@ -424,7 +422,8 @@ def enrich(data):
         "notes": data.get("notes") or [],
         "alerts": data.get("alerts") or [],
         "transit": transit,
-        "transit_common": transit_common,
+        # 不綁哪一天的一句話（付款方式），放在交通大標下當說明
+        "transit_note": data.get("transit_note") or "",
         "transit_links": data.get("transit_links") or [],
         "highlights": data.get("highlights") or [],
         "pending": pending,
