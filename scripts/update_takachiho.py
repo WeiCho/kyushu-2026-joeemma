@@ -1,148 +1,48 @@
 #!/usr/bin/env python3
-"""抓高千穗峽貸しボート當日運行狀態，寫進 trip.json 的 live_status。
+"""抓高千穗峽貸しボート「最新開賣日」的預約狀況，寫進 trip.json 的 live_status。
+
+資料來源改成官方預約系統 eipro.jp 的日曆（原本抓觀光協會官網的「當日運行狀態」）。
+原因：對這趟行程來說，當天能不能划船是到了才知道的事，真正要盯的是**搶票**——
+乘船日 14 天前 09:00 JST 開放預約，開賣當天多久賣完，決定我們 10/2 要用什麼力道搶。
+
+所以這支腳本看的是「今天剛開賣的那一天」（≈ 今天 +14 天）賣掉多少，
+另外若我們自己的乘船日已進入可預約區間，順便報那天還剩幾艇。
 
 用法：python scripts/update_takachiho.py [trip.json 路徑]
 
 離開碼：
-  0  已更新，或抓到的日期不是今天（JST）而略過不寫
+  0  已更新，或內容無變化
   1  抓取或解析失敗（讓 GitHub Actions 顯示紅燈）
 
 抓取失敗時一律不動 trip.json，也不沿用舊值。
 """
-import html
+import http.cookiejar
 import json
 import re
 import sys
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-SOURCE = "https://takachiho-kanko.info/"
+CALENDAR = "https://eipro.jp/takachiho1/eventCalendars/index"
+SEARCH = "https://eipro.jp/takachiho1/eventCalendars/search"
 ITEM_KEYWORD = "高千穗峽"
+SERVICE_KEYWORD = "ボート"   # 同一個日曆日後若掛上別的服務，只取划船那個
+RELEASE_DAYS = 14            # 乘船日的幾天前開賣（09:00 JST）
+LOOKAHEAD = 16               # 往後查幾天：要蓋過開賣日（+14）並留一點餘裕
 JST = timezone(timedelta(hours=9))
 UA = "Mozilla/5.0 (compatible; kyushu-handbook-bot/1.0; +https://github.com/WeiCho/kyushu-2026-joeemma)"
-TIMEOUT = 30      # 秒；官網平常 2 秒內就回來，逾時幾乎都是 runner 端的線路問題
+TIMEOUT = 30
 RETRIES = 3
 RETRY_WAIT = 10   # 秒，逐次遞增（10、20）
 
-# 官網 <div class="box_boat"> 區塊的結構（2026-08 確認）
-RE_BLOCK = re.compile(r'<div class="box_boat">(.*?)</small>', re.S)
-RE_UPDATED = re.compile(r"更新時間：<span>\s*(\d{4})年(\d{1,2})月(\d{1,2})日\s*(.*?)\s*</span>")
-RE_DATE = re.compile(r'<p class="time">\s*(\d{1,2})/(\d{1,2})\s*<span class="week">\s*\[(\w+)\]')
-RE_STATUS = re.compile(r'<p class="(?:red|blue|green|gray)?"[^>]*>(.*?)</p>\s*</div>', re.S)
-RE_NOTE = re.compile(r'<small class="note">(.*?)$', re.S)
+RE_TOKEN = re.compile(r'name="action_token"[^>]*value="([^"]+)"')
+WEEK_ZH = "一二三四五六日"
 
-# ── 中文欄位 ─────────────────────────────────────────────
-# 來源網站是日文，手冊要顯示中文。這裡做規則式轉換，不接翻譯 API：
-# Actions 不該依賴外部服務，而且營運狀態的用語就那幾種，規則涵蓋得住。
-# 轉不出來就不寫該欄位，樣板會自動退回顯示日文原文——寧可露出日文，也不要湊出錯的中文。
-TITLE_ZH = "高千穗峽 划船狀況"   # 小卡一行放得下的長度
-
-# 狀態：整句對照。key 為出現在官網狀態字串裡的片段
-STATUS_ZH = (
-    ("通常営業", "正常營運"),
-    ("営業中止", "停止出租"),
-    ("運航中止", "停駛"),
-    ("運休", "停駛"),
-    ("中止", "停止"),
-    ("営業", "營運"),
-)
-# 停駛原因
-REASON_ZH = (
-    ("増水", "水位上漲"),
-    ("減水", "水位過低"),
-    ("荒天", "天候不佳"),
-    ("悪天", "天候不佳"),
-    ("大雨", "大雨"),
-    ("台風", "颱風"),
-    ("強風", "強風"),
-    ("点検", "設施檢修"),
-    ("清掃", "清掃"),
-)
-
-
-def status_to_zh(status):
-    """運行狀態日文 → 中文。轉不出來回傳 None。"""
-    core = None
-    for ja, zh in STATUS_ZH:
-        if ja in status:
-            core = zh
-            break
-    if core is None:
-        return None
-    reason = next((zh for ja, zh in REASON_ZH if ja in status), None)
-    return f"{reason}，{core}" if reason else core
-
-
-def _hm(text):
-    """「2時間30分」→「3.5」小時用的數值；回傳已格式化的短字串。
-
-    小卡只有兩行，字要短：「3 小時 30 分」壓成「3.5 小時」。
-    """
-    m = re.fullmatch(r"(\d+)時間(?:(\d+)分)?", text)
-    if not m:
-        return None
-    h, mi = int(m.group(1)), int(m.group(2) or 0)
-    if mi == 0:
-        return f"{h}"
-    if mi == 30:
-        return f"{h}.5"
-    return f"{h}小時{mi}分"
-
-
-def detail_to_zh(detail):
-    """公告內文 → 兩行中文重點。抓不到任何一項就回傳 None。
-
-    這是速查卡不是公告全文：只挑「當天還買不買得到票、要怎麼買」，
-    而且每行都要短到能在窄卡片裡一行放完（約 20 個字），不靠樣板截字。
-    """
-    # 全形標點一併正規化。漏了「】」會讓等候時間抓不到，而那是最有用的一項
-    text = (detail.replace("：", ":").replace("（", "(").replace("）", ")")
-                  .replace("【", "[").replace("】", "]"))
-    tickets = []
-
-    # 今日票況：完售 / 所剩不多 / 尚有 N 張
-    m = re.search(r"(\d{1,2})/(\d{1,2})\D{0,6}?(\d{1,2}:\d{2})?\s*(?:→|->)?\s*当日券完売", text)
-    if m:
-        when = f"（{m.group(3)}）" if m.group(3) else ""
-        tickets.append(f"當日券完售{when}")
-    elif "残りわずか" in text:
-        tickets.append("當日券剩不多")
-
-    # 其他日期的餘票
-    m = re.search(r"(\d{1,2})/(\d{1,2})\D{0,6}?約\s*(\d+)\s*枚", text)
-    if m:
-        board = ""
-        m2 = re.search(r"(\d{1,2}:\d{2})以降の乗船", text)
-        if m2:
-            board = f"（{m2.group(1)} 後乘船）"
-        tickets.append(f"{int(m.group(1))}/{int(m.group(2))} 剩約 {m.group(3)} 張{board}")
-
-    # 現場等候時間
-    m = re.search(r"現在待ち時間\]?\s*([\d時間分]+)\s*(?:～|~|-)\s*([\d時間分]+)", text)
-    if m:
-        a, b = _hm(m.group(1)), _hm(m.group(2))
-        if a and b:
-            tickets.append(f"等候 {a}–{b} 小時")
-
-    # 怎麼買
-    how = []
-    m = re.search(r"当日の朝\s*(\d{1,2}:\d{2})\s*より", text)
-    if m:
-        how.append(f"當天 {m.group(1)} 現場售票")
-    if "事前ネット予約のみ" in text:
-        how.append("預約限網路")
-    elif "電話でのご予約" in text and "承っており" in text:
-        how.append("不收電話預約")
-
-    lines = []
-    if tickets:
-        lines.append("・".join(tickets))
-    if how:
-        lines.append("，".join(how))
-    return "\n".join(lines[:2]) or None
+TITLE_ZH = "高千穗峽 划船開賣"   # 小卡一行放得下的長度
 
 
 def fail(msg):
@@ -150,22 +50,12 @@ def fail(msg):
     sys.exit(1)
 
 
-def clean(raw):
-    """HTML 片段 → 純文字，<br> 變換行。"""
-    text = re.sub(r"<br\s*/?>", "\n", raw)
-    text = re.sub(r"<[^>]+>", "", text)
-    text = html.unescape(text)
-    lines = [re.sub(r"[\s　]+", " ", ln).strip() for ln in text.split("\n")]
-    return "\n".join(ln for ln in lines if ln)
-
-
-def fetch(url):
-    """抓官網原始碼。GitHub Actions runner 連日本主機偶爾會逾時，重試幾次再放棄。"""
-    req = urllib.request.Request(url, headers={"User-Agent": UA})
+def _open(opener, req):
+    """送出一個 request，失敗重試幾次（GitHub runner 連日本主機偶爾逾時）。"""
     last = None
     for attempt in range(1, RETRIES + 1):
         try:
-            with urllib.request.urlopen(req, timeout=TIMEOUT) as resp:
+            with opener.open(req, timeout=TIMEOUT) as resp:
                 return resp.read().decode("utf-8", "replace")
         except (urllib.error.URLError, TimeoutError, OSError) as exc:
             last = exc
@@ -176,60 +66,162 @@ def fetch(url):
     raise last
 
 
-def parse(page):
-    block = RE_BLOCK.search(page)
-    if not block:
-        fail("找不到 box_boat 區塊，官網結構可能改版了")
-    body = block.group(1)
+def fetch_slots(start, end):
+    """抓 [start, end] 區間所有場次（每場 30 分、每天 16 場）。
 
-    m_date = RE_DATE.search(body)
-    if not m_date:
-        fail("解析不到日期（<p class=\"time\">），官網結構可能改版了")
-    month, day, week = int(m_date.group(1)), int(m_date.group(2)), m_date.group(3)
+    日曆本身是空殼，資料靠 fullCalendar 事後 POST /eventCalendars/search 取得。
+    這個 POST 有三個必要條件，少一個就回 HTTP 500（不是 4xx，別被誤導）：
+      1. 先 GET 日曆頁拿 session cookie
+      2. 帶上頁面裡的 action_token（CakePHP 的一次性表單 token）
+      3. X-Requested-With: XMLHttpRequest
+    """
+    jar = http.cookiejar.CookieJar()
+    opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar))
 
-    m_status = RE_STATUS.search(body)
-    if not m_status:
-        fail("解析不到運行狀態，官網結構可能改版了")
-    status = clean(m_status.group(1))
-    if not status:
-        fail("運行狀態是空的，官網結構可能改版了")
+    page = _open(opener, urllib.request.Request(CALENDAR, headers={"User-Agent": UA}))
+    m = RE_TOKEN.search(page)
+    if not m:
+        fail("日曆頁抓不到 action_token，eipro 可能改版了")
+    token = m.group(1)
 
-    m_upd = RE_UPDATED.search(body)
-    if m_upd:
-        y, mo, d, clock = m_upd.groups()
-        updated = f"{int(y):04d}-{int(mo):02d}-{int(d):02d} {clock}"
-    else:
-        updated = datetime.now(JST).strftime("%Y-%m-%d %H:%M") + " (抓取時間)"
+    body = urllib.parse.urlencode({
+        "action_token": token,
+        "root_action": "index",
+        "data[conds][ServiceView][max_session_dateOver]": start.isoformat(),
+        "data[conds][ServiceView][min_session_dateUnder]": end.isoformat(),
+        "calendar_view_name": "agendaWeek",
+        "calendar_type": "week",
+    }).encode()
+    req = urllib.request.Request(SEARCH, data=body, headers={
+        "User-Agent": UA,
+        "X-Requested-With": "XMLHttpRequest",
+        "Referer": CALENDAR,
+        "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+    })
+    raw = _open(opener, req)
+    try:
+        data = json.loads(raw)
+    except json.JSONDecodeError:
+        fail("search 回的不是 JSON（多半是 HTTP 500 錯誤頁），eipro 可能改版或擋了這次請求")
 
-    m_note = RE_NOTE.search(body)
-    detail = clean(m_note.group(1)) if m_note else ""
+    results = data.get("results")
+    if not isinstance(results, list) or not results:
+        fail("search 回來沒有任何場次，eipro 可能改版了")
 
-    parsed = {
-        "date_label": f"{month}/{day}[{week}]",
-        "status": status,
-        "updated": updated,
-        "detail": detail,
-        "source": SOURCE,
-        "_md": (month, day),
+    boat = [r for r in results if SERVICE_KEYWORD in (r.get("service_name") or "")]
+    return boat or results
+
+
+def day_summary(slots):
+    """同一天的所有場次 → 摘要。"""
+    # 已被訂走 / 被卡掉的都算不能賣；官方偶爾會出現 -1（超賣），夾到 0
+    remain = sum(max(0, int(s.get("order_remain_amount") or 0)) for s in slots)
+    cap = max(int(s.get("max_accept_limit") or 0) for s in slots)
+    open_times = sorted(
+        s["service_start_datetime"][11:16]
+        for s in slots
+        if max(0, int(s.get("order_remain_amount") or 0)) > 0
+    )
+    return {
+        "slots": len(slots),
+        "cap": cap,
+        "total": len(slots) * cap,
+        "remain": remain,
+        "open_times": open_times,
+        # 未開賣的日子整天都是滿容量、看起來跟「完全沒賣出」一模一樣，
+        # 所以判斷「開賣了沒」只能看 is_reserve_started，不能看 remain
+        "started": any(s.get("is_reserve_started") for s in slots),
+        "dead": all(s.get("is_reserve_dead") for s in slots),
     }
 
-    # 中文欄位：轉得出來才寫，轉不出來就留空讓樣板退回日文原文
-    parsed["title_zh"] = TITLE_ZH
-    status_zh = status_to_zh(status)
-    if status_zh:
-        parsed["status_zh"] = status_zh
-    summary_zh = detail_to_zh(detail)
-    if summary_zh:
-        parsed["summary_zh"] = summary_zh
-    return parsed
+
+def label(d):
+    return f"{d.month}/{d.day}[{WEEK_ZH[d.weekday()]}]"
+
+
+def parse(slots, today, our_date):
+    by_date = {}
+    for s in slots:
+        try:
+            d = datetime.strptime(s["service_date"], "%Y/%m/%d").date()
+        except (KeyError, ValueError):
+            continue
+        by_date.setdefault(d, []).append(s)
+    if not by_date:
+        fail("場次裡解析不到日期（service_date），eipro 可能改版了")
+
+    summaries = {d: day_summary(v) for d, v in by_date.items()}
+
+    # 最新開賣日＝已開放預約的日期裡最遠的那天。正常情況等於今天 +14，
+    # 但 09:00 JST 前跑就會是 +13——那不是錯誤，是當下真的還沒開。
+    opened = [d for d, s in summaries.items() if s["started"]]
+    if not opened:
+        fail("查不到任何已開賣的日期，eipro 可能改版了")
+    latest = max(opened)
+    if latest < today:
+        fail(f"最新開賣日 {latest} 比今天（JST）還早，資料不合理")
+    expected = today + timedelta(days=RELEASE_DAYS)
+    if latest not in (expected, expected - timedelta(days=1)):
+        print(f"⚠ 最新開賣日是 {latest}，與預期的 {expected} 不符（開賣規則可能變了）",
+              file=sys.stderr)
+
+    s = summaries[latest]
+    sold = s["total"] - s["remain"]
+
+    if s["remain"] == 0:
+        status = "満席"
+        status_zh = f"{label(latest)} 全數售完"
+        line1 = f"{s['slots']} 場 {s['total']} 艇開賣當天清空"
+    else:
+        status = f"残り{s['remain']}艇"
+        status_zh = f"{label(latest)} 尚有 {s['remain']} 艇"
+        times = "・".join(t.lstrip("0") for t in s["open_times"][:3])
+        more = "…" if len(s["open_times"]) > 3 else ""
+        line1 = f"賣掉 {sold}/{s['total']} 艇，還有 {times}{more}"
+
+    # 第二行：我們自己那天。進到可預約區間就報實況，還沒開就報什麼時候開賣
+    ours = summaries.get(our_date)
+    release = our_date - timedelta(days=RELEASE_DAYS)
+    if ours and ours["started"]:
+        if ours["dead"]:
+            line2 = f"我們 {our_date.month}/{our_date.day} 已截止預約"
+        elif ours["remain"] == 0:
+            line2 = f"我們 {our_date.month}/{our_date.day} 已完售"
+        else:
+            line2 = f"我們 {our_date.month}/{our_date.day} 剩 {ours['remain']} 艇，快訂"
+    else:
+        line2 = (f"我們 {our_date.month}/{our_date.day}："
+                 f"{release.month}/{release.day} 09:00 JST 開賣")
+
+    detail = "\n".join([
+        f"{latest.isoformat()} 分の予約が開始済み（乗船日の{RELEASE_DAYS}日前 09:00 JST 開放）",
+        f"全{s['slots']}枠 × {s['cap']}艇 = {s['total']}艇 / 残り{s['remain']}艇",
+        ("空き枠：" + "、".join(s["open_times"])) if s["open_times"] else "空き枠なし",
+    ])
+
+    return {
+        "date_label": label(latest),
+        "status": status,
+        "updated": datetime.now(JST).strftime("%Y-%m-%d %H:%M"),
+        "detail": detail,
+        "source": CALENDAR,
+        "title_zh": TITLE_ZH,
+        "status_zh": status_zh,
+        "summary_zh": f"{line1}\n{line2}",
+    }
 
 
 def find_item(data):
+    """回傳（item, 該天的日期）。日期用來算我們自己的開賣日。"""
     for day in data.get("days", []):
         for item in day.get("items", []):
             if ITEM_KEYWORD in item.get("name", ""):
-                return item
-    return None
+                try:
+                    d = datetime.strptime(day["date"], "%Y-%m-%d").date()
+                except (KeyError, ValueError):
+                    d = None
+                return item, d
+    return None, None
 
 
 def main():
@@ -237,38 +229,38 @@ def main():
     if not trip_path.exists():
         fail(f"找不到 {trip_path}")
 
-    try:
-        page = fetch(SOURCE)
-    except (urllib.error.URLError, TimeoutError, OSError) as exc:
-        fail(f"抓不到「{SOURCE}」：{exc}")
-
-    parsed = parse(page)
-    month, day = parsed.pop("_md")
-
-    today = datetime.now(JST)
-    if (month, day) != (today.month, today.day):
-        # 官網每早 8 點左右才更新，偶爾會慢；不是錯誤，但也不能拿舊資料當今天的
-        print(
-            f"⏭  略過不寫：官網顯示 {month}/{day}，今天（JST）是 "
-            f"{today.month}/{today.day}"
-        )
-        return
-
     data = json.loads(trip_path.read_text(encoding="utf-8"))
-    item = find_item(data)
+    item, our_date = find_item(data)
     if item is None:
         fail(f"trip.json 裡找不到 name 含「{ITEM_KEYWORD}」的 item")
+    if our_date is None:
+        fail("高千穗峽那天的 days[].date 讀不出來")
+
+    today = datetime.now(JST).date()
+    try:
+        slots = fetch_slots(today, today + timedelta(days=LOOKAHEAD))
+    except (urllib.error.URLError, TimeoutError, OSError) as exc:
+        fail(f"抓不到「{CALENDAR}」：{exc}")
+
+    parsed = parse(slots, today, our_date)
 
     if item.get("live_status") == parsed:
-        print(f"＝ 內容無變化（{parsed['date_label']} {parsed['status']}），不寫入")
+        print(f"＝ 內容無變化（{parsed['status_zh']}），不寫入")
+        return
+
+    # updated 每次都會變，所以只有這欄不同時也算沒變（避免每天產生沒意義的 commit）
+    old = dict(item.get("live_status") or {})
+    if old and {k: v for k, v in old.items() if k != "updated"} == \
+            {k: v for k, v in parsed.items() if k != "updated"}:
+        print(f"＝ 只有更新時間不同（{parsed['status_zh']}），不寫入")
         return
 
     item["live_status"] = parsed
     trip_path.write_text(
         json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
     )
-    print(f"✅ 已更新 {trip_path}：{parsed['date_label']} {parsed['status']}")
-    print(parsed["detail"])
+    print(f"✅ 已更新 {trip_path}：{parsed['status_zh']}")
+    print(parsed["summary_zh"])
 
 
 if __name__ == "__main__":

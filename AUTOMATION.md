@@ -14,11 +14,14 @@
 
 ```json
 "live_status": {
-  "date_label": "10/16[Fri]",              // M/D[Ddd]，星期用英文縮寫
-  "status": "運行開放中",                    // 運行狀態原文
-  "updated": "2026-07-27 AM10:59",         // 網站顯示的更新時間
-  "detail": "【當日券殘り】…\n※…",           // 多行字串，\n 換行
-  "source": "https://takachiho-kanko.info/"
+  "date_label": "9/25[五]",                 // 最新開賣日 M/D[週]
+  "status": "満席",                          // 日文原文（中文轉不出來時的退路）
+  "updated": "2026-09-11 15:57",            // 抓取時間（JST）
+  "detail": "…",                            // 日文多行原文
+  "source": "https://eipro.jp/takachiho1/eventCalendars/index",
+  "title_zh": "高千穗峽 划船開賣",
+  "status_zh": "9/25[五] 全數售完",
+  "summary_zh": "16 場 240 艇開賣當天清空 + 我們 10/16 的狀況"
 }
 ```
 
@@ -32,9 +35,12 @@
 ```
 
 ### 資料來源網站
-- **高千穗峽划船運行狀況**：https://takachiho-kanko.info/
-  - 每早約 8 點（JST）更新；含當日運行狀態、當日券殘量、注意事項
-  - 用 WebFetch 可正常抓取
+- **高千穗峽划船預約日曆（官方訂位系統）**：https://eipro.jp/takachiho1/eventCalendars/index
+  - 乘船日 **14 天前 09:00 JST** 開放預約、2 天前 09:00 截止
+  - 每天 16 個 30 分場次，一場 15～18 艇（假日 15、平日 18，隨月份調整）
+  - 2026-09-11 起改抓這裡。原本抓觀光協會官網 https://takachiho-kanko.info/ 的
+    「當天運行狀態」，但當天能不能划是到了才知道的事；真正要盯的是**搶票**——
+    今天剛開賣的那天多久賣完，決定我們 10/2 要用什麼力道搶
 
 ### 重新產出頁面
 ```bash
@@ -46,7 +52,7 @@ python3 render.py .        # 讀 ./trip.json → 產出 行程表.html + PWA 檔
 
 ## 2. 已完成：每日自動更新划船狀態（GitHub Actions）
 
-**做法**：`.github/workflows/takachiho.yml` 每天抓 takachiho-kanko.info → 更新 `trip.json` 的 `live_status` → commit & push → 重新 render 並部署 GitHub Pages。
+**做法**：`.github/workflows/takachiho.yml` 每天抓 eipro.jp 預約日曆 → 更新 `trip.json` 的 `live_status` → commit & push → 重新 render 並部署 GitHub Pages。
 
 | 項目 | 值 |
 |---|---|
@@ -63,14 +69,26 @@ python3 render.py .        # 讀 ./trip.json → 產出 行程表.html + PWA 檔
 （另外那次試跑還把 `trip.json` 裡 7/27 的舊值當成「今天抓到的」回報，看起來像抓成功。所以現在腳本一律做日期校驗。）
 
 ### 腳本行為
-- 解析官網 `<div class="box_boat">` 區塊：更新時間、`M/D[Ddd]`、運行狀態、`<small class="note">` 全文（`<br>` → 換行）。
-- **日期校驗**：官網顯示的 M/D ≠ 今天（JST）→ 印訊息、**不寫檔**、離開碼 0（官網每早 8 點左右才更新，偶爾會慢，不算錯誤）。
+- **抓法**（日曆頁是空殼，資料靠 fullCalendar 事後 AJAX 取得）：
+  1. GET `/takachiho1/eventCalendars/index` 拿 session cookie 與頁面裡的 `action_token`
+  2. POST `/takachiho1/eventCalendars/search`，帶 `action_token`、日期區間
+     （`data[conds][ServiceView][max_session_dateOver]` / `min_session_dateUnder`）
+     與 **`X-Requested-With: XMLHttpRequest`**
+  - 三個條件少一個一律回 **HTTP 500**（不是 4xx，別誤判成日期帶錯）
+- 回來的 JSON 每個場次都有 `is_reserve_started` / `is_reserve_dead` /
+  `order_remain_amount` / `max_accept_limit`。
+  **判斷「開賣了沒」只能看 `is_reserve_started`**——未開賣的日子整天都是滿容量，
+  跟「完全沒賣出」長得一模一樣。`order_remain_amount` 偶爾是 -1（超賣），要夾到 0。
+- 查 今天 ~ 今天+16 天，取**已開賣日期裡最遠的那天**當「最新開賣日」（正常＝今天+14；
+  09:00 JST 前跑會是 +13，不算錯）。與預期不符只印警告、照樣寫入。
+- 小卡兩行：第一行是最新開賣日賣掉多少，第二行是**我們自己的 10/16**——
+  還沒開賣就寫 10/2 開賣，開賣後改成報那天剩幾艇 / 已完售 / 已截止。
 - **抓取或解析失敗** → 離開碼 1，Actions 亮紅燈，**不會寫入舊值**。
-- `detail` 直接存官網日文原文（不再手動翻譯，才能全自動）。
-- 內容與現有 `live_status` 完全相同時不寫檔，也就不會產生空 commit。
+- 內容相同（或只有 `updated` 不同）就不寫檔，也就不會產生空 commit。
 
-### 官網改版時要改哪裡
-`scripts/update_takachiho.py` 最上面的 `RE_BLOCK` / `RE_DATE` / `RE_STATUS` / `RE_NOTE` 四個正規式。改版時 workflow 會直接失敗並印出是哪一段解析不到。
+### eipro 改版時要改哪裡
+`scripts/update_takachiho.py` 的 `fetch_slots()`（請求三件套）與 `day_summary()`
+用到的欄位名。改版時 workflow 會直接失敗並印出是哪一步解析不到。
 
 ### 行程結束後
 10/20 行程結束或 10 月底，把 `.github/workflows/takachiho.yml` 刪掉或在 Actions 頁面停用即可。
