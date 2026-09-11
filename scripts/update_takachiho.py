@@ -5,8 +5,8 @@
 原因：對這趟行程來說，當天能不能划船是到了才知道的事，真正要盯的是**搶票**——
 乘船日 14 天前 09:00 JST 開放預約，開賣當天多久賣完，決定我們 10/2 要用什麼力道搶。
 
-所以這支腳本看的是「今天剛開賣的那一天」（≈ 今天 +14 天）賣掉多少，
-另外若我們自己的乘船日已進入可預約區間，順便報那天還剩幾艇。
+小卡第一行是我們自己那天（還沒開賣就寫「尚未開搶」，開賣後改報剩幾艇），
+第二行是「今天剛開賣的那一天」（≈ 今天 +14 天）賣掉多少——用來抓開搶要用多少力氣。
 
 用法：python scripts/update_takachiho.py [trip.json 路徑]
 
@@ -165,49 +165,47 @@ def parse(slots, today, our_date):
         print(f"⚠ 最新開賣日是 {latest}，與預期的 {expected} 不符（開賣規則可能變了）",
               file=sys.stderr)
 
-    s = summaries[latest]
-    sold = s["total"] - s["remain"]
-
-    if s["remain"] == 0:
-        status = "満席"
-        status_zh = f"{label(latest)} 全數售完"
-        line1 = f"{s['slots']} 場 {s['total']} 艇開賣當天清空"
-    else:
-        status = f"残り{s['remain']}艇"
-        status_zh = f"{label(latest)} 尚有 {s['remain']} 艇"
-        times = "・".join(t.lstrip("0") for t in s["open_times"][:3])
-        more = "…" if len(s["open_times"]) > 3 else ""
-        line1 = f"賣掉 {sold}/{s['total']} 艇，還有 {times}{more}"
-
-    # 第二行：我們自己那天。進到可預約區間就報實況，還沒開就報什麼時候開賣
+    # 第一行（卡片的 state）：我們自己那天。這才是要做決定的那一行，
+    # 所以放最上面；開賣日期用卡片右邊既有的 live_tag（「10/2 搶」）帶出來，不重複寫。
     ours = summaries.get(our_date)
-    release = our_date - timedelta(days=RELEASE_DAYS)
+    ours_label = f"{our_date.month}/{our_date.day}"
     if ours and ours["started"]:
         if ours["dead"]:
-            line2 = f"我們 {our_date.month}/{our_date.day} 已截止預約"
+            status, status_zh = "受付終了", f"{ours_label} 已截止預約"
         elif ours["remain"] == 0:
-            line2 = f"我們 {our_date.month}/{our_date.day} 已完售"
+            status, status_zh = "満席", f"{ours_label} 已完售"
         else:
-            line2 = f"我們 {our_date.month}/{our_date.day} 剩 {ours['remain']} 艇，快訂"
+            status, status_zh = f"残り{ours['remain']}艇", f"{ours_label} 尚有 {ours['remain']} 艇，快訂"
     else:
-        line2 = (f"我們 {our_date.month}/{our_date.day}："
-                 f"{release.month}/{release.day} 09:00 JST 開賣")
+        status, status_zh = "未発売", f"{ours_label} 尚未開搶"
 
+    # 第二行：今天剛開賣的那一天賣掉多少——用來抓我們開搶當天要用多少力氣
+    s = summaries[latest]
+    if s["remain"] == 0:
+        line1 = f"{label(latest)} {s['total']} 艇全數售完"
+    else:
+        times = "・".join(t.lstrip("0") for t in s["open_times"][:3])
+        more = "…" if len(s["open_times"]) > 3 else ""
+        line1 = f"{label(latest)} 尚有 {s['remain']} 艇（{times}{more}）"
+
+    release = our_date - timedelta(days=RELEASE_DAYS)
     detail = "\n".join([
-        f"{latest.isoformat()} 分の予約が開始済み（乗船日の{RELEASE_DAYS}日前 09:00 JST 開放）",
+        f"{our_date.isoformat()}（乗船日）：{status}"
+        f"／{release.isoformat()} 09:00 JST 発売",
+        f"最新発売日 {latest.isoformat()}："
         f"全{s['slots']}枠 × {s['cap']}艇 = {s['total']}艇 / 残り{s['remain']}艇",
         ("空き枠：" + "、".join(s["open_times"])) if s["open_times"] else "空き枠なし",
     ])
 
     return {
-        "date_label": label(latest),
+        "date_label": label(our_date),
         "status": status,
         "updated": datetime.now(JST).strftime("%Y-%m-%d %H:%M"),
         "detail": detail,
         "source": CALENDAR,
         "title_zh": TITLE_ZH,
         "status_zh": status_zh,
-        "summary_zh": f"{line1}\n{line2}",
+        "summary_zh": line1,
     }
 
 

@@ -281,14 +281,14 @@
           "map_query": "高千穂峡",
           "next_transit": "包車 → 阿蘇草千里（車程約1.5小時）",
           "live_status": {
-            "date_label": "9/25[五]",
-            "status": "満席",
-            "updated": "2026-09-11 15:57",
-            "detail": "2026-09-25 分の予約が開始済み（乗船日の14日前 09:00 JST 開放）\n全16枠 × 15艇 = 240艇 / 残り0艇\n空き枠なし",
+            "date_label": "10/16[五]",
+            "status": "未発売",
+            "updated": "2026-09-11 16:09",
+            "detail": "2026-10-16（乗船日）：未発売／2026-10-02 09:00 JST 発売\n最新発売日 2026-09-25：全16枠 × 15艇 = 240艇 / 残り0艇\n空き枠なし",
             "source": "https://eipro.jp/takachiho1/eventCalendars/index",
             "title_zh": "高千穗峽 划船開賣",
-            "status_zh": "9/25[五] 全數售完",
-            "summary_zh": "16 場 240 艇開賣當天清空\n我們 10/16：10/2 09:00 JST 開賣"
+            "status_zh": "10/16 尚未開搶",
+            "summary_zh": "9/25[五] 240 艇全數售完"
           },
           "live_tag": "10/2 搶"
         },

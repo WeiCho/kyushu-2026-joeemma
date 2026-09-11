@@ -14,14 +14,14 @@
 
 ```json
 "live_status": {
-  "date_label": "9/25[五]",                 // 最新開賣日 M/D[週]
-  "status": "満席",                          // 日文原文（中文轉不出來時的退路）
+  "date_label": "10/16[五]",                // 我們的乘船日 M/D[週]
+  "status": "未発売",                        // 我們那天的狀態，日文原文
   "updated": "2026-09-11 15:57",            // 抓取時間（JST）
   "detail": "…",                            // 日文多行原文
   "source": "https://eipro.jp/takachiho1/eventCalendars/index",
   "title_zh": "高千穗峽 划船開賣",
-  "status_zh": "9/25[五] 全數售完",
-  "summary_zh": "16 場 240 艇開賣當天清空 + 我們 10/16 的狀況"
+  "status_zh": "10/16 尚未開搶",
+  "summary_zh": "9/25[五] 240 艇全數售完"
 }
 ```
 
@@ -58,9 +58,9 @@ python3 render.py .        # 讀 ./trip.json → 產出 行程表.html + PWA 檔
 |---|---|
 | Workflow | `.github/workflows/takachiho.yml`（同一個 job 也順便更新天氣，見第 3 節） |
 | 腳本 | `scripts/update_takachiho.py`（只用 Python 標準庫） |
-| 名稱 | 「行程每日更新（划船狀態・天氣預報）」（檔名仍是 takachiho.yml，保留 Actions 歷史） |
-| 時間 | 每天 **09:04 JST**（cron `4 0 * 8,9,10 *`，UTC），只在 8・9・10 月執行 |
-| 手動執行 | Actions 頁面 → 「高千穗峽划船狀態每日更新」→ Run workflow |
+| 名稱 | 「行程狀態更新（划船開賣・天氣預報）」（檔名仍是 takachiho.yml，保留 Actions 歷史） |
+| 時間 | 每天 **09:04 / 13:04 / 21:04 JST** 三次（cron `4 0,4,12 * 8,9,10 *`，UTC），只在 8・9・10 月執行 |
+| 手動執行 | Actions 頁面 → 「行程狀態更新（划船開賣・天氣預報）」→ Run workflow |
 | 產物 | 只 commit `trip.json`；HTML/PWA 由同一個 job 重新 render 後直接部署 Pages |
 
 ### 為什麼不是 Claude 雲端排程（routine）
@@ -81,8 +81,9 @@ python3 render.py .        # 讀 ./trip.json → 產出 行程表.html + PWA 檔
   跟「完全沒賣出」長得一模一樣。`order_remain_amount` 偶爾是 -1（超賣），要夾到 0。
 - 查 今天 ~ 今天+16 天，取**已開賣日期裡最遠的那天**當「最新開賣日」（正常＝今天+14；
   09:00 JST 前跑會是 +13，不算錯）。與預期不符只印警告、照樣寫入。
-- 小卡兩行：第一行是最新開賣日賣掉多少，第二行是**我們自己的 10/16**——
-  還沒開賣就寫 10/2 開賣，開賣後改成報那天剩幾艇 / 已完售 / 已截止。
+- 小卡兩行：**第一行（state）是我們自己的 10/16**——還沒開賣寫「10/16 尚未開搶」，
+  開賣後改報剩幾艇 / 已完售 / 已截止；開賣日期由卡片既有的 `live_tag`（「10/2 搶」）帶，不重複寫。
+  第二行是最新開賣日賣掉多少，用來抓開搶那天要用多少力氣。
 - **抓取或解析失敗** → 離開碼 1，Actions 亮紅燈，**不會寫入舊值**。
 - 內容相同（或只有 `updated` 不同）就不寫檔，也就不會產生空 commit。
 
@@ -103,7 +104,7 @@ python3 render.py .        # 讀 ./trip.json → 產出 行程表.html + PWA 檔
 |---|---|
 | 腳本 | `scripts/update_weather.py`（只用 Python 標準庫） |
 | 來源 | `https://www.jma.go.jp/bosai/forecast/data/forecast/{府縣code}.json`（無金鑰、無流量限制） |
-| 執行 | 併在 `takachiho.yml` 裡，每天 09:04 JST 跟划船狀態一起跑 |
+| 執行 | 併在 `takachiho.yml` 裡，每天 09:04 / 13:04 / 21:04 JST 跟划船開賣狀況一起跑 |
 | 寫入欄位 | `days[].weather_live` = `{"text": "福岡 18–24°C・多雲時晴・降雨 30%", "updated": "10/14 17:00", "scope": "週間預報"（只有第 4～7 天才有）}` |
 
 ### 每天抓哪一區：`days[].weather_area`
@@ -130,7 +131,7 @@ python3 render.py .        # 讀 ./trip.json → 產出 行程表.html + PWA 檔
 
 ## 摘要給接手者
 - `live_status` 功能已上線。
-- 每日更新改用 GitHub Actions（`takachiho.yml`），2026-08-02 起每天 09:04 JST 自動跑，無待辦。
+- 每日更新改用 GitHub Actions（`takachiho.yml`），2026-08-02 起自動跑；2026-09-11 起改抓 eipro 預約日曆、一天三次，無待辦。
 - 同一個 workflow 也更新天氣預報（`scripts/update_weather.py`）；行程進入 10/8 之後才會真的抓到值，在那之前顯示 trip.json 原本的靜態氣候描述。
 - Claude 雲端 routine 已停用（該環境連不到來源網站）。
 - 行程結束（10/20）或 10 月底可刪掉 workflow。
