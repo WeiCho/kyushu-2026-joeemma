@@ -757,6 +757,8 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 .wx-hours b{font-size:16px;font-weight:600}
 .wx-hours .p{font-size:12px;color:var(--muted)}
 .wx-hours .wet .p{color:var(--warm)}
+.wx-spread{margin:6px 0 0;font-size:13px;line-height:1.7;color:var(--warm)}
+[data-theme-size="large"] .wx-spread{font-size:15px}
 /* Windy 按鈕沿用 .route-btn 的外框，只調位置 */
 .wx-windy{margin-top:12px}
 [data-theme-size="large"] .wx-hours b{font-size:19px}
@@ -1554,9 +1556,13 @@ body.editing>#editor{display:block !important}
             {%- if fc.text %}・{{ fc.text }}{% endif %}
             {#- 用 fc["pop"]：fc.pop 在 Jinja 裡會先拿到 dict 的 .pop() 方法 -#}
             {%- if fc["pop"] is not none %}・降雨 {{ fc["pop"] }}%{% endif %}
-            <span class="wx-src">Open-Meteo 預報 · {{ fc.updated }} 更新</span>
+            <span class="wx-src">{{ fc.model or "Open-Meteo" }} 預報 · {{ fc.updated }} 更新</span>
           </p>
           {% elif day.weather %}<p class="day-weather">{{ day.weather }}</p>{% endif %}
+          {%- if fc and fc.spread %}
+          {#- ECMWF 與 GFS 溫差 4°C 以上：數字還不可靠，提醒出發前再看（Windy 按鈕就在下面） -#}
+          <p class="wx-spread">各模式差異大（{{ fc.spread.what }} {{ fc.spread.lo }}–{{ fc.spread.hi }}°C），出發前再看一次</p>
+          {%- endif %}
           {%- if wa.lat is not none and wa.lon is not none %}
           {#- Windy 是主要的細看入口（行程主人是 Premium 會員：登入後 14 天＋逐小時），
               所以緊接在摘要下、做成跟「本日路線一鍵導航」同款的按鈕，而不是逐時列後面的一行小字。
@@ -1567,7 +1573,7 @@ body.editing>#editor{display:block !important}
           {%- if fc and fc.hours %}
           <figure class="wx-hours">
             <figcaption>{{ "每小時" if fc.step == 1 else "每 3 小時" }}氣溫・降雨機率
-              {%- if day.weather_live %}<span class="wx-src">Open-Meteo · {{ fc.updated }} 更新</span>{% endif %}</figcaption>
+              {%- if day.weather_live %}<span class="wx-src">{{ fc.model or "Open-Meteo" }} · {{ fc.updated }} 更新</span>{% endif %}</figcaption>
             <ol>
               {%- for h in fc.hours %}
               <li{% if h.p is not none and h.p >= 50 %} class="wet"{% endif %}>
