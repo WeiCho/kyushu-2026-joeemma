@@ -729,14 +729,10 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 .wx-hours b{font-size:16px;font-weight:600}
 .wx-hours .p{font-size:12px;color:var(--muted)}
 .wx-hours .wet .p{color:var(--warm)}
-.wx-windy{
-  display:inline-block;margin-top:8px;font-size:13.5px;letter-spacing:.04em;color:var(--muted);
-  text-decoration:none;border-bottom:.8px solid var(--line);padding:4px 0;
-}
-.wx-windy:hover{color:var(--ink);border-bottom-color:currentColor}
+/* Windy 按鈕沿用 .route-btn 的外框，只調位置 */
+.wx-windy{margin-top:12px}
 [data-theme-size="large"] .wx-hours b{font-size:19px}
 [data-theme-size="large"] .wx-hours .h,[data-theme-size="large"] .wx-hours .p{font-size:14px}
-[data-theme-size="large"] .wx-windy{font-size:16px}
 /* 當日小提醒：跟天氣同一種灰，字級一樣，只用行距分開 */
 .day-note{margin:6px 0 0;font-size:14px;line-height:1.8;color:var(--muted)}
 .day-tools{margin-top:16px}
@@ -1606,7 +1602,8 @@ body.editing>#editor{display:block !important}
           <p class="day-weather">福岡 17–23°C・晴時多雲・降雨 12%
             <span class="wx-src">Open-Meteo 預報 · 10/04 13:24 更新</span>
           </p>
-          
+          <a class="route-btn wx-windy" href="https://www.windy.com/33.59/130.401?33.59,130.401,10"
+             target="_blank" rel="noopener">Windy 逐時預報・福岡&nbsp;↗</a>
           <figure class="wx-hours">
             <figcaption>每 3 小時氣溫・降雨機率</figcaption>
             <ol>
@@ -1623,8 +1620,8 @@ body.editing>#editor{display:block !important}
               <li>
                 <span class="h">21</span><b>19°</b><span class="p">6%</span></li>
             </ol>
-          </figure><a class="wx-windy" href="https://www.windy.com/33.59/130.401?33.59,130.401,10"
-             target="_blank" rel="noopener">在 Windy 看福岡逐時預報&nbsp;↗</a>
+          </figure>
+
           
           
           <div class="day-tools">
@@ -1752,7 +1749,8 @@ body.editing>#editor{display:block !important}
           <p class="day-weather">高千穗 12–24°C・大致晴・降雨 16%
             <span class="wx-src">Open-Meteo 預報 · 10/04 13:24 更新</span>
           </p>
-          
+          <a class="route-btn wx-windy" href="https://www.windy.com/32.704/131.303?32.704,131.303,10"
+             target="_blank" rel="noopener">Windy 逐時預報・高千穗&nbsp;↗</a>
           <figure class="wx-hours">
             <figcaption>每 3 小時氣溫・降雨機率</figcaption>
             <ol>
@@ -1769,8 +1767,8 @@ body.editing>#editor{display:block !important}
               <li>
                 <span class="h">21</span><b>15°</b><span class="p">10%</span></li>
             </ol>
-          </figure><a class="wx-windy" href="https://www.windy.com/32.704/131.303?32.704,131.303,10"
-             target="_blank" rel="noopener">在 Windy 看高千穗逐時預報&nbsp;↗</a>
+          </figure>
+
           
           
           <div class="day-tools">
@@ -1896,7 +1894,8 @@ body.editing>#editor{display:block !important}
           <p class="day-weather">別府・由布院 11–21°C・短暫毛毛雨・降雨 21%
             <span class="wx-src">Open-Meteo 預報 · 10/04 13:23 更新</span>
           </p>
-          
+          <a class="route-btn wx-windy" href="https://www.windy.com/33.265/131.356?33.265,131.356,10"
+             target="_blank" rel="noopener">Windy 逐時預報・別府・由布院&nbsp;↗</a>
           <figure class="wx-hours">
             <figcaption>每 3 小時氣溫・降雨機率</figcaption>
             <ol>
@@ -1913,8 +1912,8 @@ body.editing>#editor{display:block !important}
               <li>
                 <span class="h">21</span><b>15°</b><span class="p">20%</span></li>
             </ol>
-          </figure><a class="wx-windy" href="https://www.windy.com/33.265/131.356?33.265,131.356,10"
-             target="_blank" rel="noopener">在 Windy 看別府・由布院逐時預報&nbsp;↗</a>
+          </figure>
+
           
           
           <div class="day-tools">
@@ -2110,7 +2109,8 @@ body.editing>#editor{display:block !important}
           <p class="day-weather">門司・北九州 17–20°C・毛毛雨・降雨 24%
             <span class="wx-src">Open-Meteo 預報 · 10/04 13:23 更新</span>
           </p>
-          
+          <a class="route-btn wx-windy" href="https://www.windy.com/33.945/130.962?33.945,130.962,10"
+             target="_blank" rel="noopener">Windy 逐時預報・門司・北九州&nbsp;↗</a>
           <figure class="wx-hours">
             <figcaption>每 3 小時氣溫・降雨機率</figcaption>
             <ol>
@@ -2127,8 +2127,8 @@ body.editing>#editor{display:block !important}
               <li>
                 <span class="h">21</span><b>17°</b><span class="p">14%</span></li>
             </ol>
-          </figure><a class="wx-windy" href="https://www.windy.com/33.945/130.962?33.945,130.962,10"
-             target="_blank" rel="noopener">在 Windy 看門司・北九州逐時預報&nbsp;↗</a>
+          </figure>
+
           
           
           <div class="day-tools">
@@ -2306,7 +2306,8 @@ body.editing>#editor{display:block !important}
           <p class="day-weather">糸島・福岡 15–24°C・短暫毛毛雨・降雨 17%
             <span class="wx-src">Open-Meteo 預報 · 10/04 13:23 更新</span>
           </p>
-          
+          <a class="route-btn wx-windy" href="https://www.windy.com/33.557/130.195?33.557,130.195,10"
+             target="_blank" rel="noopener">Windy 逐時預報・糸島・福岡&nbsp;↗</a>
           <figure class="wx-hours">
             <figcaption>每 3 小時氣溫・降雨機率</figcaption>
             <ol>
@@ -2323,8 +2324,8 @@ body.editing>#editor{display:block !important}
               <li>
                 <span class="h">21</span><b>20°</b><span class="p">0%</span></li>
             </ol>
-          </figure><a class="wx-windy" href="https://www.windy.com/33.557/130.195?33.557,130.195,10"
-             target="_blank" rel="noopener">在 Windy 看糸島・福岡逐時預報&nbsp;↗</a>
+          </figure>
+
           
           
           <div class="day-tools">
@@ -2502,8 +2503,9 @@ body.editing>#editor{display:block !important}
              aria-label="Day 6 10月20日">
       <div class="day-grid">
         <div class="day-aside"><h3 class="day-name">滿載而歸（早班機，時間偏緊）</h3>
-          <p class="day-date">10月20日 · 週二</p><p class="day-weather">清晨 15°C 上下，早起微涼</p><a class="wx-windy" href="https://www.windy.com/33.59/130.401?33.59,130.401,10"
-             target="_blank" rel="noopener">在 Windy 看福岡逐時預報&nbsp;↗</a>
+          <p class="day-date">10月20日 · 週二</p><p class="day-weather">清晨 15°C 上下，早起微涼</p><a class="route-btn wx-windy" href="https://www.windy.com/33.59/130.401?33.59,130.401,10"
+             target="_blank" rel="noopener">Windy 逐時預報・福岡&nbsp;↗</a>
+
           
           
           <div class="day-tools">

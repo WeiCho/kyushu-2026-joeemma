@@ -757,14 +757,10 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 .wx-hours b{font-size:16px;font-weight:600}
 .wx-hours .p{font-size:12px;color:var(--muted)}
 .wx-hours .wet .p{color:var(--warm)}
-.wx-windy{
-  display:inline-block;margin-top:8px;font-size:13.5px;letter-spacing:.04em;color:var(--muted);
-  text-decoration:none;border-bottom:.8px solid var(--line);padding:4px 0;
-}
-.wx-windy:hover{color:var(--ink);border-bottom-color:currentColor}
+/* Windy 按鈕沿用 .route-btn 的外框，只調位置 */
+.wx-windy{margin-top:12px}
 [data-theme-size="large"] .wx-hours b{font-size:19px}
 [data-theme-size="large"] .wx-hours .h,[data-theme-size="large"] .wx-hours .p{font-size:14px}
-[data-theme-size="large"] .wx-windy{font-size:16px}
 /* 當日小提醒：跟天氣同一種灰，字級一樣，只用行距分開 */
 .day-note{margin:6px 0 0;font-size:14px;line-height:1.8;color:var(--muted)}
 .day-tools{margin-top:16px}
@@ -1561,6 +1557,13 @@ body.editing>#editor{display:block !important}
             <span class="wx-src">Open-Meteo 預報 · {{ fc.updated }} 更新</span>
           </p>
           {% elif day.weather %}<p class="day-weather">{{ day.weather }}</p>{% endif %}
+          {%- if wa.lat is not none and wa.lon is not none %}
+          {#- Windy 是主要的細看入口（行程主人是 Premium 會員：登入後 14 天＋逐小時），
+              所以緊接在摘要下、做成跟「本日路線一鍵導航」同款的按鈕，而不是逐時列後面的一行小字。
+              不分日子遠近一律顯示：自動抓的預報還沒進範圍時，Windy 已經看得到 -#}
+          <a class="route-btn wx-windy" href="https://www.windy.com/{{ wa.lat }}/{{ wa.lon }}?{{ wa.lat }},{{ wa.lon }},10"
+             target="_blank" rel="noopener">Windy 逐時預報・{{ wa.label }}&nbsp;↗</a>
+          {%- endif %}
           {%- if fc and fc.hours %}
           <figure class="wx-hours">
             <figcaption>{{ "每小時" if fc.step == 1 else "每 3 小時" }}氣溫・降雨機率
@@ -1574,11 +1577,7 @@ body.editing>#editor{display:block !important}
             </ol>
           </figure>
           {%- endif %}
-          {%- if wa.lat is not none and wa.lon is not none %}
-          {#- 細看交給 Windy：開到同一個座標。Premium 會員登入後是 14 天與逐小時，沒登入也看得到免費版 -#}
-          <a class="wx-windy" href="https://www.windy.com/{{ wa.lat }}/{{ wa.lon }}?{{ wa.lat }},{{ wa.lon }},10"
-             target="_blank" rel="noopener">在 Windy 看{{ wa.label }}逐時預報&nbsp;↗</a>
-          {%- endif %}
+
           {% if day.note %}<p class="day-note">{{ day.note }}</p>{% endif %}
           {% if day.route_url %}
           <div class="day-tools">
