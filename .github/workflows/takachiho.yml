@@ -40,6 +40,11 @@ jobs:
         continue-on-error: true
         run: python scripts/update_weather.py trip.json
 
+      # Open-Meteo：16 天內的氣溫、降雨與逐時（氣象廳只到 7 天）。同樣失敗不中斷
+      - name: 抓 Open-Meteo 預報並更新 trip.json
+        continue-on-error: true
+        run: python scripts/update_forecast.py trip.json
+
       - name: Commit & push
         id: commit
         env:
@@ -72,6 +77,11 @@ jobs:
                   if d.get("weather_live") and d["weather_live"] != old_wx.get(d["date"]))
           if n:
               bits.append(f"天氣預報 {n} 天")
+          old_fc = {d["date"]: d.get("forecast") for d in prev["days"]}
+          m = sum(1 for d in new["days"]
+                  if d.get("forecast") and d["forecast"] != old_fc.get(d["date"]))
+          if m:
+              bits.append(f"逐時預報 {m} 天")
           print("chore: 每日更新（" + "、".join(bits or ["trip.json"]) + "）")
           PY
           )

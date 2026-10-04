@@ -739,6 +739,32 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 .day-weather{margin:14px 0 0;font-size:14px;line-height:1.8;color:var(--muted)}
 /* 預報來源：比天氣本身再淡一階，換行自己站一行，不跟氣溫擠在一起 */
 .wx-src{display:block;font-size:12px;letter-spacing:.04em;opacity:.72}
+/* 逐時氣溫：一格一個時段（時／氣溫／降雨），格子多於欄寬時橫向捲動。
+   降雨機率 50% 以上用暖色點出來——要回答的是「這個時段要不要帶傘」 */
+.wx-hours{margin:12px 0 0}
+.wx-hours figcaption{font-size:12px;letter-spacing:.04em;color:var(--muted)}
+.wx-hours ol{
+  list-style:none;margin:6px 0 0;padding:0 0 6px;display:flex;gap:0;
+  overflow-x:auto;scrollbar-width:thin;scroll-snap-type:x proximity;
+}
+.wx-hours li{
+  flex:0 0 auto;min-width:3em;display:grid;justify-items:center;gap:1px;
+  padding:6px 4px;border-left:.8px solid var(--line);scroll-snap-align:start;
+  font-family:var(--latin);font-variant-numeric:tabular-nums;
+}
+.wx-hours li:first-child{border-left:0}
+.wx-hours .h{font-size:12px;color:var(--muted)}
+.wx-hours b{font-size:16px;font-weight:600}
+.wx-hours .p{font-size:12px;color:var(--muted)}
+.wx-hours .wet .p{color:var(--warm)}
+.wx-windy{
+  display:inline-block;margin-top:8px;font-size:13.5px;letter-spacing:.04em;color:var(--muted);
+  text-decoration:none;border-bottom:.8px solid var(--line);padding:4px 0;
+}
+.wx-windy:hover{color:var(--ink);border-bottom-color:currentColor}
+[data-theme-size="large"] .wx-hours b{font-size:19px}
+[data-theme-size="large"] .wx-hours .h,[data-theme-size="large"] .wx-hours .p{font-size:14px}
+[data-theme-size="large"] .wx-windy{font-size:16px}
 /* 當日小提醒：跟天氣同一種灰，字級一樣，只用行距分開 */
 .day-note{margin:6px 0 0;font-size:14px;line-height:1.8;color:var(--muted)}
 .day-tools{margin-top:16px}
@@ -1226,6 +1252,7 @@ body.editing>#editor{display:block !important}
   .em-row{break-inside:avoid}
   /* 紙上的帳只要清單與合計；輸入列、匯率按鈕、復原提示都是螢幕上的操作 */
   .ledger-add,.ledger-rate button,.ledger-undo,.ledger-warn{display:none !important}
+  .wx-windy{display:none}
   .lg-row{border-bottom-style:solid}
   a{text-decoration:none;color:inherit}
   body{background:#fff}
@@ -1514,13 +1541,44 @@ body.editing>#editor{display:block !important}
           <h3 class="day-name">{{ day.theme or "自由安排" }}</h3>
           <p class="day-date">{{ day.date_label }} · {{ day.weekday }}</p>
           {#- 左欄只留「當地氣候 + 當日小提醒」，整串景點鏈右邊的時間軸就看得到。
-              weather_live 是氣象廳預報（scripts/update_weather.py 每天更新），只在
-              行程進入 7 天預報範圍後才有；還沒有就顯示 trip.json 原本的氣候描述 -#}
+              天氣那一行的來源依序退：
+                weather_live 氣象廳（官方文字預報，7 天內才有，scripts/update_weather.py）
+                forecast     Open-Meteo（16 天內，scripts/update_forecast.py）
+                weather      trip.json 手寫的氣候描述
+              逐時那一列只來自 forecast；兩個來源同時有時，摘要用氣象廳、逐時用 Open-Meteo，
+              不在同一行並列兩組氣溫，免得長輩看到兩個數字不知道信哪個 -#}
+          {%- set fc = day.forecast -%}
+          {%- set wa = day.weather_area or {} -%}
           {% if day.weather_live %}
           <p class="day-weather">{{ day.weather_live.text }}
             <span class="wx-src">氣象廳{% if day.weather_live.scope %} {{ day.weather_live.scope }}{% endif %} · {{ day.weather_live.updated }} 發布</span>
           </p>
+          {% elif fc %}
+          <p class="day-weather">{{ wa.label }} {{ fc.tmin }}–{{ fc.tmax }}°C
+            {%- if fc.text %}・{{ fc.text }}{% endif %}
+            {#- 用 fc["pop"]：fc.pop 在 Jinja 裡會先拿到 dict 的 .pop() 方法 -#}
+            {%- if fc["pop"] is not none %}・降雨 {{ fc["pop"] }}%{% endif %}
+            <span class="wx-src">Open-Meteo 預報 · {{ fc.updated }} 更新</span>
+          </p>
           {% elif day.weather %}<p class="day-weather">{{ day.weather }}</p>{% endif %}
+          {%- if fc and fc.hours %}
+          <figure class="wx-hours">
+            <figcaption>{{ "每小時" if fc.step == 1 else "每 3 小時" }}氣溫・降雨機率
+              {%- if day.weather_live %}<span class="wx-src">Open-Meteo · {{ fc.updated }} 更新</span>{% endif %}</figcaption>
+            <ol>
+              {%- for h in fc.hours %}
+              <li{% if h.p is not none and h.p >= 50 %} class="wet"{% endif %}>
+                <span class="h">{{ h.h }}</span><b>{{ h.t }}°</b>
+                {%- if h.p is not none %}<span class="p">{{ h.p }}%</span>{% endif %}</li>
+              {%- endfor %}
+            </ol>
+          </figure>
+          {%- endif %}
+          {%- if wa.lat is not none and wa.lon is not none %}
+          {#- 細看交給 Windy：開到同一個座標。Premium 會員登入後是 14 天與逐小時，沒登入也看得到免費版 -#}
+          <a class="wx-windy" href="https://www.windy.com/{{ wa.lat }}/{{ wa.lon }}?{{ wa.lat }},{{ wa.lon }},10"
+             target="_blank" rel="noopener">在 Windy 看{{ wa.label }}逐時預報&nbsp;↗</a>
+          {%- endif %}
           {% if day.note %}<p class="day-note">{{ day.note }}</p>{% endif %}
           {% if day.route_url %}
           <div class="day-tools">
