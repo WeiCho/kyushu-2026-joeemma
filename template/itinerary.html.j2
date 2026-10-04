@@ -402,6 +402,109 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 .card-live a.who{text-decoration:none;border-bottom:.8px solid var(--line)}
 .card-live a.who:hover{border-color:currentColor}
 
+/* ── 票根卡（card.variant = "hello"）──
+   出發前的問候卡做成一張登機票根：上半問候、打孔線、下半航線與倒數。
+   右上角蓋一枚會慢慢轉的環形印章；底色兩團極淡的暖紅／海藍光暈，
+   顏色只從既有的 --warm 與高千穗峽照片的水色取，不另立新色 */
+.card-live.card-hello,
+:root[data-theme="dark"] .card-live.card-hello{
+  position:relative;min-height:0;padding:20px 18px 0;
+  background:
+    radial-gradient(110% 80% at 100% 0%,var(--hello-a),transparent 62%),
+    radial-gradient(90% 75% at 0% 100%,var(--hello-b),transparent 66%),
+    var(--card);
+}
+{% include '_barlow_font.j2' %}
+.card-hello{
+  --hello-a:rgba(140,47,34,.09);--hello-b:rgba(58,110,122,.11);
+  /* 卡上的英文與數字用內嵌的 Barlow；--latin 的 DIN 多數裝置沒有，會一路掉到 Roboto／Arial */
+  --hello-latin:"Barlow",var(--latin);
+}
+:root[data-theme="dark"] .card-hello{--hello-a:rgba(224,138,114,.10);--hello-b:rgba(120,170,180,.09)}
+.hello-title{margin:0;font-size:13px;line-height:1.6;letter-spacing:.32em;color:var(--muted)}
+.hello-fun{
+  margin:2px 0 0;font-family:var(--hello-latin);font-weight:500;
+  font-size:38px;line-height:1.05;letter-spacing:-.01em;color:var(--ink);
+}
+/* 打孔線：虛線＋左右兩個半圓缺口。缺口是紙色圓，裁掉外半邊，
+   多留 1px 蓋住卡片自己的邊框，看起來才像真的被咬掉一口 */
+.hello-stub{
+  position:relative;margin-top:16px;padding:11px 0 13px;
+  border-top:1px dashed var(--line);
+  display:flex;justify-content:space-between;align-items:baseline;gap:10px;
+}
+.hello-stub::before,.hello-stub::after{
+  content:"";position:absolute;top:-8px;width:15px;height:15px;border-radius:50%;
+  background:var(--paper);border:.8px solid var(--line);
+}
+.hello-stub::before{left:-26.3px;clip-path:inset(0 0 0 calc(50% - 1px))}
+.hello-stub::after{right:-26.3px;clip-path:inset(0 calc(50% - 1px) 0 0)}
+.hello-route{
+  margin:0;display:flex;align-items:center;gap:6px;white-space:nowrap;
+  font-family:var(--hello-latin);font-weight:600;font-size:13px;letter-spacing:.16em;
+}
+.hello-route svg{width:22px;height:8px;fill:none;stroke:currentColor;stroke-width:1}
+.hello-count{
+  margin:0;display:flex;align-items:baseline;gap:5px;white-space:nowrap;
+  font-size:12px;letter-spacing:.06em;color:var(--muted);
+}
+.hello-n{
+  font-family:var(--hello-latin);font-weight:500;font-size:29px;line-height:1;
+  letter-spacing:0;color:var(--warm);font-variant-numeric:tabular-nums;
+}
+.hello-u{font-family:var(--hello-latin);font-size:12.5px}
+/* 沒有 JS（或還沒算好）時是「10.15 — 10.20」，破折號不該放大成倒數字級 */
+.card-hello:not(.is-counted) .hello-n{font-size:12px;color:inherit}
+.card-hello.is-home .hello-k{color:var(--ink)}
+
+.hello-stamp{
+  position:absolute;top:-34px;right:-8px;width:80px;height:80px;
+  border-radius:50%;background:var(--card);
+  box-shadow:0 2px 10px rgba(45,37,25,.10);
+  overflow:visible;pointer-events:none;
+}
+.hello-stamp text{
+  font-family:var(--hello-latin);font-size:10.5px;font-weight:600;letter-spacing:.08em;
+  fill:var(--warm);
+  transform-box:view-box;transform-origin:50% 50%;
+}
+.hello-plane{fill:var(--ink);transform:rotate(45deg);transform-box:view-box;transform-origin:50% 50%}
+@media (prefers-reduced-motion:no-preference){
+  .hello-stamp text{animation:hello-spin 32s linear infinite}
+  /* 卡片浮上來之後才「蓋章」：從大一圈、斜一點的位置壓下來。全卡唯一的登場動作 */
+  .js .card-hello .hello-stamp{
+    opacity:0;transform:scale(1.4) rotate(-14deg);
+    transition:opacity .35s var(--ease) .5s,transform .7s var(--ease) .5s;
+  }
+  .js .card-deck.is-in .card-hello .hello-stamp{opacity:1;transform:none}
+}
+@keyframes hello-spin{to{transform:rotate(360deg)}}
+/* 大字模式：卡片加寬，字級跟著其他區塊放大一級；
+   底列寬度不夠時讓倒數折到第二行，而不是把字擠小 */
+[data-theme-size="large"] .card-deck{--live-box:calc(280px + 32px + 1.6px)}
+[data-theme-size="large"] .hello-title{font-size:15px;letter-spacing:.26em}
+[data-theme-size="large"] .hello-fun{font-size:44px}
+[data-theme-size="large"] .hello-stub{flex-wrap:wrap;row-gap:4px}
+[data-theme-size="large"] .hello-route{font-size:15px}
+[data-theme-size="large"] .hello-count{font-size:15px}
+[data-theme-size="large"] .hello-u{font-size:15px}
+[data-theme-size="large"] .hello-n{font-size:34px}
+
+/* 手機封面：浮卡固定在右下，原本會壓住照片下緣（正好是小船的位置）。
+   改成讓照片只佔「標語之下、浮卡之上」的高度：底部留出浮卡實高
+   （--deck-h，由 JS 量；含印章凸出的部分），照片在剩下的那格裡等比縮放。
+   只在有 JS（浮卡真的是浮層）時才這樣排；照片最矮保留 220px，再矮就讓它被蓋 */
+@media (width<=860px){
+  .js .hero:has(.card-deck){
+    /* 高度要是定值 1fr 才會吃「剩下的空間」；min-content 保底，矮螢幕內容放不下時照樣撐開 */
+    height:100svh;min-height:min-content;
+    grid-template-rows:auto minmax(220px,1fr);
+    padding-bottom:calc(var(--deck-h,190px) + 24px + var(--nowbar-h,0px) + 20px);
+  }
+  .js .hero:has(.card-deck) .hero-figure{align-self:stretch;min-height:0}
+  .js .hero:has(.card-deck) .hero-figure img{height:100%;max-height:460px}
+}
+
 /* ── 章節 ── */
 .section{max-width:1440px;margin:0 auto;padding:var(--sec) var(--gut) 0}
 .section-heading{margin-bottom:clamp(28px,5vh,60px)}
@@ -535,18 +638,6 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 #emergency .em-sub{color:rgba(255,255,255,.86)}
 #emergency .em-name{border-top-color:var(--hair-dark)}
 
-/* ── 可收合章節（花費；預設收起，沒有 JS 也能點開）── */
-/* 區塊銜接不畫橫線，改用底色與進場動畫區分 */
-/* 不用 margin-top：這一區是帶裡的第一個元素，外邊距會被帶「擠」出去變成空白帶。
-   需要的上留白由 .alerts-summary 的 padding-top 負責 */
-.alerts-section{margin-top:0}
-.alerts-summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;
-  align-items:flex-start;gap:20px;padding-top:var(--sec)}
-.alerts-summary::-webkit-details-marker{display:none}
-.alerts-toggle{font-family:var(--latin);font-size:22px;color:var(--muted);flex:0 0 auto}
-.alerts-section[open] .alerts-toggle{transform:rotate(45deg)}
-.alerts-section .section-heading{margin-bottom:0}
-.alerts-body{padding-top:clamp(20px,3.4vh,40px)}
 
 /* ── 每日行程：跳日列 ── */
 /* 六格等分排一行，任何天數都不會有一格特別寬；天數多到擠不下才換行。
@@ -852,46 +943,94 @@ html:not(.js) .em-card{cursor:default}
 
 /* ── 花費 ── */
 .recommendation{padding-top:clamp(22px,3.6vh,44px)}
-/* 每天一列的明細表：編號、名稱、金額靠右。金額同欄右對齊才好直向比較 */
-.pick-grid{display:grid;gap:0}
-.pick-row{
-  display:grid;grid-template-columns:auto minmax(0,1fr) auto;
-  gap:clamp(12px,2.4vw,36px);align-items:baseline;
-  border-top:.8px solid var(--line);padding-block:clamp(14px,2.2vh,22px);
+/* 自己的記帳（#ledger）：只存在這支手機的 localStorage，不上傳、不進 trip.json。
+   版面沿用全站語法：.8px 細線分列、金額用 --latin 靠右，合計放最上面當這一區的收束點 */
+.ledger-total{
+  display:flex;flex-wrap:wrap;align-items:baseline;column-gap:14px;row-gap:2px;
+  padding-bottom:clamp(14px,2.4vh,22px);
 }
-.pick-row:last-child{border-bottom:.8px solid var(--line)}
-.pick-no{
-  font-family:var(--latin);font-size:14px;letter-spacing:.1em;color:var(--muted);
-  white-space:nowrap;min-width:4.5em;
+.ledger-total .lbl{font-size:15px;letter-spacing:.04em;color:var(--muted);flex-basis:100%}
+.ledger-yen{font-family:var(--latin);font-size:clamp(34px,4.4vw,48px);line-height:1.15;
+  letter-spacing:.01em;font-variant-numeric:tabular-nums}
+.ledger-twd{font-family:var(--latin);font-size:17px;color:var(--muted);font-variant-numeric:tabular-nums}
+.ledger-rate{
+  flex-basis:100%;display:flex;align-items:center;gap:8px;margin-top:6px;
+  font-size:14px;color:var(--muted);letter-spacing:.04em;
 }
-.pick-name{font-size:16px;line-height:1.7;letter-spacing:.04em}
-.pick-amt{font-family:var(--latin);font-size:clamp(18px,1.8vw,22px);letter-spacing:.03em;
-  white-space:nowrap;text-align:right}
-.budget-stay{display:block;margin-top:2px;font-size:13.5px;color:var(--muted)}
+.ledger-rate button,.ledger-btn{
+  font:inherit;color:inherit;background:none;cursor:pointer;
+  border:0;border-bottom:.8px solid var(--line);padding:2px 0;min-height:32px;
+}
+.ledger-rate button:hover,.ledger-btn:hover{border-bottom-color:currentColor}
+.ledger-rate input{width:6.5em}
+.ledger input{
+  font:inherit;font-size:16px;   /* 16 以下 iOS 會在聚焦時自動放大整頁 */
+  color:var(--ink);background:var(--card);
+  border:.8px solid var(--line);border-radius:4px;padding:8px 10px;min-height:44px;min-width:0;
+}
+.ledger input:focus-visible{outline:3px solid var(--focus);outline-offset:1px}
+.ledger input::placeholder{color:var(--muted);opacity:.75}
+.ledger-warn{margin:0 0 12px;font-size:14px;color:var(--warm)}
+/* 品項只比金額長一點，不撐滿整列：寬螢幕上一條長框反而不知道該打多少字 */
+.ledger-add{
+  display:grid;grid-template-columns:minmax(0,13em) minmax(0,10em) auto;
+  justify-content:start;gap:8px;
+  border-top:.8px solid var(--line);padding-block:clamp(14px,2.2vh,20px);
+}
+.ledger-yen-in{position:relative;display:block}
+.ledger-yen-in::before{
+  content:"¥";position:absolute;left:10px;top:50%;transform:translateY(-50%);
+  font-family:var(--latin);color:var(--muted);pointer-events:none;
+}
+.ledger-yen-in input{width:100%;padding-left:24px;font-family:var(--latin);font-variant-numeric:tabular-nums}
+.ledger-go{
+  min-width:44px;min-height:44px;border:0;border-radius:4px;cursor:pointer;
+  background:var(--pine);color:var(--paper);font:inherit;font-size:20px;line-height:1;
+}
+:root[data-theme="dark"] .ledger-go{background:var(--ink);color:var(--paper)}
+.lg-day{border-top:.8px solid var(--line);padding-top:clamp(14px,2.2vh,20px);margin-top:clamp(10px,1.8vh,16px)}
+.lg-day h3{display:flex;align-items:baseline;gap:12px;margin:0 0 4px;font-size:15px}
+.lg-no{font-family:var(--latin);letter-spacing:.1em;color:var(--muted);white-space:nowrap}
+.lg-date{font-family:var(--latin);font-size:13.5px;color:var(--muted)}
+.lg-sub{margin-left:auto;font-family:var(--latin);font-size:17px;font-variant-numeric:tabular-nums}
+.lg-day ul{list-style:none;margin:0;padding:0}
+.lg-row{
+  display:flex;width:100%;align-items:baseline;justify-content:space-between;gap:16px;
+  font:inherit;color:inherit;text-align:left;background:none;border:0;cursor:pointer;
+  padding:10px 0;min-height:44px;border-bottom:.8px dashed var(--line);
+}
+.lg-day li:last-child .lg-row{border-bottom:0}
+.lg-row:hover .lg-name{text-decoration:underline;text-underline-offset:4px;text-decoration-thickness:.8px}
+.lg-name{font-size:16px;letter-spacing:.04em;overflow-wrap:anywhere}
+.lg-amt{font-family:var(--latin);font-size:17px;white-space:nowrap;font-variant-numeric:tabular-nums}
+/* 點某一列就地變成編輯列：名稱、金額一行，下面是儲存／刪除／取消 */
+.lg-edit{display:grid;grid-template-columns:minmax(0,13em) minmax(0,10em);justify-content:start;gap:8px;padding:8px 0 12px}
+.lg-edit-acts{grid-column:1/-1;display:flex;gap:20px;align-items:center}
+.lg-edit-acts .del{color:var(--warm);margin-left:auto}
+.ledger-empty{margin:clamp(14px,2.4vh,26px) 0 0;font-size:15px;line-height:1.85;color:var(--muted)}
+/* 刪除後的「復原」提示：貼在畫面底部中間，幾秒後自己消失 */
+.ledger-undo{
+  position:fixed;left:50%;bottom:calc(20px + var(--nowbar-h,0px));z-index:45;
+  transform:translateX(-50%);display:flex;align-items:center;gap:16px;
+  background:var(--ink);color:var(--paper);border-radius:4px;
+  padding:6px 8px 6px 16px;font-size:15px;box-shadow:0 4px 18px rgba(45,37,25,.18);
+  max-width:calc(100% - var(--gut)*2);
+}
+.ledger-undo[hidden]{display:none}
+.ledger-undo button{
+  font:inherit;color:inherit;background:none;border:.8px solid currentColor;border-radius:4px;
+  padding:4px 12px;min-height:36px;cursor:pointer;white-space:nowrap;
+}
+.ledger-undo span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+[data-theme-size="large"] .lg-name,[data-theme-size="large"] .lg-amt{font-size:19px}
+[data-theme-size="large"] .lg-day h3{font-size:17px}
+[data-theme-size="large"] .ledger-rate{font-size:16px}
+[data-theme-size="large"] .ledger-twd{font-size:19px}
+/* 手機：三格擠在同一行，品項與金額按 1.3:1 分剩下的寬度 */
 @media (width<=560px){
-  .pick-row{grid-template-columns:auto minmax(0,1fr);row-gap:4px}
-  .pick-amt{grid-column:2;justify-self:end}
+  .ledger-add{grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) auto;justify-content:stretch}
+  .lg-edit{grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);justify-content:stretch}
 }
-/* 合計：靠右、與明細拉開，是這一區的收束點。
-   兩列用同一個格線，標題與金額各自對齊成一欄，字級也一致 */
-.budget-lines{
-  display:grid;grid-template-columns:auto auto;justify-content:end;align-items:baseline;
-  column-gap:clamp(16px,3vw,40px);row-gap:clamp(6px,1.2vh,14px);
-  margin-top:clamp(18px,3vh,34px);padding-block:clamp(12px,2vh,20px);
-}
-.budget-lines span{font-size:15px;letter-spacing:.04em;color:var(--muted);justify-self:end}
-.budget-lines b{
-  font-family:var(--latin);font-size:clamp(22px,2.8vw,32px);letter-spacing:.03em;
-  justify-self:start;   /* 數字靠左起排，兩列的開頭才對得齊 */
-}
-/* 預算那行放進同一個格線的第二欄，開頭跟數字切齊 */
-.budget-lines .pick-note{grid-column:2;margin:clamp(6px,1.2vh,12px) 0 0;text-align:left}
-.over-tag{
-  margin-left:.6em;color:var(--warm);border:.8px solid var(--warm);border-radius:4px;
-  padding:1px 8px;font-size:13px;letter-spacing:.06em;
-}
-.pick-note{margin:clamp(10px,1.8vh,18px) 0 0;font-size:15px;line-height:1.85;color:var(--muted)}
-.budget-empty{margin:clamp(14px,2.4vh,26px) 0 0;font-size:15px;line-height:1.85;color:var(--muted)}
 
 /* ── 備忘 ── */
 .check-grid{display:grid;gap:0}
@@ -1085,9 +1224,9 @@ body.editing>#editor{display:block !important}
   .em-hint{display:none}
   .em-print-todo{color:var(--muted)}
   .em-row{break-inside:avoid}
-  /* 花費螢幕上預設收起，紙本由 beforeprint 展開；這裡只收掉多餘留白與「＋」 */
-  .alerts-summary{padding-top:24px}
-  .alerts-toggle{display:none}
+  /* 紙上的帳只要清單與合計；輸入列、匯率按鈕、復原提示都是螢幕上的操作 */
+  .ledger-add,.ledger-rate button,.ledger-undo,.ledger-warn{display:none !important}
+  .lg-row{border-bottom-style:solid}
   a{text-decoration:none;color:inherit}
   body{background:#fff}
 }
@@ -1124,7 +1263,8 @@ body.editing>#editor{display:block !important}
         "title": item.card.title or item.name, "url": item.card.url,
         "state": item.card.text, "date": item.card.date,
         "tag": item.card.tag, "body": item.card["body"],
-        "hours": item.card.hours}) -%}
+        "hours": item.card.hours, "variant": item.card.variant,
+        "route": item.card.route}) -%}
     {%- endif -%}
   {%- endfor -%}
 {%- endfor -%}
@@ -1148,6 +1288,33 @@ body.editing>#editor{display:block !important}
   {%- if cards %}
   <div class="card-deck" id="card-deck">
     {%- for c in cards %}
+    {%- if c.variant == "hello" %}
+    {#- 出發前的「票根」卡：上半是問候，打孔線下半是航線與倒數。
+        倒數由下方小段 JS 依今天日期換算（出發前／旅途中第幾天／回家後），
+        沒有 JS 時退回顯示旅程起訖日。環形印章只是裝飾，對讀屏隱藏 -#}
+    <article class="card-live card-hello" data-i="{{ loop.index0 }}"
+             data-start="{{ trip.start_date }}" data-end="{{ trip.end_date }}">
+      <svg class="hello-stamp" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
+        <defs><path id="hello-ring" d="M50,50 m-37,0 a37,37 0 1,1 74,0 a37,37 0 1,1 -74,0"/></defs>
+        <text><textPath href="#hello-ring" textLength="230">BON VOYAGE · KYUSHU 2026 ·</textPath></text>
+        <path class="hello-plane" d="M50 38 L53 47 L63 51 L63 54 L53 52 L52 60 L55 63 L55 65 L50 63.5 L45 65 L45 63 L48 60 L47 52 L37 54 L37 51 L47 47 Z"/>
+      </svg>
+      <p class="hello-title">{{ c.title }}</p>
+      <p class="hello-fun" lang="en">{{ c.state }}</p>
+      <div class="hello-stub">
+        {%- if c.route %}
+        <p class="hello-route" aria-label="{{ c.route[0] }} 飛往 {{ c.route[1] }}">
+          <span>{{ c.route[0] }}</span>
+          <svg viewBox="0 0 28 8" aria-hidden="true" focusable="false"><path d="M0 4h26M22 1l4 3-4 3"/></svg>
+          <span>{{ c.route[1] }}</span></p>
+        {%- endif %}
+        <p class="hello-count" aria-live="off">
+          <span class="hello-k">{{ trip.start_date[5:] | replace("-", ".") }}</span>
+          <span class="hello-n">—</span>
+          <span class="hello-u">{{ trip.end_date[5:] | replace("-", ".") }}</span></p>
+      </div>
+    </article>
+    {%- else %}
     <article class="card-live" data-i="{{ loop.index0 }}"{% if c.hours %} data-hours='{{ c.hours | tojson }}'{% endif %}>
       <div class="top">
         {%- if c.url %}
@@ -1163,8 +1330,30 @@ body.editing>#editor{display:block !important}
       <p class="keys">{{ c.body }}</p>
       {%- endif %}
     </article>
+    {%- endif %}
     {%- endfor %}
   </div>
+  <script>
+  /* 票根卡的倒數：以裝置當地日期計（台灣／日本只差一小時，不影響「第幾天」） */
+  (function(){
+    var card = document.querySelector(".card-hello");
+    if (!card) return;
+    function day(s){ var p = s.split("-"); return new Date(+p[0], p[1]-1, +p[2]); }
+    var now = new Date(), today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    var start = day(card.dataset.start), end = day(card.dataset.end);
+    var toGo = Math.round((start - today) / 864e5);
+    var nth = Math.round((today - start) / 864e5) + 1;
+    var total = Math.round((end - start) / 864e5) + 1;
+    var k, n, u;
+    if (toGo > 0)        { k = "出發倒數"; n = toGo; u = toGo === 1 ? "day" : "days"; }
+    else if (nth <= total){ k = "旅途第";   n = nth;  u = "/ " + total + " 天"; }
+    else                 { k = "歡迎回家"; n = "";   u = ""; card.classList.add("is-home"); }
+    card.querySelector(".hello-k").textContent = k;
+    card.querySelector(".hello-n").textContent = n;
+    card.querySelector(".hello-u").textContent = u;
+    card.classList.add("is-counted");
+  })();
+  </script>
   {%- endif %}
 </header>
 
@@ -1375,7 +1564,7 @@ body.editing>#editor{display:block !important}
     <button class="arw" id="day-next" type="button" aria-label="後一天">→</button>
   </div>
 
-  {% if transit %}{{ handoff("實際走一遍") }}{% else %}{{ handoff("六天實際要花多少") }}{% endif %}
+  {% if transit %}{{ handoff("實際走一遍") }}{% else %}{{ handoff("這趟自己花了多少") }}{% endif %}
 </section>
 
 </div>{# /band-b #}
@@ -1448,65 +1637,42 @@ body.editing>#editor{display:block !important}
     {%- endfor %}
   </div>
   {%- endif %}
-  {{ handoff("六天實際要花多少") }}
+  {{ handoff("這趟自己花了多少") }}
 </section>
 </div>{# /band-c #}
 {% endif %}
 {# ── 區塊 E：花費 + 檢查（出發前要看的都在同一帶） ── #}
-{# 花費預設收起，點才展開：金額是回頭對帳才看的，不是路上看的 #}
+{#- 花費：每個人自己的記帳，只存在這支手機（localStorage），不上傳、不寫回 trip.json。
+    日幣輸入，依 trip.fx 的匯率換算台幣（匯率可在頁面上自己改）。
+    清單依「記下當天」分組：出發前／DAY 01…／回國後，分組在顯示時用時間戳推算，不另外存。
+    trip.json 裡各項目的 cost 仍保留（編輯器還用得到），只是不再顯示在這裡 -#}
 <div class="band band-e">
-<details class="section alerts-section" id="budget">
-  <summary class="alerts-summary">
-    <div class="section-heading">
-      <h2>花費</h2>
-      <p>每天一列，右側為當日小計。（點右側展開）</p>
+<section class="section" id="budget">
+  <div class="section-heading">
+    <h2>花費</h2>
+    <p>自己的記帳，只存在這支手機、不會上傳。</p>
+  </div>
+  <div class="ledger" id="ledger" hidden
+       data-rate="{{ (trip.fx and trip.fx.rate) or 4.8 }}"
+       data-start="{{ trip.start_date }}" data-end="{{ trip.end_date }}">
+    <div class="ledger-total">
+      <span class="lbl">合計</span>
+      <b class="ledger-yen" id="ledger-yen">¥0</b>
+      <span class="ledger-twd" id="ledger-twd">≈ NT$0</span>
+      <div class="ledger-rate" id="ledger-rate"></div>
     </div>
-    <span class="alerts-toggle" aria-hidden="true">＋</span>
-  </summary>
-  <div class="alerts-body">
-  {% if totals.has_costs %}
-  {# 每天一列，像明細一樣橫向排開；金額靠右對齊便於直向比較 #}
-  <div class="pick-grid">
-  {% for day in days %}
-    <div class="pick-row">
-      <span class="pick-no">DAY {{ "%02d" | format(day.day_no) }}</span>
-      <span class="pick-name">{{ day.theme or "自由安排" }}
-        {%- set stay = day["items"] | selectattr("type", "equalto", "住宿") | map(attribute="cost") | sum -%}
-        {%- if stay %}<small class="budget-stay">住宿 {{ money(stay) }}</small>{% endif -%}
-      </span>
-      <b class="pick-amt">{{ money(day.subtotal) }}</b>
-    </div>
-  {% endfor %}
-  {% set booking_cost = bookings | sum(attribute="cost") %}
-  {% if booking_cost %}
-    <div class="pick-row">
-      <span class="pick-no">預付</span>
-      <span class="pick-name">機票、住宿等預先付款項目</span>
-      <b class="pick-amt">{{ money(booking_cost) }}</b>
-    </div>
-  {% endif %}
+    <p class="ledger-warn" id="ledger-warn" hidden>這個瀏覽器不允許存資料（可能是無痕模式），關掉頁面記錄就會消失。</p>
+    <form class="ledger-add" id="ledger-add" autocomplete="off">
+      <input class="ledger-name-in" name="name" maxlength="40" placeholder="品項" aria-label="品項">
+      <span class="ledger-yen-in"><input name="yen" inputmode="numeric" placeholder="金額" aria-label="金額（日幣）"></span>
+      <button class="ledger-go" type="submit" aria-label="新增這筆">＋</button>
+    </form>
+    <div id="ledger-list"></div>
+    <p class="ledger-empty" id="ledger-empty">還沒有記錄。輸入品項與日幣金額按「＋」就會記下，依天自動分組。</p>
   </div>
-  <div class="budget-lines">
-    <span>總計{% if totals.over %} <span class="over-tag">超出預算 {{ money(totals.spent - totals.budget) }}</span>{% endif %}</span>
-    <b>{{ money(totals.spent) }}{{ fx_alt(totals.spent) }}</b>
-    <span>每人平均</span>
-    <b>{{ money(totals.per_person) }}{{ fx_alt(totals.per_person) }}</b>
-    {#- 大字只留合計與每人平均；類別占比那幾條移除，這裡用一行字交代預算餘裕 -#}
-    {% if totals.over %}
-    <p class="pick-note">預算 {{ money(totals.budget) }}，已超出 {{ money(totals.spent - totals.budget) }}，出發前再檢視一次大項花費。</p>
-    {% else %}
-    <p class="pick-note">預算 {{ money(totals.budget) }}，目前尚有 {{ money(totals.budget - totals.spent) }} 餘裕。</p>
-    {% endif %}
-  </div>
-  {% else %}
-  <div class="budget-lines">
-    <span>預算</span>
-    <b>{{ money(totals.budget) }}{{ fx_alt(totals.budget) }}</b>
-  </div>
-  <p class="budget-empty">花費尚未填入。待各項報價／確認金額後再逐筆補上，這裡會自動顯示合計與每人分攤。</p>
-  {% endif %}
-  </div>
-</details>
+  <noscript><p class="ledger-empty">記帳需要開啟 JavaScript。</p></noscript>
+  <div class="ledger-undo" id="ledger-undo" role="status" aria-live="polite" hidden></div>
+</section>
 {%- if trip.packing %}
 {{ handoff("出發前還有事要確認") }}
 {%- endif %}
@@ -1688,12 +1854,11 @@ body.editing>#editor{display:block !important}
   window.addEventListener("hashchange", function(){ openHash(location.hash); });
   openHash(location.hash);
 
-  // 列印：紙本要印出全部天數（換日只是螢幕上的行為），收合的花費區也一併展開
+  // 列印：紙本要印出全部天數（換日只是螢幕上的行為）
   var printedAll = false;
   window.addEventListener("beforeprint", function(){
     printedAll = true;
     daysEls.forEach(function(d){ d.classList.add("is-on"); });
-    document.querySelectorAll("details.alerts-section").forEach(function(d){ d.open = true; });
   });
   window.addEventListener("afterprint", function(){
     if (!printedAll) return;
@@ -1901,6 +2066,14 @@ body.editing>#editor{display:block !important}
     });
     // 保險：rAF 在分頁未渲染時不會回呼，浮卡會永遠停在 opacity:0
     setTimeout(function(){ liveCard.classList.add("is-in"); }, 400);
+    // 手機封面要替浮卡在底部留位（見 .hero:has(.card-deck)）：量實高，
+    // 票根卡的印章凸出卡片上緣 34px，也要算進去。字級切換、換卡都會改變高度
+    var syncDeckH = function(){
+      var h = liveCard.offsetHeight + (liveCard.querySelector(".hello-stamp") ? 34 : 0);
+      if (h) document.documentElement.style.setProperty("--deck-h", h + "px");
+    };
+    syncDeckH();
+    if (window.ResizeObserver) new ResizeObserver(syncDeckH).observe(liveCard);
   }
 
   var deckCards = liveCard ? [].slice.call(liveCard.querySelectorAll(".card-live")) : [];
@@ -2098,6 +2271,206 @@ body.editing>#editor{display:block !important}
       try { localStorage.setItem(key, box.checked ? "1" : "0"); } catch (e) {}
     });
   });
+
+  // ── 花費：自己的記帳（只存 localStorage，依本頁路徑分隔；不發任何網路請求）──
+  // 存的是 {rate?, items:[{id, name, yen, ts}]}。rate 只有自己改過才存，沒改就跟 trip.fx 走
+  (function(){
+    var root = document.getElementById("ledger");
+    if (!root) return;
+    root.hidden = false;
+    var KEY = "ledger:" + location.pathname;
+    var DEF_RATE = parseFloat(root.dataset.rate) || 4.8;
+    var DAY = 864e5;
+    function ymd(s){ var p = s.split("-"); return new Date(+p[0], p[1]-1, +p[2]); }
+    var start = ymd(root.dataset.start), end = ymd(root.dataset.end);
+    var total = Math.round((end - start) / DAY) + 1;
+
+    var canStore = true;
+    try { localStorage.setItem(KEY + ":probe", "1"); localStorage.removeItem(KEY + ":probe"); }
+    catch (e) { canStore = false; }
+    document.getElementById("ledger-warn").hidden = canStore;
+
+    var state = { items: [] };
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (raw) { var d = JSON.parse(raw); if (d && Array.isArray(d.items)) state = d; }
+    } catch (e) {}
+    function save(){ try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+    function rate(){ return state.rate > 0 ? state.rate : DEF_RATE; }
+
+    // 全形數字、逗號、¥／円、空白都收；只要正整數日幣
+    function parseYen(v){
+      v = String(v || "").replace(/[０-９]/g, function(c){ return String.fromCharCode(c.charCodeAt(0) - 0xFEE0); })
+                         .replace(/[,，、¥￥円\s]/g, "");
+      if (!/^\d+$/.test(v)) return 0;
+      var n = parseInt(v, 10);
+      return n > 0 && n <= 1e8 ? n : 0;
+    }
+    function yen(n){ return "¥" + n.toLocaleString("en-US"); }
+    function twd(n){ return "NT$" + Math.round(n / rate()).toLocaleString("en-US"); }
+    function el(tag, cls, text){
+      var e = document.createElement(tag);
+      if (cls) e.className = cls;
+      if (text != null) e.textContent = text;
+      return e;
+    }
+
+    // 用「記下那天」對照行程起訖，決定歸哪一組。排序值越大越新
+    function groupOf(ts){
+      var t = new Date(ts), d = new Date(t.getFullYear(), t.getMonth(), t.getDate());
+      var n = Math.round((d - start) / DAY) + 1;
+      if (n < 1) return { key: "pre", order: 0, no: "出發前", date: "" };
+      if (n > total) return { key: "post", order: total + 1, no: "回國後", date: "" };
+      return { key: "d" + n, order: n, no: "DAY " + (n < 10 ? "0" : "") + n,
+               date: (d.getMonth() + 1) + "." + (d.getDate() < 10 ? "0" : "") + d.getDate() };
+    }
+
+    var listEl = document.getElementById("ledger-list");
+    var editing = null;   // 正在編輯的那筆 id
+
+    function render(){
+      var sum = state.items.reduce(function(a, it){ return a + it.yen; }, 0);
+      document.getElementById("ledger-yen").textContent = yen(sum);
+      document.getElementById("ledger-twd").textContent = "≈ " + twd(sum);
+      renderRate();
+      document.getElementById("ledger-empty").hidden = state.items.length > 0;
+
+      var groups = {};
+      state.items.forEach(function(it){
+        var g = groupOf(it.ts);
+        (groups[g.key] = groups[g.key] || { g: g, items: [], sum: 0 }).items.push(it);
+        groups[g.key].sum += it.yen;
+      });
+      var order = Object.keys(groups).map(function(k){ return groups[k]; })
+                        .sort(function(a, b){ return b.g.order - a.g.order; });
+      listEl.textContent = "";
+      order.forEach(function(grp){
+        var sec = el("section", "lg-day");
+        var h = el("h3");
+        h.appendChild(el("span", "lg-no", grp.g.no));
+        if (grp.g.date) h.appendChild(el("span", "lg-date", grp.g.date));
+        h.appendChild(el("b", "lg-sub", yen(grp.sum)));
+        sec.appendChild(h);
+        var ul = el("ul");
+        grp.items.sort(function(a, b){ return b.ts - a.ts; }).forEach(function(it){
+          var li = el("li");
+          if (editing === it.id) li.appendChild(editForm(it));
+          else {
+            var b = el("button", "lg-row");
+            b.type = "button";
+            b.setAttribute("aria-label", it.name + " " + yen(it.yen) + "，點一下修改");
+            b.appendChild(el("span", "lg-name", it.name));
+            b.appendChild(el("b", "lg-amt", yen(it.yen)));
+            b.addEventListener("click", function(){ editing = it.id; render(); });
+            li.appendChild(b);
+          }
+          ul.appendChild(li);
+        });
+        sec.appendChild(ul);
+        listEl.appendChild(sec);
+      });
+      var f = listEl.querySelector(".lg-edit input");
+      if (f) f.focus();
+    }
+
+    function editForm(it){
+      var f = el("form", "lg-edit");
+      f.setAttribute("autocomplete", "off");
+      var n = el("input"); n.value = it.name; n.maxLength = 40; n.setAttribute("aria-label", "品項");
+      var wrap = el("span", "ledger-yen-in");
+      var y = el("input"); y.value = it.yen; y.inputMode = "numeric"; y.setAttribute("aria-label", "金額（日幣）");
+      wrap.appendChild(y);
+      var acts = el("div", "lg-edit-acts");
+      var ok = el("button", "ledger-btn", "儲存"); ok.type = "submit";
+      var cancel = el("button", "ledger-btn", "取消"); cancel.type = "button";
+      var del = el("button", "ledger-btn del", "刪除"); del.type = "button";
+      acts.appendChild(ok); acts.appendChild(cancel); acts.appendChild(del);
+      f.appendChild(n); f.appendChild(wrap); f.appendChild(acts);
+      f.addEventListener("submit", function(e){
+        e.preventDefault();
+        var v = parseYen(y.value);
+        if (!v) { y.focus(); y.select(); return; }
+        it.name = n.value.trim() || "未命名"; it.yen = v;
+        editing = null; save(); render();
+      });
+      cancel.addEventListener("click", function(){ editing = null; render(); });
+      del.addEventListener("click", function(){ remove(it); });
+      f.addEventListener("keydown", function(e){ if (e.key === "Escape") { editing = null; render(); } });
+      return f;
+    }
+
+    // 刪除不跳確認框，改成幾秒內可以「復原」
+    var undoEl = document.getElementById("ledger-undo"), undoTimer = null;
+    function remove(it){
+      var idx = state.items.indexOf(it);
+      state.items.splice(idx, 1);
+      editing = null; save(); render();
+      undoEl.textContent = "";
+      undoEl.appendChild(el("span", "", "已刪除「" + it.name + "」"));
+      var b = el("button", "", "復原"); b.type = "button";
+      b.addEventListener("click", function(){
+        state.items.splice(Math.min(idx, state.items.length), 0, it);
+        save(); render(); hideUndo();
+      });
+      undoEl.appendChild(b);
+      undoEl.hidden = false;
+      clearTimeout(undoTimer);
+      undoTimer = setTimeout(hideUndo, 6000);
+    }
+    function hideUndo(){ undoEl.hidden = true; clearTimeout(undoTimer); }
+
+    // 匯率：平常是一行字＋「修改」，點了才變成輸入框；清空就回到 trip.json 的預設
+    var rateEl = document.getElementById("ledger-rate"), rateEditing = false;
+    function renderRate(){
+      rateEl.textContent = "";
+      if (!rateEditing) {
+        rateEl.appendChild(el("span", "", "匯率 1 台幣 = ¥" + rate() + (state.rate > 0 ? "" : "（預設）")));
+        var b = el("button", "", "修改"); b.type = "button";
+        b.addEventListener("click", function(){ rateEditing = true; renderRate(); rateEl.querySelector("input").focus(); });
+        rateEl.appendChild(b);
+        return;
+      }
+      var f = el("form");
+      f.style.display = "contents";
+      f.appendChild(el("span", "", "1 台幣 = ¥"));
+      var i = el("input"); i.inputMode = "decimal"; i.value = state.rate > 0 ? state.rate : "";
+      i.placeholder = String(DEF_RATE); i.setAttribute("aria-label", "匯率：1 台幣換多少日幣");
+      var ok = el("button", "", "確定"); ok.type = "submit";
+      f.appendChild(i); f.appendChild(ok);
+      f.addEventListener("submit", function(e){
+        e.preventDefault();
+        var v = parseFloat(String(i.value).replace(/[０-９．]/g, function(c){
+          return c === "．" ? "." : String.fromCharCode(c.charCodeAt(0) - 0xFEE0); }));
+        if (v > 0 && v < 1000) state.rate = v; else delete state.rate;
+        rateEditing = false; save(); render();
+      });
+      i.addEventListener("keydown", function(e){ if (e.key === "Escape") { rateEditing = false; renderRate(); } });
+      rateEl.appendChild(f);
+    }
+
+    var add = document.getElementById("ledger-add");
+    // 用 elements 取欄位：form.name 是表單自己的 name 屬性，不是那個輸入框
+    var addName = add.elements["name"], addYen = add.elements["yen"];
+    add.addEventListener("submit", function(e){
+      e.preventDefault();
+      var v = parseYen(addYen.value);
+      if (!v) { addYen.focus(); return; }
+      state.items.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+                         name: addName.value.trim() || "未命名", yen: v, ts: Date.now() });
+      save(); render();
+      add.reset(); addName.focus();
+    });
+
+    // 在別的分頁改過（例如同時開著兩個）就跟著更新
+    window.addEventListener("storage", function(e){
+      if (e.key !== KEY) return;
+      try { state = JSON.parse(e.newValue) || { items: [] }; } catch (err) { state = { items: [] }; }
+      if (!Array.isArray(state.items)) state.items = [];
+      editing = null; render();
+    });
+
+    render();
+  })();
 
 })();
 </script>

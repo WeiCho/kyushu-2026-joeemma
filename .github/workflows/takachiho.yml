@@ -31,11 +31,11 @@ jobs:
         with:
           python-version: "3.12"
 
-      # 抓不到或解析不出來就直接失敗（紅燈），不會寫入舊值
-      - name: 抓取官網並更新 trip.json
-        run: python scripts/update_takachiho.py trip.json
+      # 划船 10/2 開賣已結束（10/16 満席），不再抓 eipro；首頁小卡改成手寫的「旅遊準備開始」。
+      # scripts/update_takachiho.py 留著，要恢復就把這步加回來：
+      #   - run: python scripts/update_takachiho.py trip.json
 
-      # 天氣抓不到不該連帶擋掉划船狀態的更新，所以這步失敗只亮紅字、不中斷 job
+      # 天氣抓不到只亮紅字、不中斷 job
       - name: 抓氣象廳預報並更新 trip.json
         continue-on-error: true
         run: python scripts/update_weather.py trip.json
