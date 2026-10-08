@@ -526,7 +526,7 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 
 /* ── 區塊分帶 ──
    一個帶＝一種底色，相關的章節歸在同一帶：
-     A 緊急（深色）　B 行程　C 交通　E 花費＋檢查
+     B 行程　C 交通　E 花費＋檢查＋緊急（深色圓角色塊，壓在 E 的底色上）
    帶與帶直接相接，不留空白段：換色在下一帶開頭的那一小段裡完成
    （--prev → --band 的漸層），所以既沒有硬邊，也不會出現一塊空的過場。 */
 /* 帶的底色不做左右展開：那會讓帶的第一個章節出現時露出兩側較窄的色塊，
@@ -1309,9 +1309,8 @@ body.editing>#editor{display:block !important}
 
 <nav class="sticky-nav" aria-label="快速跳轉">
   <div class="nav-inner"><div class="nav-links">
-    <a class="nav-urgent" href="#emergency">緊急</a>
     <a href="#itinerary">行程</a><a href="#transit">交通</a>
-    <a href="#budget">花費</a><a href="#packing">檢查</a>
+    <a href="#budget">花費</a><a href="#packing">檢查</a><a class="nav-urgent" href="#emergency">緊急</a>
   </div>
   <div class="nav-tools">
     <button class="tools-toggle" id="tools-toggle" type="button"
@@ -1331,234 +1330,6 @@ body.editing>#editor{display:block !important}
 </nav>
 
 <main>
-
-
-
-
-<section id="emergency">
-  <div class="ov-inner">
-    
-    <div class="em-wrap">
-      <div class="em-head">
-        <h2>緊急</h2>
-        <p class="em-sub">EMERGENCY</p>
-        <p><span class="em-hint">點任一項目看說明與電話。</span>日本境內撥號不需國碼。</p>
-      </div>
-
-      <ul class="em-cards">
-      
-        <li>
-          <button type="button" class="em-card" data-em="0"
-                  aria-haspopup="dialog" aria-controls="em-dlg-0">
-            <span class="em-icn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3 4 6v6c0 4.5 3.2 7.6 8 9 4.8-1.4 8-4.5 8-9V6z"/></svg></span>
-            <span class="em-name">日本警察</span>
-            <span class="em-go" aria-hidden="true">→</span>
-          </button>
-        </li>
-      
-        <li>
-          <button type="button" class="em-card" data-em="1"
-                  aria-haspopup="dialog" aria-controls="em-dlg-1">
-            <span class="em-icn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg></span>
-            <span class="em-name">日本救護</span>
-            <span class="em-go" aria-hidden="true">→</span>
-          </button>
-        </li>
-      
-        <li>
-          <button type="button" class="em-card" data-em="2"
-                  aria-haspopup="dialog" aria-controls="em-dlg-2">
-            <span class="em-icn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><ellipse cx="12" cy="12" rx="4" ry="9"/></svg></span>
-            <span class="em-name">外交部急難救助</span>
-            <span class="em-go" aria-hidden="true">→</span>
-          </button>
-        </li>
-      
-        <li>
-          <button type="button" class="em-card" data-em="3"
-                  aria-haspopup="dialog" aria-controls="em-dlg-3">
-            <span class="em-icn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 21h18M4 10h16M12 3 3 8h18zM7 10v11M11 10v11M15 10v11M19 10v11"/></svg></span>
-            <span class="em-name">台北駐福岡辦事處</span>
-            <span class="em-go" aria-hidden="true">→</span>
-          </button>
-        </li>
-      
-        <li>
-          <button type="button" class="em-card" data-em="4"
-                  aria-haspopup="dialog" aria-controls="em-dlg-4">
-            <span class="em-icn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 16V9a1 1 0 0 1 1-1h8l4 4h3a1 1 0 0 1 1 1v3"/><path d="M3 16h2M9 16h6M19 16h2"/><circle cx="7" cy="16.5" r="2"/><circle cx="17" cy="16.5" r="2"/></svg></span>
-            <span class="em-name">包車公司</span>
-            <span class="em-go" aria-hidden="true">→</span>
-          </button>
-        </li>
-      
-        <li>
-          <button type="button" class="em-card" data-em="5"
-                  aria-haspopup="dialog" aria-controls="em-dlg-5">
-            <span class="em-icn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3a9 9 0 0 1 9 9H3a9 9 0 0 1 9-9z"/><path d="M12 12v6a3 3 0 0 0 6 0"/></svg></span>
-            <span class="em-name">旅遊保險</span>
-            <span class="em-go" aria-hidden="true">→</span>
-          </button>
-        </li>
-      
-      </ul>
-    </div>
-
-    
-    
-    <dialog class="em-dlg" id="em-dlg-0" aria-labelledby="em-dlg-t-0">
-      <div class="em-dlg-in">
-        <h3 id="em-dlg-t-0">日本警察</h3>
-        <p class="em-desc">遭竊、事故、糾紛、人身安全受威脅時撥打。講中文可要求通譯。</p>
-        <dl class="em-meta"><dt>服務時間</dt><dd>24 小時</dd>
-        </dl>
-        
-        <a class="em-tel" href="tel:110">110</a>
-        
-        <button type="button" class="em-close" data-em-close aria-label="關閉">關閉</button>
-      </div>
-    </dialog>
-    
-    <dialog class="em-dlg" id="em-dlg-1" aria-labelledby="em-dlg-t-1">
-      <div class="em-dlg-in">
-        <h3 id="em-dlg-t-1">日本消防・救護車</h3>
-        <p class="em-desc">傷病、需要救護車或火災時撥打。日本救護車免費。</p>
-        <dl class="em-meta"><dt>服務時間</dt><dd>24 小時</dd>
-        </dl>
-        
-        <a class="em-tel" href="tel:119">119</a>
-        
-        <button type="button" class="em-close" data-em-close aria-label="關閉">關閉</button>
-      </div>
-    </dialog>
-    
-    <dialog class="em-dlg" id="em-dlg-2" aria-labelledby="em-dlg-t-2">
-      <div class="em-dlg-in">
-        <h3 id="em-dlg-t-2">外交部旅外國人急難救助全球免付費專線</h3>
-        <p class="em-desc">護照遺失、遭遇重大事故、需要聯繫家屬時使用。限緊急事件，一般領務問題請洽駐辦。</p>
-        <dl class="em-meta"><dt>服務時間</dt><dd>24 小時</dd>
-        </dl>
-        
-        <a class="em-tel" href="tel:800-0885-0885">800-0885-0885</a>
-        
-        <button type="button" class="em-close" data-em-close aria-label="關閉">關閉</button>
-      </div>
-    </dialog>
-    
-    <dialog class="em-dlg" id="em-dlg-3" aria-labelledby="em-dlg-t-3">
-      <div class="em-dlg-in">
-        <h3 id="em-dlg-t-3">台北駐福岡經濟文化辦事處</h3>
-        <p class="em-desc">護照補發、文件驗證、急難協助。出發前請確認最新地址與電話。</p>
-        
-        
-        <p class="em-tel is-todo"><span class="em-todo-line"></span><span class="em-todo-tag">待填</span></p>
-        
-        <button type="button" class="em-close" data-em-close aria-label="關閉">關閉</button>
-      </div>
-    </dialog>
-    
-    <dialog class="em-dlg" id="em-dlg-4" aria-labelledby="em-dlg-t-4">
-      <div class="em-dlg-in">
-        <h3 id="em-dlg-t-4">美黛子遊日本（客製化包車）</h3>
-        <p class="em-desc">行程變更、司機聯繫、車輛狀況。司機當日手機號出發前向公司確認。</p>
-        
-        
-        <p class="em-tel is-todo"><span class="em-todo-line"></span><span class="em-todo-tag">待填</span></p>
-        
-        <button type="button" class="em-close" data-em-close aria-label="關閉">關閉</button>
-      </div>
-    </dialog>
-    
-    <dialog class="em-dlg" id="em-dlg-5" aria-labelledby="em-dlg-t-5">
-      <div class="em-dlg-in">
-        <h3 id="em-dlg-t-5">旅遊保險</h3>
-        <p class="em-desc">醫療理賠、行李遺失、班機延誤。出發前填入保單號與 24 小時服務電話。</p>
-        
-        
-        <p class="em-tel is-todo"><span class="em-todo-line"></span><span class="em-todo-tag">待填</span></p>
-        
-        <button type="button" class="em-close" data-em-close aria-label="關閉">關閉</button>
-      </div>
-    </dialog>
-    
-
-    
-    <div class="em-print">
-      <div class="emergency-grid">
-      
-        <div class="em-row">
-          <b>日本警察</b>
-          <div class="em-val">
-            <p>遭竊、事故、糾紛、人身安全受威脅時撥打。講中文可要求通譯。</p>
-            <p>服務時間：24 小時</p>
-            
-            <a class="tel" href="tel:110">110</a>
-            
-          </div>
-        </div>
-      
-        <div class="em-row">
-          <b>日本消防・救護車</b>
-          <div class="em-val">
-            <p>傷病、需要救護車或火災時撥打。日本救護車免費。</p>
-            <p>服務時間：24 小時</p>
-            
-            <a class="tel" href="tel:119">119</a>
-            
-          </div>
-        </div>
-      
-        <div class="em-row">
-          <b>外交部旅外國人急難救助全球免付費專線</b>
-          <div class="em-val">
-            <p>護照遺失、遭遇重大事故、需要聯繫家屬時使用。限緊急事件，一般領務問題請洽駐辦。</p>
-            <p>服務時間：24 小時</p>
-            
-            <a class="tel" href="tel:800-0885-0885">800-0885-0885</a>
-            
-          </div>
-        </div>
-      
-        <div class="em-row">
-          <b>台北駐福岡經濟文化辦事處</b>
-          <div class="em-val">
-            <p>護照補發、文件驗證、急難協助。出發前請確認最新地址與電話。</p>
-            
-            
-            <p class="em-print-todo">電話：＿＿＿＿＿＿＿＿＿＿（出發前補上）</p>
-          </div>
-        </div>
-      
-        <div class="em-row">
-          <b>美黛子遊日本（客製化包車）</b>
-          <div class="em-val">
-            <p>行程變更、司機聯繫、車輛狀況。司機當日手機號出發前向公司確認。</p>
-            
-            
-            <p class="em-print-todo">電話：＿＿＿＿＿＿＿＿＿＿（出發前補上）</p>
-          </div>
-        </div>
-      
-        <div class="em-row">
-          <b>旅遊保險</b>
-          <div class="em-val">
-            <p>醫療理賠、行李遺失、班機延誤。出發前填入保單號與 24 小時服務電話。</p>
-            
-            
-            <p class="em-print-todo">電話：＿＿＿＿＿＿＿＿＿＿（出發前補上）</p>
-          </div>
-        </div>
-      
-      </div>
-    </div>
-  </div>
-</section>
 
 
 
@@ -2900,6 +2671,234 @@ body.editing>#editor{display:block !important}
     </div>
     
   
+  </div>
+</section>
+
+
+
+
+<section id="emergency">
+  <div class="ov-inner">
+    
+    <div class="em-wrap">
+      <div class="em-head">
+        <h2>緊急</h2>
+        <p class="em-sub">EMERGENCY</p>
+        <p><span class="em-hint">點任一項目看說明與電話。</span>日本境內撥號不需國碼。</p>
+      </div>
+
+      <ul class="em-cards">
+      
+        <li>
+          <button type="button" class="em-card" data-em="0"
+                  aria-haspopup="dialog" aria-controls="em-dlg-0">
+            <span class="em-icn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3 4 6v6c0 4.5 3.2 7.6 8 9 4.8-1.4 8-4.5 8-9V6z"/></svg></span>
+            <span class="em-name">日本警察</span>
+            <span class="em-go" aria-hidden="true">→</span>
+          </button>
+        </li>
+      
+        <li>
+          <button type="button" class="em-card" data-em="1"
+                  aria-haspopup="dialog" aria-controls="em-dlg-1">
+            <span class="em-icn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg></span>
+            <span class="em-name">日本救護</span>
+            <span class="em-go" aria-hidden="true">→</span>
+          </button>
+        </li>
+      
+        <li>
+          <button type="button" class="em-card" data-em="2"
+                  aria-haspopup="dialog" aria-controls="em-dlg-2">
+            <span class="em-icn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><ellipse cx="12" cy="12" rx="4" ry="9"/></svg></span>
+            <span class="em-name">外交部急難救助</span>
+            <span class="em-go" aria-hidden="true">→</span>
+          </button>
+        </li>
+      
+        <li>
+          <button type="button" class="em-card" data-em="3"
+                  aria-haspopup="dialog" aria-controls="em-dlg-3">
+            <span class="em-icn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 21h18M4 10h16M12 3 3 8h18zM7 10v11M11 10v11M15 10v11M19 10v11"/></svg></span>
+            <span class="em-name">台北駐福岡辦事處</span>
+            <span class="em-go" aria-hidden="true">→</span>
+          </button>
+        </li>
+      
+        <li>
+          <button type="button" class="em-card" data-em="4"
+                  aria-haspopup="dialog" aria-controls="em-dlg-4">
+            <span class="em-icn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 16V9a1 1 0 0 1 1-1h8l4 4h3a1 1 0 0 1 1 1v3"/><path d="M3 16h2M9 16h6M19 16h2"/><circle cx="7" cy="16.5" r="2"/><circle cx="17" cy="16.5" r="2"/></svg></span>
+            <span class="em-name">包車公司</span>
+            <span class="em-go" aria-hidden="true">→</span>
+          </button>
+        </li>
+      
+        <li>
+          <button type="button" class="em-card" data-em="5"
+                  aria-haspopup="dialog" aria-controls="em-dlg-5">
+            <span class="em-icn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3a9 9 0 0 1 9 9H3a9 9 0 0 1 9-9z"/><path d="M12 12v6a3 3 0 0 0 6 0"/></svg></span>
+            <span class="em-name">旅遊保險</span>
+            <span class="em-go" aria-hidden="true">→</span>
+          </button>
+        </li>
+      
+      </ul>
+    </div>
+
+    
+    
+    <dialog class="em-dlg" id="em-dlg-0" aria-labelledby="em-dlg-t-0">
+      <div class="em-dlg-in">
+        <h3 id="em-dlg-t-0">日本警察</h3>
+        <p class="em-desc">遭竊、事故、糾紛、人身安全受威脅時撥打。講中文可要求通譯。</p>
+        <dl class="em-meta"><dt>服務時間</dt><dd>24 小時</dd>
+        </dl>
+        
+        <a class="em-tel" href="tel:110">110</a>
+        
+        <button type="button" class="em-close" data-em-close aria-label="關閉">關閉</button>
+      </div>
+    </dialog>
+    
+    <dialog class="em-dlg" id="em-dlg-1" aria-labelledby="em-dlg-t-1">
+      <div class="em-dlg-in">
+        <h3 id="em-dlg-t-1">日本消防・救護車</h3>
+        <p class="em-desc">傷病、需要救護車或火災時撥打。日本救護車免費。</p>
+        <dl class="em-meta"><dt>服務時間</dt><dd>24 小時</dd>
+        </dl>
+        
+        <a class="em-tel" href="tel:119">119</a>
+        
+        <button type="button" class="em-close" data-em-close aria-label="關閉">關閉</button>
+      </div>
+    </dialog>
+    
+    <dialog class="em-dlg" id="em-dlg-2" aria-labelledby="em-dlg-t-2">
+      <div class="em-dlg-in">
+        <h3 id="em-dlg-t-2">外交部旅外國人急難救助全球免付費專線</h3>
+        <p class="em-desc">護照遺失、遭遇重大事故、需要聯繫家屬時使用。限緊急事件，一般領務問題請洽駐辦。</p>
+        <dl class="em-meta"><dt>服務時間</dt><dd>24 小時</dd>
+        </dl>
+        
+        <a class="em-tel" href="tel:800-0885-0885">800-0885-0885</a>
+        
+        <button type="button" class="em-close" data-em-close aria-label="關閉">關閉</button>
+      </div>
+    </dialog>
+    
+    <dialog class="em-dlg" id="em-dlg-3" aria-labelledby="em-dlg-t-3">
+      <div class="em-dlg-in">
+        <h3 id="em-dlg-t-3">台北駐福岡經濟文化辦事處</h3>
+        <p class="em-desc">護照補發、文件驗證、急難協助。出發前請確認最新地址與電話。</p>
+        
+        
+        <p class="em-tel is-todo"><span class="em-todo-line"></span><span class="em-todo-tag">待填</span></p>
+        
+        <button type="button" class="em-close" data-em-close aria-label="關閉">關閉</button>
+      </div>
+    </dialog>
+    
+    <dialog class="em-dlg" id="em-dlg-4" aria-labelledby="em-dlg-t-4">
+      <div class="em-dlg-in">
+        <h3 id="em-dlg-t-4">美黛子遊日本（客製化包車）</h3>
+        <p class="em-desc">行程變更、司機聯繫、車輛狀況。司機當日手機號出發前向公司確認。</p>
+        
+        
+        <p class="em-tel is-todo"><span class="em-todo-line"></span><span class="em-todo-tag">待填</span></p>
+        
+        <button type="button" class="em-close" data-em-close aria-label="關閉">關閉</button>
+      </div>
+    </dialog>
+    
+    <dialog class="em-dlg" id="em-dlg-5" aria-labelledby="em-dlg-t-5">
+      <div class="em-dlg-in">
+        <h3 id="em-dlg-t-5">旅遊保險</h3>
+        <p class="em-desc">醫療理賠、行李遺失、班機延誤。出發前填入保單號與 24 小時服務電話。</p>
+        
+        
+        <p class="em-tel is-todo"><span class="em-todo-line"></span><span class="em-todo-tag">待填</span></p>
+        
+        <button type="button" class="em-close" data-em-close aria-label="關閉">關閉</button>
+      </div>
+    </dialog>
+    
+
+    
+    <div class="em-print">
+      <div class="emergency-grid">
+      
+        <div class="em-row">
+          <b>日本警察</b>
+          <div class="em-val">
+            <p>遭竊、事故、糾紛、人身安全受威脅時撥打。講中文可要求通譯。</p>
+            <p>服務時間：24 小時</p>
+            
+            <a class="tel" href="tel:110">110</a>
+            
+          </div>
+        </div>
+      
+        <div class="em-row">
+          <b>日本消防・救護車</b>
+          <div class="em-val">
+            <p>傷病、需要救護車或火災時撥打。日本救護車免費。</p>
+            <p>服務時間：24 小時</p>
+            
+            <a class="tel" href="tel:119">119</a>
+            
+          </div>
+        </div>
+      
+        <div class="em-row">
+          <b>外交部旅外國人急難救助全球免付費專線</b>
+          <div class="em-val">
+            <p>護照遺失、遭遇重大事故、需要聯繫家屬時使用。限緊急事件，一般領務問題請洽駐辦。</p>
+            <p>服務時間：24 小時</p>
+            
+            <a class="tel" href="tel:800-0885-0885">800-0885-0885</a>
+            
+          </div>
+        </div>
+      
+        <div class="em-row">
+          <b>台北駐福岡經濟文化辦事處</b>
+          <div class="em-val">
+            <p>護照補發、文件驗證、急難協助。出發前請確認最新地址與電話。</p>
+            
+            
+            <p class="em-print-todo">電話：＿＿＿＿＿＿＿＿＿＿（出發前補上）</p>
+          </div>
+        </div>
+      
+        <div class="em-row">
+          <b>美黛子遊日本（客製化包車）</b>
+          <div class="em-val">
+            <p>行程變更、司機聯繫、車輛狀況。司機當日手機號出發前向公司確認。</p>
+            
+            
+            <p class="em-print-todo">電話：＿＿＿＿＿＿＿＿＿＿（出發前補上）</p>
+          </div>
+        </div>
+      
+        <div class="em-row">
+          <b>旅遊保險</b>
+          <div class="em-val">
+            <p>醫療理賠、行李遺失、班機延誤。出發前填入保單號與 24 小時服務電話。</p>
+            
+            
+            <p class="em-print-todo">電話：＿＿＿＿＿＿＿＿＿＿（出發前補上）</p>
+          </div>
+        </div>
+      
+      </div>
+    </div>
   </div>
 </section>
 <div class="coda">

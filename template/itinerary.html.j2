@@ -554,7 +554,7 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 
 /* ── 區塊分帶 ──
    一個帶＝一種底色，相關的章節歸在同一帶：
-     A 緊急（深色）　B 行程　C 交通　E 花費＋檢查
+     B 行程　C 交通　E 花費＋檢查＋緊急（深色圓角色塊，壓在 E 的底色上）
    帶與帶直接相接，不留空白段：換色在下一帶開頭的那一小段裡完成
    （--prev → --band 的漸層），所以既沒有硬邊，也不會出現一塊空的過場。 */
 /* 帶的底色不做左右展開：那會讓帶的第一個章節出現時露出兩側較窄的色塊，
@@ -1404,11 +1404,11 @@ body.editing>#editor{display:block !important}
   {#- 「緊急」永遠留在列上、不收進抽屜：人在日本出事時要立刻按到，
       多一層漢堡就是多一次點擊。其餘四條在手機版收進抽屜 -#}
   <div class="nav-links">
-    {% if trip.emergency %}<a class="nav-urgent" href="#emergency">緊急</a>{% endif %}
     <a href="#itinerary">行程</a>
     {%- if transit %}<a href="#transit">交通</a>{% endif %}
     <a href="#budget">花費</a>
     {%- if trip.packing %}<a href="#packing">檢查</a>{% endif %}
+    {%- if trip.emergency %}<a class="nav-urgent" href="#emergency">緊急</a>{% endif %}
   </div>
   <div class="nav-tools">
     <button class="tools-toggle" id="tools-toggle" type="button"
@@ -1444,81 +1444,6 @@ body.editing>#editor{display:block !important}
     </ul>
   </details>
 </div>
-{% endif %}
-
-{# ── 區塊 A：緊急（深色，臨時要用時最好找） ── #}
-{% if trip.emergency %}
-<section id="emergency">
-  <div class="ov-inner">
-    {# 版式參考 c-morinosato.com 的「診療案內」：左欄標題＋副標＋說明，右欄圖示卡片網格。
-       卡片上只放名稱，說明與電話進彈窗——慌亂時網格要能一眼掃完，細節點開再看。
-       原本的文字列版型保留在下方，只在列印時出現（見 @media print 的說明）。 #}
-    <div class="em-wrap">
-      <div class="em-head">
-        <h2>緊急</h2>
-        <p class="em-sub">EMERGENCY</p>
-        <p><span class="em-hint">點任一項目看說明與電話。</span>日本境內撥號不需國碼。</p>
-      </div>
-
-      <ul class="em-cards">
-      {% for e in trip.emergency %}
-        <li>
-          <button type="button" class="em-card" data-em="{{ loop.index0 }}"
-                  aria-haspopup="dialog" aria-controls="em-dlg-{{ loop.index0 }}">
-            <span class="em-icn">{{ em_icon(loop.index0) }}</span>
-            <span class="em-name">{{ e.label }}</span>
-            <span class="em-go" aria-hidden="true">→</span>
-          </button>
-        </li>
-      {% endfor %}
-      </ul>
-    </div>
-
-    {# 彈窗：原生 <dialog>，焦點鎖定與 Escape 由瀏覽器負責。
-       沒有 JS 時 <dialog> 會被 CSS 改回一般區塊直接顯示——緊急資訊是全頁
-       唯一不能因為 JS 沒跑就消失的內容。 #}
-    {% for e in trip.emergency %}
-    <dialog class="em-dlg" id="em-dlg-{{ loop.index0 }}" aria-labelledby="em-dlg-t-{{ loop.index0 }}">
-      <div class="em-dlg-in">
-        <h3 id="em-dlg-t-{{ loop.index0 }}">{{ e.name or e.label }}</h3>
-        {% if e.desc %}<p class="em-desc">{{ e.desc }}</p>{% endif %}
-        {%- if e.address or e.hours %}
-        <dl class="em-meta">
-          {%- if e.address %}<dt>地址</dt><dd>{{ e.address }}</dd>{% endif %}
-          {%- if e.hours %}<dt>服務時間</dt><dd>{{ e.hours }}</dd>{% endif %}
-        </dl>
-        {%- endif %}
-        {% if e.tel %}
-        <a class="em-tel" href="tel:{{ e.tel }}">{{ e.tel }}</a>
-        {% else %}
-        {# 虛線佔位：保留 13 碼號碼的寬度，之後填進來版面不會跳 #}
-        <p class="em-tel is-todo"><span class="em-todo-line"></span><span class="em-todo-tag">待填</span></p>
-        {% endif %}
-        <button type="button" class="em-close" data-em-close aria-label="關閉">關閉</button>
-      </div>
-    </dialog>
-    {% endfor %}
-
-    {# 只在紙上出現：卡片網格是為了掃視與點擊而設計，這兩件事在紙上都不存在，
-       而六張卡各自展開五個欄位會把這一區撐成兩三頁。原本的三欄文字列最省紙。 #}
-    <div class="em-print">
-      <div class="emergency-grid">
-      {% for e in trip.emergency %}
-        <div class="em-row">
-          <b>{{ e.name or e.label }}</b>
-          <div class="em-val">
-            {% if e.desc %}<p>{{ e.desc }}</p>{% endif %}
-            {% if e.hours %}<p>服務時間：{{ e.hours }}</p>{% endif %}
-            {% if e.address %}<p>{{ e.address }}</p>{% endif %}
-            {% if e.tel %}<a class="tel" href="tel:{{ e.tel }}">{{ e.tel }}</a>
-            {% else %}<p class="em-print-todo">電話：＿＿＿＿＿＿＿＿＿＿（出發前補上）</p>{% endif %}
-          </div>
-        </div>
-      {% endfor %}
-      </div>
-    </div>
-  </div>
-</section>
 {% endif %}
 
 {# ── 區塊 B：行程 ── #}
@@ -1807,6 +1732,82 @@ body.editing>#editor{display:block !important}
   </div>
 </section>
 {% endif %}
+
+{# ── 緊急（深色圓角色塊）：放在全頁最後、頁尾之前。平常用不到，要用時點頂列「緊急」直接跳過來 ── #}
+{% if trip.emergency %}
+<section id="emergency">
+  <div class="ov-inner">
+    {# 版式參考 c-morinosato.com 的「診療案內」：左欄標題＋副標＋說明，右欄圖示卡片網格。
+       卡片上只放名稱，說明與電話進彈窗——慌亂時網格要能一眼掃完，細節點開再看。
+       原本的文字列版型保留在下方，只在列印時出現（見 @media print 的說明）。 #}
+    <div class="em-wrap">
+      <div class="em-head">
+        <h2>緊急</h2>
+        <p class="em-sub">EMERGENCY</p>
+        <p><span class="em-hint">點任一項目看說明與電話。</span>日本境內撥號不需國碼。</p>
+      </div>
+
+      <ul class="em-cards">
+      {% for e in trip.emergency %}
+        <li>
+          <button type="button" class="em-card" data-em="{{ loop.index0 }}"
+                  aria-haspopup="dialog" aria-controls="em-dlg-{{ loop.index0 }}">
+            <span class="em-icn">{{ em_icon(loop.index0) }}</span>
+            <span class="em-name">{{ e.label }}</span>
+            <span class="em-go" aria-hidden="true">→</span>
+          </button>
+        </li>
+      {% endfor %}
+      </ul>
+    </div>
+
+    {# 彈窗：原生 <dialog>，焦點鎖定與 Escape 由瀏覽器負責。
+       沒有 JS 時 <dialog> 會被 CSS 改回一般區塊直接顯示——緊急資訊是全頁
+       唯一不能因為 JS 沒跑就消失的內容。 #}
+    {% for e in trip.emergency %}
+    <dialog class="em-dlg" id="em-dlg-{{ loop.index0 }}" aria-labelledby="em-dlg-t-{{ loop.index0 }}">
+      <div class="em-dlg-in">
+        <h3 id="em-dlg-t-{{ loop.index0 }}">{{ e.name or e.label }}</h3>
+        {% if e.desc %}<p class="em-desc">{{ e.desc }}</p>{% endif %}
+        {%- if e.address or e.hours %}
+        <dl class="em-meta">
+          {%- if e.address %}<dt>地址</dt><dd>{{ e.address }}</dd>{% endif %}
+          {%- if e.hours %}<dt>服務時間</dt><dd>{{ e.hours }}</dd>{% endif %}
+        </dl>
+        {%- endif %}
+        {% if e.tel %}
+        <a class="em-tel" href="tel:{{ e.tel }}">{{ e.tel }}</a>
+        {% else %}
+        {# 虛線佔位：保留 13 碼號碼的寬度，之後填進來版面不會跳 #}
+        <p class="em-tel is-todo"><span class="em-todo-line"></span><span class="em-todo-tag">待填</span></p>
+        {% endif %}
+        <button type="button" class="em-close" data-em-close aria-label="關閉">關閉</button>
+      </div>
+    </dialog>
+    {% endfor %}
+
+    {# 只在紙上出現：卡片網格是為了掃視與點擊而設計，這兩件事在紙上都不存在，
+       而六張卡各自展開五個欄位會把這一區撐成兩三頁。原本的三欄文字列最省紙。 #}
+    <div class="em-print">
+      <div class="emergency-grid">
+      {% for e in trip.emergency %}
+        <div class="em-row">
+          <b>{{ e.name or e.label }}</b>
+          <div class="em-val">
+            {% if e.desc %}<p>{{ e.desc }}</p>{% endif %}
+            {% if e.hours %}<p>服務時間：{{ e.hours }}</p>{% endif %}
+            {% if e.address %}<p>{{ e.address }}</p>{% endif %}
+            {% if e.tel %}<a class="tel" href="tel:{{ e.tel }}">{{ e.tel }}</a>
+            {% else %}<p class="em-print-todo">電話：＿＿＿＿＿＿＿＿＿＿（出發前補上）</p>{% endif %}
+          </div>
+        </div>
+      {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endif %}
+
 
 {#- 收尾：頁面原本在最後一個勾選框之後直接結束，像被裁掉。
     留在帶內吃同一個底色，只靠細線與字級差異區隔——為了首尾呼應再切一次
