@@ -1,5 +1,5 @@
 /* 旅程手冊離線快取（PWA）。以 file:// 開啟時不會註冊，不影響單檔離線用法 */
-const CACHE = "trip-9c2cf1e9";
+const CACHE = "trip-5e1e0fea";
 const ASSETS = ["./", "./index.html", "./行程表.html", "./manifest.webmanifest", "./icon.svg"];
 self.addEventListener("install", (e) => {
   // cache: "reload" 跳過瀏覽器的 HTTP 快取（GitHub Pages 給 10 分鐘），不然新版 SW 可能存到舊頁
