@@ -742,14 +742,22 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 /* 逐時氣溫：一格一個時段（時／氣溫／降雨），格子多於欄寬時橫向捲動。
    降雨機率 50% 以上用暖色點出來——要回答的是「這個時段要不要帶傘」 */
 .wx-hours{margin:12px 0 0}
+/* 每個地點一條可點的列，外框跟 route-btn 同一套，看起來就是「可以按」；
+   右邊的 ▾ 點開後轉向 */
+.wx-hours{border:.8px solid var(--line);border-radius:4px}
+.wx-hours+.wx-hours{margin-top:8px}
 .wx-hours>summary{
-  cursor:pointer;list-style:none;font-size:14px;letter-spacing:.04em;color:var(--muted);
-  min-height:32px;display:flex;align-items:center;
+  cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:10px;
+  min-height:44px;padding:0 14px;font-size:15px;letter-spacing:.04em;
 }
 .wx-hours>summary::-webkit-details-marker{display:none}
-.wx-hours>summary::after{content:"▸";margin-left:.5em;font-size:12px}
-.wx-hours[open]>summary::after{content:"▾"}
-.wx-hours .wx-src{margin-top:2px}
+.wx-hours>summary b{font-family:var(--latin);font-weight:600;margin-left:.3em}
+.wx-more{font-size:12px;color:var(--muted);white-space:nowrap}
+.wx-more::after{content:"▾";display:inline-block;margin-left:.4em;font-size:14px;transition:transform .15s}
+.wx-hours[open] .wx-more::after{transform:rotate(180deg)}
+.wx-hours>ol,.wx-hours>.wx-spread,.wx-hours>.wx-src{padding-left:14px;padding-right:14px}
+.wx-hours>.wx-src{margin-top:4px}
+.wx-hours>.wx-windy{margin:10px 14px 14px}
 .wx-hours ol{
   list-style:none;margin:6px 0 0;padding:0 0 6px;display:flex;gap:0;
   overflow-x:auto;scrollbar-width:thin;scroll-snap-type:x proximity;
@@ -769,7 +777,8 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 /* Windy 按鈕沿用 .route-btn 的外框，只調位置 */
 .wx-windy{margin:12px 8px 0 0}
 [data-theme-size="large"] .wx-hours b{font-size:19px}
-[data-theme-size="large"] .wx-hours>summary{font-size:16px}
+[data-theme-size="large"] .wx-hours>summary{font-size:17px}
+[data-theme-size="large"] .wx-more{font-size:14px}
 [data-theme-size="large"] .wx-hours .h,[data-theme-size="large"] .wx-hours .p{font-size:14px}
 /* 當日小提醒：跟天氣同一種灰，字級一樣，只用行距分開 */
 .day-note{margin:6px 0 0;font-size:14px;line-height:1.8;color:var(--muted)}
@@ -1557,42 +1566,19 @@ body.editing>#editor{display:block !important}
               forecast_extra 是同一天的其他地點（例如高千穗那天的草千里），各自一列逐時 -#}
           {%- set fc = day.forecast -%}
           {%- set wa = day.weather_area or {} -%}
-          {% if day.weather_live %}
-          <p class="day-weather">{{ day.weather_live.text }}
-            <span class="wx-src">氣象廳{% if day.weather_live.scope %} {{ day.weather_live.scope }}{% endif %} · {{ day.weather_live.updated }} 發布</span>
-          </p>
-          {% elif fc and not fc.hours %}
-          <p class="day-weather">{{ wa.label }} {{ fc.tmin }}–{{ fc.tmax }}°C
-            {%- if fc.text %}・{{ fc.text }}{% endif %}
-            {#- 用 fc["pop"]：fc.pop 在 Jinja 裡會先拿到 dict 的 .pop() 方法 -#}
-            {%- if fc["pop"] is not none %}・降雨 {{ fc["pop"] }}%{% endif %}
-            <span class="wx-src">{{ fc.model or "Open-Meteo" }} 預報 · {{ fc.updated }} 更新</span>
-          </p>
-          {% elif day.weather and not fc %}<p class="day-weather">{{ day.weather }}</p>{% endif %}
-          {%- if fc and fc.spread and not fc.hours %}
-          {#- ECMWF 與 GFS 溫差 4°C 以上：數字還不可靠，提醒出發前再看（Windy 按鈕就在下面）。
-              有逐時列時改放在各自那一列下面 -#}
-          <p class="wx-spread">各模式差異大（{{ fc.spread.what }} {{ fc.spread.lo }}–{{ fc.spread.hi }}°C），出發前再看一次</p>
-          {%- endif %}
-          {%- if wa.lat is not none and wa.lon is not none %}
-          {#- Windy 是主要的細看入口（行程主人是 Premium 會員：登入後 14 天＋逐小時），
-              所以緊接在摘要下、做成跟「本日路線一鍵導航」同款的按鈕，而不是逐時列後面的一行小字。
-              不分日子遠近一律顯示：自動抓的預報還沒進範圍時，Windy 已經看得到 -#}
-          <a class="route-btn wx-windy" href="https://www.windy.com/{{ wa.lat }}/{{ wa.lon }}?{{ wa.lat }},{{ wa.lon }},10"
-             target="_blank" rel="noopener">Windy 逐時預報・{{ wa.label }}&nbsp;↗</a>
-          {%- endif %}
+          {#- 有 Open-Meteo 逐時資料時，每天都只有同一種樣子：每個地點一個可點開的區塊
+              （標題列「地點 低–高°C」，點開是逐時、模式分歧提醒、來源、Windy 按鈕），
+              不再另出氣象廳或摘要行，免得同一天出現兩組對不上的氣溫。
+              逐時還沒進範圍（16 天外）才退回舊的一行摘要＋Windy 按鈕 -#}
+          {%- set spots = [] %}
+          {%- if fc and fc.hours %}{% set _ = spots.append((wa, fc)) %}{% endif %}
           {%- for a in day.forecast_areas or [] %}
-          <a class="route-btn wx-windy" href="https://www.windy.com/{{ a.lat }}/{{ a.lon }}?{{ a.lat }},{{ a.lon }},10"
-             target="_blank" rel="noopener">Windy 逐時預報・{{ a.label }}&nbsp;↗</a>
+            {%- for x in day.forecast_extra or [] %}{% if x.label == a.label and x.hours %}{% set _ = spots.append((a, x)) %}{% endif %}{% endfor %}
           {%- endfor %}
-          {%- set fcs = [] %}
-          {%- if fc and fc.hours %}{% set _ = fcs.append((wa.label, fc)) %}{% endif %}
-          {%- for x in day.forecast_extra or [] %}{% if x.hours %}{% set _ = fcs.append((x.label, x)) %}{% endif %}{% endfor %}
-          {%- for label, f in fcs %}
-          {#- 預設收合：左欄先看行程，要看氣溫再點開；收合時標題列帶最低–最高溫，不點也知道大概 -#}
+          {%- if spots %}
+          {%- for a, f in spots %}
           <details class="wx-hours">
-            <summary>{% if label %}{{ label }} {% endif %}{{ f.tmin }}–{{ f.tmax }}°C・{{ "每小時" if f.step == 1 else "每 3 小時" }}氣溫</summary>
-            <span class="wx-src">{{ f.model or "Open-Meteo" }} · {{ f.updated }} 更新</span>
+            <summary><span>{{ a.label }} <b>{{ f.tmin }}–{{ f.tmax }}°C</b></span><span class="wx-more">{{ "每小時" if f.step == 1 else "每 3 小時" }}</span></summary>
             <ol>
               {%- for h in f.hours %}
               <li{% if h.p is not none and h.p >= 50 %} class="wet"{% endif %}>
@@ -1601,10 +1587,38 @@ body.editing>#editor{display:block !important}
               {%- endfor %}
             </ol>
             {%- if f.spread %}
+            {#- ECMWF 與 GFS 溫差 4°C 以上：數字還不可靠，提醒出發前再看 -#}
             <p class="wx-spread">各模式差異大（{{ f.spread.what }} {{ f.spread.lo }}–{{ f.spread.hi }}°C），出發前再看一次</p>
+            {%- endif %}
+            <span class="wx-src">氣溫・降雨機率 · {{ f.model or "Open-Meteo" }} · {{ f.updated }} 更新</span>
+            {%- if a.lat is not none and a.lon is not none %}
+            <a class="route-btn wx-windy" href="https://www.windy.com/{{ a.lat }}/{{ a.lon }}?{{ a.lat }},{{ a.lon }},10"
+               target="_blank" rel="noopener">Windy 逐時預報・{{ a.label }}&nbsp;↗</a>
             {%- endif %}
           </details>
           {%- endfor %}
+          {%- else %}
+          {% if day.weather_live %}
+          <p class="day-weather">{{ day.weather_live.text }}
+            <span class="wx-src">氣象廳{% if day.weather_live.scope %} {{ day.weather_live.scope }}{% endif %} · {{ day.weather_live.updated }} 發布</span>
+          </p>
+          {% elif fc %}
+          <p class="day-weather">{{ wa.label }} {{ fc.tmin }}–{{ fc.tmax }}°C
+            {%- if fc.text %}・{{ fc.text }}{% endif %}
+            {#- 用 fc["pop"]：fc.pop 在 Jinja 裡會先拿到 dict 的 .pop() 方法 -#}
+            {%- if fc["pop"] is not none %}・降雨 {{ fc["pop"] }}%{% endif %}
+            <span class="wx-src">{{ fc.model or "Open-Meteo" }} 預報 · {{ fc.updated }} 更新</span>
+          </p>
+          {% elif day.weather %}<p class="day-weather">{{ day.weather }}</p>{% endif %}
+          {%- if fc and fc.spread %}
+          <p class="wx-spread">各模式差異大（{{ fc.spread.what }} {{ fc.spread.lo }}–{{ fc.spread.hi }}°C），出發前再看一次</p>
+          {%- endif %}
+          {#- Windy 不分日子遠近一律顯示：自動抓的預報還沒進範圍時，Windy 已經看得到 -#}
+          {%- for a in [wa] + (day.forecast_areas or []) %}{% if a.lat is not none and a.lon is not none %}
+          <a class="route-btn wx-windy" href="https://www.windy.com/{{ a.lat }}/{{ a.lon }}?{{ a.lat }},{{ a.lon }},10"
+             target="_blank" rel="noopener">Windy 逐時預報・{{ a.label }}&nbsp;↗</a>
+          {%- endif %}{% endfor %}
+          {%- endif %}
 
           {% if day.note %}<p class="day-note">{{ day.note }}</p>{% endif %}
           {% if day.route_url %}
