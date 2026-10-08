@@ -760,7 +760,7 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 .wx-spread{margin:6px 0 0;font-size:13px;line-height:1.7;color:var(--warm)}
 [data-theme-size="large"] .wx-spread{font-size:15px}
 /* Windy 按鈕沿用 .route-btn 的外框，只調位置 */
-.wx-windy{margin-top:12px}
+.wx-windy{margin:12px 8px 0 0}
 [data-theme-size="large"] .wx-hours b{font-size:19px}
 [data-theme-size="large"] .wx-hours .h,[data-theme-size="large"] .wx-hours .p{font-size:14px}
 /* 當日小提醒：跟天氣同一種灰，字級一樣，只用行距分開 */
@@ -1573,6 +1573,10 @@ body.editing>#editor{display:block !important}
           <a class="route-btn wx-windy" href="https://www.windy.com/{{ wa.lat }}/{{ wa.lon }}?{{ wa.lat }},{{ wa.lon }},10"
              target="_blank" rel="noopener">Windy 逐時預報・{{ wa.label }}&nbsp;↗</a>
           {%- endif %}
+          {%- for a in day.forecast_areas or [] %}
+          <a class="route-btn wx-windy" href="https://www.windy.com/{{ a.lat }}/{{ a.lon }}?{{ a.lat }},{{ a.lon }},10"
+             target="_blank" rel="noopener">Windy 逐時預報・{{ a.label }}&nbsp;↗</a>
+          {%- endfor %}
           {%- set fcs = [] %}
           {%- if fc and fc.hours %}{% set _ = fcs.append((wa.label, fc)) %}{% endif %}
           {%- for x in day.forecast_extra or [] %}{% if x.hours %}{% set _ = fcs.append((x.label, x)) %}{% endif %}{% endfor %}
