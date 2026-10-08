@@ -11,12 +11,14 @@
 正式版一年 990 歐元；Premium 會員只解鎖網站與 App，不含 API。所以手冊上自動顯示的數字
 用 Open-Meteo（免金鑰、個人非商業免費），細看再點手冊上的 Windy 連結。
 
-座標用 days[].weather_area 的 lat／lon（與 Windy 連結同一點）。
+座標用 days[].weather_area 的 lat／lon（與 Windy 連結同一點），寫進 days[].forecast。
+同一天要多看幾個點（例如高千穗那天的草千里，海拔差 800 m、氣溫差 5°C 以上），
+在 days[].forecast_areas 列 [{"label", "lat", "lon"}]，依序寫進 days[].forecast_extra（每筆多帶 label）。
 Open-Meteo 最多預報 16 天，超出範圍的日子不寫，樣板會退回氣象廳或靜態描述。
 
 手冊上只列一個模型（長輩看到三組氣溫只會更不知道信哪個），依距離自動挑：
   3 天內      JMA MSM（氣象廳 5km 高解析，山區溫度最準）；它沒有降雨機率，降雨借 ECMWF
-  4～15 天    ECMWF IFS（中長期最穩）
+  4～15 天    ECMWF IFS 9 km（中長期最穩；跟 Windy 的 ECMWF 同一個解析度）
   ECMWF 之外  GFS（16 天，先頂著，ECMWF 涵蓋到就自動換掉）
 某模型只要那一天 24 小時有任何一格缺，就當它沒涵蓋那天——只涵蓋半天的日最低／最高溫是錯的。
 另外比對 ECMWF 與 GFS：最低或最高溫差 4°C 以上就記下 spread，手冊提醒「各模式差異大」。
@@ -24,6 +26,10 @@ Open-Meteo 最多預報 16 天，超出範圍的日子不寫，樣板會退回�
 逐時的粒度跟著預報距離走：3 天內的高解析模型是真的每小時一筆，就列每小時；
 更遠的日子模型本身只有 3～6 小時一筆，逐時數字是插補出來的，列出來只是假精確，
 所以改成每 3 小時一筆。
+
+氣溫是 Open-Meteo 依實際海拔修正過的（預設行為）：模型格點把周圍山地平均進去，
+高千穗那格約 700 m，實際町區 305 m，不修正會整排低 2～3°C。Windy 等網站顯示格點高度的值時
+會比手冊冷，這是正常的。
 """
 import json
 import sys
@@ -46,7 +52,7 @@ HOURS = range(6, 22)  # 只列白天到晚上（06–21 時），半夜的數字
 SPREAD_C = 4          # ECMWF 與 GFS 溫差到這個度數就提醒
 
 # Open-Meteo 的模型代號 → 手冊上顯示的名字
-MSM, ECMWF, GFS = "jma_msm", "ecmwf_ifs025", "gfs_seamless"
+MSM, ECMWF, GFS = "jma_msm", "ecmwf_ifs", "gfs_seamless"
 MODELS = (MSM, ECMWF, GFS)
 LABEL = {MSM: "JMA MSM", ECMWF: "ECMWF", GFS: "GFS"}
 
@@ -165,22 +171,27 @@ def main():
     today = datetime.now(JST).date()
     last_day = today + timedelta(days=HORIZON - 1)
 
-    targets = []
+    def point(a):
+        return (a["lat"], a["lon"]) if a.get("lat") is not None and a.get("lon") is not None else None
+
+    targets = []   # (day, 日期, weather_area 座標或 None, [(label, 座標)] 給 forecast_areas)
     for day in data.get("days", []):
-        wa = day.get("weather_area") or {}
-        if wa.get("lat") is None or wa.get("lon") is None:
-            continue
         d = date.fromisoformat(day["date"])
         # 已經過去的日子不再覆寫：留著最後一次的預報，回頭看也知道當天大概怎樣
-        if today <= d <= last_day:
-            targets.append((day, d, (wa["lat"], wa["lon"])))
+        if not today <= d <= last_day:
+            continue
+        main = point(day.get("weather_area") or {})
+        extra = [(a["label"], point(a)) for a in day.get("forecast_areas", []) if point(a)]
+        if main or extra:
+            targets.append((day, d, main, extra))
 
     if not targets:
         print("＝ 行程不在 Open-Meteo 預報範圍內（太遠或已結束），不寫入")
         return
 
     # 同一個座標只抓一次；Open-Meteo 接受逗號分隔的多點，一次請求就夠
-    points = sorted({c for _, _, c in targets})
+    points = sorted({c for _, _, main, extra in targets
+                     for c in [main] + [c for _, c in extra] if c})
     query = urllib.parse.urlencode({
         "latitude": ",".join(f"{lat:.3f}" for lat, _ in points),
         "longitude": ",".join(f"{lon:.3f}" for _, lon in points),
@@ -202,23 +213,36 @@ def main():
 
     stamp = datetime.now(JST).strftime("%m/%d %H:%M")
     changed = 0
-    for day, d, c in targets:
-        try:
-            fc = build(by_point[c], d, (d - today).days)
-        except (KeyError, IndexError, TypeError) as exc:
-            fail(f"{day['date']} 的回應格式看不懂：{exc}")
-        if fc is None:
+
+    def strip(fc):
+        return {k: v for k, v in (fc or {}).items() if k != "updated"}
+
+    for day, d, main_c, extra_c in targets:
+        def fc_at(c, label):
+            try:
+                return build(by_point[c], d, (d - today).days)
+            except (KeyError, IndexError, TypeError) as exc:
+                fail(f"{day['date']} {label} 的回應格式看不懂：{exc}")
+
+        main = fc_at(main_c, day["weather_area"].get("label")) if main_c else None
+        extra = [dict(fc, label=label) for label, c in extra_c if (fc := fc_at(c, label))]
+        same_main = main is None or strip(main) == strip(day.get("forecast"))
+        same_extra = [strip(f) for f in extra] == [strip(f) for f in day.get("forecast_extra", [])]
+        if same_main and same_extra:
             continue
-        old = {k: v for k, v in (day.get("forecast") or {}).items() if k != "updated"}
-        if old == fc:
-            continue
-        fc["updated"] = stamp
-        day["forecast"] = fc
+        shown = []
+        if main:
+            day["forecast"] = dict(main, updated=stamp)
+            shown.append((day["weather_area"].get("label"), main))
+        if extra:
+            day["forecast_extra"] = [dict(f, updated=stamp) for f in extra]
+            shown += [(f["label"], f) for f in extra]
         changed += 1
-        sp = fc.get("spread")
-        print(f"✅ {day['date']} {day['weather_area']['label']} [{fc['model']}] "
-              f"{fc['tmin']}–{fc['tmax']}°C {fc['text'] or ''} 降雨 {fc['pop']}%（每 {fc['step']} 小時）"
-              + (f" ⚠ {sp['what']} {sp['lo']}–{sp['hi']}°C" if sp else ""))
+        for label, fc in shown:
+            sp = fc.get("spread")
+            print(f"✅ {day['date']} {label} [{fc['model']}] "
+                  f"{fc['tmin']}–{fc['tmax']}°C {fc['text'] or ''} 降雨 {fc['pop']}%（每 {fc['step']} 小時）"
+                  + (f" ⚠ {sp['what']} {sp['lo']}–{sp['hi']}°C" if sp else ""))
 
     if not changed:
         print("＝ 預報內容無變化，不寫入")

@@ -1544,23 +1544,26 @@ body.editing>#editor{display:block !important}
                 forecast     Open-Meteo（16 天內，scripts/update_forecast.py）
                 weather      trip.json 手寫的氣候描述
               逐時那一列只來自 forecast；兩個來源同時有時，摘要用氣象廳、逐時用 Open-Meteo，
-              不在同一行並列兩組氣溫，免得長輩看到兩個數字不知道信哪個 -#}
+              不在同一行並列兩組氣溫，免得長輩看到兩個數字不知道信哪個。
+              Open-Meteo 有逐時資料時就不再出摘要行：最低／最高溫和降雨都在逐時那列看得到。
+              forecast_extra 是同一天的其他地點（例如高千穗那天的草千里），各自一列逐時 -#}
           {%- set fc = day.forecast -%}
           {%- set wa = day.weather_area or {} -%}
           {% if day.weather_live %}
           <p class="day-weather">{{ day.weather_live.text }}
             <span class="wx-src">氣象廳{% if day.weather_live.scope %} {{ day.weather_live.scope }}{% endif %} · {{ day.weather_live.updated }} 發布</span>
           </p>
-          {% elif fc %}
+          {% elif fc and not fc.hours %}
           <p class="day-weather">{{ wa.label }} {{ fc.tmin }}–{{ fc.tmax }}°C
             {%- if fc.text %}・{{ fc.text }}{% endif %}
             {#- 用 fc["pop"]：fc.pop 在 Jinja 裡會先拿到 dict 的 .pop() 方法 -#}
             {%- if fc["pop"] is not none %}・降雨 {{ fc["pop"] }}%{% endif %}
             <span class="wx-src">{{ fc.model or "Open-Meteo" }} 預報 · {{ fc.updated }} 更新</span>
           </p>
-          {% elif day.weather %}<p class="day-weather">{{ day.weather }}</p>{% endif %}
-          {%- if fc and fc.spread %}
-          {#- ECMWF 與 GFS 溫差 4°C 以上：數字還不可靠，提醒出發前再看（Windy 按鈕就在下面） -#}
+          {% elif day.weather and not fc %}<p class="day-weather">{{ day.weather }}</p>{% endif %}
+          {%- if fc and fc.spread and not fc.hours %}
+          {#- ECMWF 與 GFS 溫差 4°C 以上：數字還不可靠，提醒出發前再看（Windy 按鈕就在下面）。
+              有逐時列時改放在各自那一列下面 -#}
           <p class="wx-spread">各模式差異大（{{ fc.spread.what }} {{ fc.spread.lo }}–{{ fc.spread.hi }}°C），出發前再看一次</p>
           {%- endif %}
           {%- if wa.lat is not none and wa.lon is not none %}
@@ -1570,19 +1573,25 @@ body.editing>#editor{display:block !important}
           <a class="route-btn wx-windy" href="https://www.windy.com/{{ wa.lat }}/{{ wa.lon }}?{{ wa.lat }},{{ wa.lon }},10"
              target="_blank" rel="noopener">Windy 逐時預報・{{ wa.label }}&nbsp;↗</a>
           {%- endif %}
-          {%- if fc and fc.hours %}
+          {%- set fcs = [] %}
+          {%- if fc and fc.hours %}{% set _ = fcs.append((wa.label, fc)) %}{% endif %}
+          {%- for x in day.forecast_extra or [] %}{% if x.hours %}{% set _ = fcs.append((x.label, x)) %}{% endif %}{% endfor %}
+          {%- for label, f in fcs %}
           <figure class="wx-hours">
-            <figcaption>{{ "每小時" if fc.step == 1 else "每 3 小時" }}氣溫・降雨機率
-              {%- if day.weather_live %}<span class="wx-src">{{ fc.model or "Open-Meteo" }} · {{ fc.updated }} 更新</span>{% endif %}</figcaption>
+            <figcaption>{% if label %}{{ label }}・{% endif %}{{ "每小時" if f.step == 1 else "每 3 小時" }}氣溫・降雨機率
+              <span class="wx-src">{{ f.model or "Open-Meteo" }} · {{ f.updated }} 更新</span></figcaption>
             <ol>
-              {%- for h in fc.hours %}
+              {%- for h in f.hours %}
               <li{% if h.p is not none and h.p >= 50 %} class="wet"{% endif %}>
                 <span class="h">{{ h.h }}</span><b>{{ h.t }}°</b>
                 {%- if h.p is not none %}<span class="p">{{ h.p }}%</span>{% endif %}</li>
               {%- endfor %}
             </ol>
+            {%- if f.spread %}
+            <p class="wx-spread">各模式差異大（{{ f.spread.what }} {{ f.spread.lo }}–{{ f.spread.hi }}°C），出發前再看一次</p>
+            {%- endif %}
           </figure>
-          {%- endif %}
+          {%- endfor %}
 
           {% if day.note %}<p class="day-note">{{ day.note }}</p>{% endif %}
           {% if day.route_url %}
