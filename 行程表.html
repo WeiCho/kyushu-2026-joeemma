@@ -714,7 +714,14 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 /* 逐時氣溫：一格一個時段（時／氣溫／降雨），格子多於欄寬時橫向捲動。
    降雨機率 50% 以上用暖色點出來——要回答的是「這個時段要不要帶傘」 */
 .wx-hours{margin:12px 0 0}
-.wx-hours figcaption{font-size:12px;letter-spacing:.04em;color:var(--muted)}
+.wx-hours>summary{
+  cursor:pointer;list-style:none;font-size:14px;letter-spacing:.04em;color:var(--muted);
+  min-height:32px;display:flex;align-items:center;
+}
+.wx-hours>summary::-webkit-details-marker{display:none}
+.wx-hours>summary::after{content:"▸";margin-left:.5em;font-size:12px}
+.wx-hours[open]>summary::after{content:"▾"}
+.wx-hours .wx-src{margin-top:2px}
 .wx-hours ol{
   list-style:none;margin:6px 0 0;padding:0 0 6px;display:flex;gap:0;
   overflow-x:auto;scrollbar-width:thin;scroll-snap-type:x proximity;
@@ -734,6 +741,7 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 /* Windy 按鈕沿用 .route-btn 的外框，只調位置 */
 .wx-windy{margin:12px 8px 0 0}
 [data-theme-size="large"] .wx-hours b{font-size:19px}
+[data-theme-size="large"] .wx-hours>summary{font-size:16px}
 [data-theme-size="large"] .wx-hours .h,[data-theme-size="large"] .wx-hours .p{font-size:14px}
 /* 當日小提醒：跟天氣同一種灰，字級一樣，只用行距分開 */
 .day-note{margin:6px 0 0;font-size:14px;line-height:1.8;color:var(--muted)}
@@ -1605,10 +1613,9 @@ body.editing>#editor{display:block !important}
             <span class="wx-src">氣象廳 週間預報 · 10/08 11:00 發布</span>
           </p>
           <a class="route-btn wx-windy" href="https://www.windy.com/33.59/130.401?33.59,130.401,10"
-             target="_blank" rel="noopener">Windy 逐時預報・福岡&nbsp;↗</a>
-          <figure class="wx-hours">
-            <figcaption>福岡・每 3 小時氣溫・降雨機率
-              <span class="wx-src">ECMWF · 10/08 23:06 更新</span></figcaption>
+             target="_blank" rel="noopener">Windy 逐時預報・福岡&nbsp;↗</a><details class="wx-hours">
+            <summary>福岡 16–22°C・每 3 小時氣溫</summary>
+            <span class="wx-src">ECMWF · 10/08 23:06 更新</span>
             <ol>
               <li>
                 <span class="h">06</span><b>18°</b><span class="p">0%</span></li>
@@ -1623,7 +1630,7 @@ body.editing>#editor{display:block !important}
               <li>
                 <span class="h">21</span><b>18°</b><span class="p">0%</span></li>
             </ol>
-          </figure>
+          </details>
 
           
           
@@ -1751,10 +1758,9 @@ body.editing>#editor{display:block !important}
           <p class="day-date">10月16日 · 週五</p><a class="route-btn wx-windy" href="https://www.windy.com/32.704/131.303?32.704,131.303,10"
              target="_blank" rel="noopener">Windy 逐時預報・高千穗&nbsp;↗</a>
           <a class="route-btn wx-windy" href="https://www.windy.com/32.884/131.063?32.884,131.063,10"
-             target="_blank" rel="noopener">Windy 逐時預報・草千里&nbsp;↗</a>
-          <figure class="wx-hours">
-            <figcaption>高千穗・每 3 小時氣溫・降雨機率
-              <span class="wx-src">ECMWF · 10/08 23:06 更新</span></figcaption>
+             target="_blank" rel="noopener">Windy 逐時預報・草千里&nbsp;↗</a><details class="wx-hours">
+            <summary>高千穗 14–25°C・每 3 小時氣溫</summary>
+            <span class="wx-src">ECMWF · 10/08 23:06 更新</span>
             <ol>
               <li>
                 <span class="h">06</span><b>16°</b><span class="p">0%</span></li>
@@ -1770,10 +1776,9 @@ body.editing>#editor{display:block !important}
                 <span class="h">21</span><b>19°</b><span class="p">16%</span></li>
             </ol>
             <p class="wx-spread">各模式差異大（最低溫 10–14°C），出發前再看一次</p>
-          </figure>
-          <figure class="wx-hours">
-            <figcaption>草千里・每 3 小時氣溫・降雨機率
-              <span class="wx-src">ECMWF · 10/08 23:06 更新</span></figcaption>
+          </details><details class="wx-hours">
+            <summary>草千里 9–21°C・每 3 小時氣溫</summary>
+            <span class="wx-src">ECMWF · 10/08 23:06 更新</span>
             <ol>
               <li>
                 <span class="h">06</span><b>11°</b><span class="p">1%</span></li>
@@ -1788,7 +1793,7 @@ body.editing>#editor{display:block !important}
               <li>
                 <span class="h">21</span><b>14°</b><span class="p">24%</span></li>
             </ol>
-          </figure>
+          </details>
 
           
           
@@ -1912,10 +1917,9 @@ body.editing>#editor{display:block !important}
       <div class="day-grid">
         <div class="day-aside"><h3 class="day-name">別府地獄與由布院山城童話（夜宿溫泉小鎮）</h3>
           <p class="day-date">10月17日 · 週六</p><a class="route-btn wx-windy" href="https://www.windy.com/33.265/131.356?33.265,131.356,10"
-             target="_blank" rel="noopener">Windy 逐時預報・別府・由布院&nbsp;↗</a>
-          <figure class="wx-hours">
-            <figcaption>別府・由布院・每 3 小時氣溫・降雨機率
-              <span class="wx-src">ECMWF · 10/08 23:06 更新</span></figcaption>
+             target="_blank" rel="noopener">Windy 逐時預報・別府・由布院&nbsp;↗</a><details class="wx-hours">
+            <summary>別府・由布院 16–19°C・每 3 小時氣溫</summary>
+            <span class="wx-src">ECMWF · 10/08 23:06 更新</span>
             <ol>
               <li>
                 <span class="h">06</span><b>18°</b><span class="p">11%</span></li>
@@ -1930,7 +1934,7 @@ body.editing>#editor{display:block !important}
               <li>
                 <span class="h">21</span><b>17°</b><span class="p">10%</span></li>
             </ol>
-          </figure>
+          </details>
 
           
           
@@ -2124,10 +2128,9 @@ body.editing>#editor{display:block !important}
       <div class="day-grid">
         <div class="day-aside"><h3 class="day-name">九州自然動物園，午後回福岡逛街、屋台收尾</h3>
           <p class="day-date">10月18日 · 週日</p><a class="route-btn wx-windy" href="https://www.windy.com/33.945/130.962?33.945,130.962,10"
-             target="_blank" rel="noopener">Windy 逐時預報・門司・北九州&nbsp;↗</a>
-          <figure class="wx-hours">
-            <figcaption>門司・北九州・每 3 小時氣溫・降雨機率
-              <span class="wx-src">ECMWF · 10/08 23:06 更新</span></figcaption>
+             target="_blank" rel="noopener">Windy 逐時預報・門司・北九州&nbsp;↗</a><details class="wx-hours">
+            <summary>門司・北九州 19–24°C・每 3 小時氣溫</summary>
+            <span class="wx-src">ECMWF · 10/08 23:06 更新</span>
             <ol>
               <li>
                 <span class="h">06</span><b>21°</b><span class="p">6%</span></li>
@@ -2142,7 +2145,7 @@ body.editing>#editor{display:block !important}
               <li>
                 <span class="h">21</span><b>20°</b><span class="p">22%</span></li>
             </ol>
-          </figure>
+          </details>
 
           
           
@@ -2318,10 +2321,9 @@ body.editing>#editor{display:block !important}
       <div class="day-grid">
         <div class="day-aside"><h3 class="day-name">糸島夫婦岩（直達巴士），午後天神逛街＋藥院燒肉</h3>
           <p class="day-date">10月19日 · 週一</p><a class="route-btn wx-windy" href="https://www.windy.com/33.557/130.195?33.557,130.195,10"
-             target="_blank" rel="noopener">Windy 逐時預報・糸島・福岡&nbsp;↗</a>
-          <figure class="wx-hours">
-            <figcaption>糸島・福岡・每 3 小時氣溫・降雨機率
-              <span class="wx-src">ECMWF · 10/08 23:06 更新</span></figcaption>
+             target="_blank" rel="noopener">Windy 逐時預報・糸島・福岡&nbsp;↗</a><details class="wx-hours">
+            <summary>糸島・福岡 17–20°C・每 3 小時氣溫</summary>
+            <span class="wx-src">ECMWF · 10/08 23:06 更新</span>
             <ol>
               <li>
                 <span class="h">06</span><b>19°</b><span class="p">26%</span></li>
@@ -2337,7 +2339,7 @@ body.editing>#editor{display:block !important}
                 <span class="h">21</span><b>18°</b><span class="p">27%</span></li>
             </ol>
             <p class="wx-spread">各模式差異大（最低溫 17–21°C），出發前再看一次</p>
-          </figure>
+          </details>
 
           
           
@@ -2517,10 +2519,9 @@ body.editing>#editor{display:block !important}
       <div class="day-grid">
         <div class="day-aside"><h3 class="day-name">滿載而歸（早班機，時間偏緊）</h3>
           <p class="day-date">10月20日 · 週二</p><a class="route-btn wx-windy" href="https://www.windy.com/33.59/130.401?33.59,130.401,10"
-             target="_blank" rel="noopener">Windy 逐時預報・福岡&nbsp;↗</a>
-          <figure class="wx-hours">
-            <figcaption>福岡・每 3 小時氣溫・降雨機率
-              <span class="wx-src">ECMWF · 10/08 23:06 更新</span></figcaption>
+             target="_blank" rel="noopener">Windy 逐時預報・福岡&nbsp;↗</a><details class="wx-hours">
+            <summary>福岡 15–23°C・每 3 小時氣溫</summary>
+            <span class="wx-src">ECMWF · 10/08 23:06 更新</span>
             <ol>
               <li>
                 <span class="h">06</span><b>16°</b><span class="p">16%</span></li>
@@ -2536,7 +2537,7 @@ body.editing>#editor{display:block !important}
                 <span class="h">21</span><b>18°</b><span class="p">22%</span></li>
             </ol>
             <p class="wx-spread">各模式差異大（最低溫 15–20°C），出發前再看一次</p>
-          </figure>
+          </details>
 
           
           

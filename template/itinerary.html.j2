@@ -742,7 +742,14 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 /* 逐時氣溫：一格一個時段（時／氣溫／降雨），格子多於欄寬時橫向捲動。
    降雨機率 50% 以上用暖色點出來——要回答的是「這個時段要不要帶傘」 */
 .wx-hours{margin:12px 0 0}
-.wx-hours figcaption{font-size:12px;letter-spacing:.04em;color:var(--muted)}
+.wx-hours>summary{
+  cursor:pointer;list-style:none;font-size:14px;letter-spacing:.04em;color:var(--muted);
+  min-height:32px;display:flex;align-items:center;
+}
+.wx-hours>summary::-webkit-details-marker{display:none}
+.wx-hours>summary::after{content:"▸";margin-left:.5em;font-size:12px}
+.wx-hours[open]>summary::after{content:"▾"}
+.wx-hours .wx-src{margin-top:2px}
 .wx-hours ol{
   list-style:none;margin:6px 0 0;padding:0 0 6px;display:flex;gap:0;
   overflow-x:auto;scrollbar-width:thin;scroll-snap-type:x proximity;
@@ -762,6 +769,7 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 /* Windy 按鈕沿用 .route-btn 的外框，只調位置 */
 .wx-windy{margin:12px 8px 0 0}
 [data-theme-size="large"] .wx-hours b{font-size:19px}
+[data-theme-size="large"] .wx-hours>summary{font-size:16px}
 [data-theme-size="large"] .wx-hours .h,[data-theme-size="large"] .wx-hours .p{font-size:14px}
 /* 當日小提醒：跟天氣同一種灰，字級一樣，只用行距分開 */
 .day-note{margin:6px 0 0;font-size:14px;line-height:1.8;color:var(--muted)}
@@ -1581,9 +1589,10 @@ body.editing>#editor{display:block !important}
           {%- if fc and fc.hours %}{% set _ = fcs.append((wa.label, fc)) %}{% endif %}
           {%- for x in day.forecast_extra or [] %}{% if x.hours %}{% set _ = fcs.append((x.label, x)) %}{% endif %}{% endfor %}
           {%- for label, f in fcs %}
-          <figure class="wx-hours">
-            <figcaption>{% if label %}{{ label }}・{% endif %}{{ "每小時" if f.step == 1 else "每 3 小時" }}氣溫・降雨機率
-              <span class="wx-src">{{ f.model or "Open-Meteo" }} · {{ f.updated }} 更新</span></figcaption>
+          {#- 預設收合：左欄先看行程，要看氣溫再點開；收合時標題列帶最低–最高溫，不點也知道大概 -#}
+          <details class="wx-hours">
+            <summary>{% if label %}{{ label }} {% endif %}{{ f.tmin }}–{{ f.tmax }}°C・{{ "每小時" if f.step == 1 else "每 3 小時" }}氣溫</summary>
+            <span class="wx-src">{{ f.model or "Open-Meteo" }} · {{ f.updated }} 更新</span>
             <ol>
               {%- for h in f.hours %}
               <li{% if h.p is not none and h.p >= 50 %} class="wet"{% endif %}>
@@ -1594,7 +1603,7 @@ body.editing>#editor{display:block !important}
             {%- if f.spread %}
             <p class="wx-spread">各模式差異大（{{ f.spread.what }} {{ f.spread.lo }}–{{ f.spread.hi }}°C），出發前再看一次</p>
             {%- endif %}
-          </figure>
+          </details>
           {%- endfor %}
 
           {% if day.note %}<p class="day-note">{{ day.note }}</p>{% endif %}
