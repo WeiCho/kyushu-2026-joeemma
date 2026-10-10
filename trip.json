@@ -165,7 +165,16 @@
           "cost": 4500,
           "url": "https://tw.trip.com/hotels/detail/?cityEnName=Fukuoka&cityId=248&hotelId=70941704&checkIn=2026-10-15&checkOut=2026-10-16",
           "map_query": "Hotel Oriental Express Fukuoka Nakasu Kawabata",
-          "next_transit": "步行 → 博多華味鳥 中洲本店（約5-10分鐘）"
+          "next_transit": "步行 → 博多華味鳥 中洲本店（約5-10分鐘）",
+          "events": [
+            {
+              "name": "博多川川床（HAKATA Riverside Festival）",
+              "when": "10/9–10/17，平日 17:00–21:30（10/15 是週四）",
+              "where": "博多大橋～明治橋之間的博多川畔，地下鐵中洲川端站 5 號出口步行約 1 分",
+              "desc": "秋夜限定的河畔座位，竹燈、提燈、博多美食攤、緣日和表演。免費入場、不能預約，小雨照常、天候差會停辦。就在飯店旁，check-in 後到 20:30 晚餐前可以先繞過去看一眼。",
+              "url": "https://www.crossroadfukuoka.jp/event/17374"
+            }
+          ]
         },
         {
           "time": "20:30",
@@ -625,7 +634,16 @@
           "note": "室內商場好逛、下雨也不怕，長輩累了到處有地方能坐；中庭噴水池聲光秀整點演出。唐吉訶德等店家的電子折價券記得先領，結帳出示條碼可再折",
           "duration": "3h",
           "map_query": "キャナルシティ博多",
-          "next_transit": "步行／地鐵 → 拉麵店"
+          "next_transit": "步行／地鐵 → 拉麵店",
+          "events": [
+            {
+              "name": "TOHO entertainment STORE 九州首店",
+              "when": "10/15 開幕，營業時間以官網為準",
+              "where": "博多 RIVERAIN B2（地下鐵中洲川端站直達），從博多運河城步行約 10 分",
+              "desc": "TOHO 旗下角色、動畫、電影的官方周邊店，九州第一間。",
+              "url": "https://www.threads.com/@fukuoka.life.gem/post/DeHMkQRlJJD"
+            }
+          ]
         },
         {
           "time": "18:00",
@@ -643,7 +661,16 @@
           "note": "JR博多城、阿米魯廣場、博多地下街；伴手禮可以先看，明天還有一輪能補買",
           "duration": "1.5h",
           "map_query": "JR博多シティ",
-          "next_transit": "地鐵 → 天神（約5分鐘）"
+          "next_transit": "地鐵 → 天神（約5分鐘）",
+          "events": [
+            {
+              "name": "哈利波特快閃店",
+              "when": "9/26–12/27",
+              "where": "博多車站 AMU EST 1 樓",
+              "desc": "魔法世界生活雜貨與限定商品，有博多限定巧克力蛙。",
+              "url": "https://www.threads.com/@fukuoka.life.gem/post/DeHMkQRlJJD"
+            }
+          ]
         },
         {
           "time": "21:00",
@@ -773,7 +800,23 @@
           "note": "新天町商店街、天神地下街、大丸／岩田屋一帶；10/20是早班機，明太子等伴手禮今天買齊；努努雞等含肉製品依規定不能帶回台灣，要買就當地吃完。唐吉訶德等店家有電子折價券，先在官網／APP 領好，結帳時出示條碼掃描再折一次",
           "duration": "2.5h",
           "map_query": "天神地下街",
-          "next_transit": "西鐵天神大牟田線1站／地下鐵七隈線（天神南）2站 → 薬院"
+          "next_transit": "西鐵天神大牟田線1站／地下鐵七隈線（天神南）2站 → 薬院",
+          "events": [
+            {
+              "name": "吉伊卡哇快閃店",
+              "when": "10/16–11/3（10/16–18 要用 LINE 拿入場整理券，10/19 起不用）",
+              "where": "天神 福岡三越 9 樓",
+              "desc": "有活動限定商品。",
+              "url": "https://www.threads.com/@fukuoka.life.gem/post/DeHMkQRlJJD"
+            },
+            {
+              "name": "Animate 搬遷中（注意）",
+              "when": "10/12–10/25 原店只營業小型「Animate Only Shop」；10/24 新店開幕",
+              "where": "原店：福岡 PARCO；新店：福岡三越 8 樓「Animate LACHIC 福岡天神」",
+              "desc": "10/19 去的時候原店不是完整的綜合店，新店還沒開，想逛要有心理準備。",
+              "url": "https://www.threads.com/@fukuoka.life.gem/post/DeHMkQRlJJD"
+            }
+          ]
         },
         {
           "time": "17:45",
@@ -791,7 +834,16 @@
           "note": "吃完再逛一輪，補買漏掉的伴手禮；商場多在20:00–21:00打烊，別逛太晚",
           "duration": "2h",
           "map_query": "天神地下街",
-          "next_transit": "地鐵／計程車 → 住宿"
+          "next_transit": "地鐵／計程車 → 住宿",
+          "events": [
+            {
+              "name": "福岡德國啤酒節（Oktoberfest）",
+              "when": "10/16–10/25，平日 16:00–22:00（10/19 是週一）",
+              "where": "冷泉公園（中洲川端站與祇園站之間）",
+              "desc": "啤酒加德國料理，免費入場，全場可刷信用卡、QR Code、交通 IC。",
+              "url": "https://www.threads.com/@fukuoka.life.gem/post/DeHMkQRlJJD"
+            }
+          ]
         },
         {
           "time": "22:00",

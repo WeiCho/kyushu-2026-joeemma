@@ -935,6 +935,19 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 .em-meta{margin:14px 0 0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 14px;font-size:14px}
 .em-meta dt{color:var(--muted);letter-spacing:.06em;white-space:nowrap}
 .em-meta dd{margin:0;line-height:1.7}
+
+/* ── 行程點旁的「活動」彈窗：借用緊急彈窗的外框 ── */
+/* 跟 📍 地圖 同一種行內樣式，button 要把預設外觀清掉 */
+.stop .ev-open{font:inherit;font-size:14px;color:inherit;background:none;border:0;
+  border-bottom:.8px solid var(--line);padding:0;cursor:pointer}
+/* 緊急彈窗在沒 JS 時會攤開顯示；活動只是加料，沒 JS 就整個收起來 */
+.em-dlg.ev-dlg:not([open]),html:not(.js) .ev-open{display:none}
+@media print{ .stop .ev-open{display:none} }
+.ev-dlg{max-height:min(80vh,640px)}
+.ev-item+.ev-item{margin-top:18px;padding-top:16px;border-top:.8px solid var(--line)}
+.ev-item h4{font-size:16px;line-height:1.6;letter-spacing:.03em}
+.ev-item h4 a{color:inherit;text-decoration:none;border-bottom:.8px solid var(--line)}
+.ev-dlg h3{margin-bottom:14px}
 .em-tel{
   display:flex;align-items:center;min-height:52px;margin-top:16px;
   font-family:var(--latin);font-size:26px;letter-spacing:.06em;
@@ -1558,7 +1571,26 @@ body.editing>#editor{display:block !important}
         <li class="stop {{ TYPE_META[item.type].cls if item.type in TYPE_META else '' }}" data-time="{{ item.time }}" data-name="{{ item.name }}"{% if item.map_url %} data-map="{{ item.map_url }}"{% endif %}>
           <time>{{ item.time }}</time>
           <div>
-            <h4><span class="tico">{{ TYPE_META[item.type].icon if item.type in TYPE_META else '📍' }}</span>{% if item.url %}<a class="name" href="{{ item.url }}">{{ item.name }} ↗</a>{% else %}{{ item.name }}{% endif %}{% if item.map_url %} <a class="loc" href="{{ item.map_url }}">📍 地圖</a>{% endif %}{% for lk in item.links %} <a class="loc" href="{{ lk.url }}" target="_blank" rel="noopener">{{ lk.emoji }} {{ lk.label }}</a>{% endfor %}</h4>
+            <h4><span class="tico">{{ TYPE_META[item.type].icon if item.type in TYPE_META else '📍' }}</span>{% if item.url %}<a class="name" href="{{ item.url }}">{{ item.name }} ↗</a>{% else %}{{ item.name }}{% endif %}{% if item.map_url %} <a class="loc" href="{{ item.map_url }}">📍 地圖</a>{% endif %}{% for lk in item.links %} <a class="loc" href="{{ lk.url }}" target="_blank" rel="noopener">{{ lk.emoji }} {{ lk.label }}</a>{% endfor %}{% if item.events %} <button type="button" class="loc ev-open" aria-haspopup="dialog" aria-controls="ev-{{ day.date }}-{{ loop.index0 }}">活動</button>{% endif %}</h4>
+            {#- 附近的期間限定活動：行程本身不動，名稱旁多一顆「活動」，點開才看 -#}
+            {% if item.events %}
+            <dialog class="em-dlg ev-dlg" id="ev-{{ day.date }}-{{ loop.index0 }}" aria-labelledby="ev-{{ day.date }}-{{ loop.index0 }}-t">
+              <div class="em-dlg-in">
+                <h3 id="ev-{{ day.date }}-{{ loop.index0 }}-t">附近活動</h3>
+                {% for ev in item.events %}
+                <div class="ev-item">
+                  <h4>{% if ev.url %}<a href="{{ ev.url }}" target="_blank" rel="noopener">{{ ev.name }} ↗</a>{% else %}{{ ev.name }}{% endif %}</h4>
+                  <dl class="em-meta">
+                    {%- if ev.when %}<dt>時間</dt><dd>{{ ev.when }}</dd>{% endif %}
+                    {%- if ev.where %}<dt>地點</dt><dd>{{ ev.where }}</dd>{% endif %}
+                  </dl>
+                  {% if ev.desc %}<p class="em-desc">{{ ev.desc }}</p>{% endif %}
+                </div>
+                {% endfor %}
+                <button type="button" class="em-close" data-em-close aria-label="關閉">關閉</button>
+              </div>
+            </dialog>
+            {% endif %}
             {% if item.note %}<p class="desc">{{ item.note }}</p>{% endif %}
             {# live_status 只出現在封面的浮卡，行程內不重複 #}
             {# 金額一律只出現在「花費」那一區，行程列表不重複寫價錢 #}
@@ -2139,7 +2171,7 @@ body.editing>#editor{display:block !important}
   // ── 緊急卡片彈窗 ──
   // 用原生 <dialog>.showModal()：焦點鎖定、Escape 關閉、背景 inert 都由瀏覽器負責，
   // 不用自己寫 focus trap。舊瀏覽器沒有 showModal 就退回錨點行為（內容仍在頁面上）
-  [].slice.call(document.querySelectorAll(".em-card")).forEach(function (btn) {
+  [].slice.call(document.querySelectorAll(".em-card, .ev-open")).forEach(function (btn) {
     btn.addEventListener("click", function () {
       var dlg = document.getElementById(btn.getAttribute("aria-controls"));
       if (!dlg) return;
@@ -2154,7 +2186,7 @@ body.editing>#editor{display:block !important}
     });
   });
   // 點背景關閉：<dialog> 的點擊事件在 backdrop 上也會觸發，且 target 會是 dialog 本身
-  [].slice.call(document.querySelectorAll(".em-dlg")).forEach(function (dlg) {
+  [].slice.call(document.querySelectorAll(".em-dlg")).forEach(function (dlg) {   // 含 .ev-dlg
     dlg.addEventListener("click", function (e) { if (e.target === dlg) dlg.close(); });
   });
 
