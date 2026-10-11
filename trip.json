@@ -648,6 +648,15 @@
               "desc": "TOHO 旗下角色、動畫、電影的官方周邊店，九州第一間。",
               "url": "https://www.threads.com/@fukuoka.life.gem/post/DeHMkQRlJJD"
             }
+          ],
+          "shops_title": "NANGA 哪裡買",
+          "shops": [
+            {
+              "name": "L-Breath 博多運河城店",
+              "where": "博多運河城 South Building 3F",
+              "map_query": "L-Breath キャナルシティ博多",
+              "desc": "運河城裡的大型戶外用品店。網路整理文章把它列為 NANGA 代理店，但官方沒有寫，有沒有貨要到現場看；就在逛街動線上，順路繞一下。"
+            }
           ]
         },
         {
@@ -674,6 +683,16 @@
               "where": "博多車站 AMU EST 1 樓",
               "desc": "魔法世界生活雜貨與限定商品，有博多限定巧克力蛙。",
               "url": "https://www.threads.com/@fukuoka.life.gem/post/DeHMkQRlJJD"
+            }
+          ],
+          "shops_title": "NANGA 哪裡買",
+          "shops": [
+            {
+              "name": "DOUBLEDAY（AMU PLAZA 博多）",
+              "where": "JR 博多城 AMU PLAZA 博多 7F",
+              "map_query": "ダブルデイ アミュプラザ博多",
+              "url": "https://www.jrhakatacity.com/shopblog/detail/?cd=002636&scd=000170",
+              "desc": "生活選物店。2024/10 店家部落格寫「今季 NANGA 羽絨衣很齊全」，今年有沒有進貨不確定，想要特定款式可以先打電話問。"
             }
           ]
         },
@@ -825,6 +844,32 @@
               "where": "原店：福岡 PARCO；新店：福岡三越 8 樓「Animate LACHIC 福岡天神」",
               "desc": "10/19 去的時候原店不是完整的綜合店，新店還沒開，想逛要有心理準備。",
               "url": "https://www.threads.com/@fukuoka.life.gem/post/DeHMkQRlJJD"
+            }
+          ],
+          "shops_title": "NANGA 哪裡買",
+          "shops": [
+            {
+              "name": "好日山荘 大丸福岡天神店",
+              "where": "大丸福岡天神店 本館 5F",
+              "map_query": "好日山荘 大丸福岡天神店",
+              "hours": "10:00–19:00",
+              "url": "https://www.kojitusanso.jp/shop/kyushu_okinawa/fukuoka/",
+              "desc": "登山用品專門店，官網的代理品牌清單有 NANGA，是天神一帶最確定買得到的一家。19:00 就關門，晚餐後的續攤時段來不及，要在這段逛街時間去。"
+            },
+            {
+              "name": "URBAN RESEARCH（福岡 PARCO）",
+              "where": "福岡 PARCO（樓層以 PARCO 官網為準）",
+              "map_query": "アーバンリサーチ 福岡パルコ",
+              "url": "https://fukuoka.parco.jp/shop/search/?keyword=%E3%83%8A%E3%83%B3%E3%82%AC",
+              "desc": "福岡 PARCO 的店舖消息介紹過這家進 NANGA 羽絨衣；PARCO 就在天神站旁，跟三越吉伊卡哇快閃店同一區。"
+            },
+            {
+              "name": "ReTrick",
+              "where": "中央區大名 1-2-50 4F（天神站走路約 10 分）",
+              "map_query": "ReTrick 福岡 大名",
+              "hours": "13:00–20:00",
+              "url": "https://retrick.net/?mode=cate&cbid=2379656&csid=0&sort=n",
+              "desc": "大名的小選物店，網店有 NANGA 分類，但目前多是帽子、針織衫，不是羽絨衣；想找羽絨衣以上面兩家為主。"
             }
           ]
         },

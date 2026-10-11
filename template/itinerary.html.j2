@@ -1576,7 +1576,7 @@ body.editing>#editor{display:block !important}
         <li class="stop {{ TYPE_META[item.type].cls if item.type in TYPE_META else '' }}" data-time="{{ item.time }}" data-name="{{ item.name }}"{% if item.map_url %} data-map="{{ item.map_url }}"{% endif %}>
           <time>{{ item.time }}</time>
           <div>
-            <h4><span class="tico">{{ TYPE_META[item.type].icon if item.type in TYPE_META else '📍' }}</span>{% if item.url %}<a class="name" href="{{ item.url }}">{{ item.name }} ↗</a>{% else %}{{ item.name }}{% endif %}{% if item.map_url %} <a class="loc" href="{{ item.map_url }}">📍 地圖</a>{% endif %}{% for lk in item.links %} <a class="loc" href="{{ lk.url }}" target="_blank" rel="noopener">{{ lk.emoji }} {{ lk.label }}</a>{% endfor %}{% if item.events %} <button type="button" class="loc ev-open" aria-haspopup="dialog" aria-controls="ev-{{ day.date }}-{{ loop.index0 }}">活動</button>{% endif %}</h4>
+            <h4><span class="tico">{{ TYPE_META[item.type].icon if item.type in TYPE_META else '📍' }}</span>{% if item.url %}<a class="name" href="{{ item.url }}">{{ item.name }} ↗</a>{% else %}{{ item.name }}{% endif %}{% if item.map_url %} <a class="loc" href="{{ item.map_url }}">📍 地圖</a>{% endif %}{% for lk in item.links %} <a class="loc" href="{{ lk.url }}" target="_blank" rel="noopener">{{ lk.emoji }} {{ lk.label }}</a>{% endfor %}{% if item.events %} <button type="button" class="loc ev-open" aria-haspopup="dialog" aria-controls="ev-{{ day.date }}-{{ loop.index0 }}">活動</button>{% endif %}{% if item.shops %} <button type="button" class="loc ev-open" aria-haspopup="dialog" aria-controls="sh-{{ day.date }}-{{ loop.index0 }}">店家</button>{% endif %}</h4>
             {#- 附近的期間限定活動：行程本身不動，名稱旁多一顆「活動」，點開才看 -#}
             {% if item.events %}
             <dialog class="em-dlg ev-dlg" id="ev-{{ day.date }}-{{ loop.index0 }}" aria-labelledby="ev-{{ day.date }}-{{ loop.index0 }}-t">
@@ -1590,6 +1590,25 @@ body.editing>#editor{display:block !important}
                     {%- if ev.where %}<dt>地點</dt><dd>{{ ev.where }}</dd>{% endif %}
                   </dl>
                   {% if ev.desc %}<p class="em-desc">{{ ev.desc }}</p>{% endif %}
+                </div>
+                {% endfor %}
+                <button type="button" class="em-close" data-em-close aria-label="關閉">關閉</button>
+              </div>
+            </dialog>
+            {% endif %}
+            {#- 順路可逛的店（例如想買的品牌在這附近哪裡有賣）：一樣收在彈窗，行程列表不變長 -#}
+            {% if item.shops %}
+            <dialog class="em-dlg ev-dlg" id="sh-{{ day.date }}-{{ loop.index0 }}" aria-labelledby="sh-{{ day.date }}-{{ loop.index0 }}-t">
+              <div class="em-dlg-in">
+                <h3 id="sh-{{ day.date }}-{{ loop.index0 }}-t">{{ item.shops_title or "順路店家" }}</h3>
+                {% for sh in item.shops %}
+                <div class="ev-item">
+                  <h4>{% if sh.url %}<a href="{{ sh.url }}" target="_blank" rel="noopener">{{ sh.name }} ↗</a>{% else %}{{ sh.name }}{% endif %}</h4>
+                  <dl class="em-meta">
+                    {%- if sh.where %}<dt>地點</dt><dd>{% if sh.map_query %}<a href="https://www.google.com/maps/search/?api=1&query={{ sh.map_query | urlencode }}" target="_blank" rel="noopener">{{ sh.where }} 📍</a>{% else %}{{ sh.where }}{% endif %}</dd>{% endif %}
+                    {%- if sh.hours %}<dt>營業</dt><dd>{{ sh.hours }}</dd>{% endif %}
+                  </dl>
+                  {% if sh.desc %}<p class="em-desc">{{ sh.desc }}</p>{% endif %}
                 </div>
                 {% endfor %}
                 <button type="button" class="em-close" data-em-close aria-label="關閉">關閉</button>
