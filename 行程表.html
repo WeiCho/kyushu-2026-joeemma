@@ -1004,11 +1004,16 @@ html:not(.js) .em-card{cursor:default}
   border-top:.8px solid var(--line);padding-block:clamp(14px,2.2vh,20px);
 }
 .ledger-yen-in{position:relative;display:block}
-.ledger-yen-in::before{
-  content:"¥";position:absolute;left:10px;top:50%;transform:translateY(-50%);
-  font-family:var(--latin);color:var(--muted);pointer-events:none;
+/* 金額框左邊的幣別鈕（¥／NT$），點一下切換；框的左內距跟著符號寬度變 */
+.ledger-cur{
+  position:absolute;left:1px;top:1px;bottom:1px;padding:0 6px 0 10px;
+  border:0;background:none;cursor:pointer;font-family:var(--latin);font-size:16px;color:var(--ink);
+  text-decoration:underline dotted;text-underline-offset:4px;text-decoration-thickness:.8px;
 }
-.ledger-yen-in input{width:100%;padding-left:24px;font-family:var(--latin);font-variant-numeric:tabular-nums}
+.ledger-cur:focus-visible{outline:3px solid var(--focus);outline-offset:1px}
+.ledger-yen-in input{width:100%;padding-left:28px;font-family:var(--latin);font-variant-numeric:tabular-nums}
+.ledger-yen-in.is-twd input{padding-left:48px}
+.lg-alt{margin-left:8px;font-size:14px;font-weight:400;color:var(--muted)}
 .ledger-go{
   min-width:44px;min-height:44px;border:0;border-radius:4px;cursor:pointer;
   background:var(--pine);color:var(--paper);font:inherit;font-size:20px;line-height:1;
@@ -2686,11 +2691,11 @@ body.editing>#editor{display:block !important}
     <p class="ledger-warn" id="ledger-warn" hidden>這個瀏覽器不允許存資料（可能是無痕模式），關掉頁面記錄就會消失。</p>
     <form class="ledger-add" id="ledger-add" autocomplete="off">
       <input class="ledger-name-in" name="name" maxlength="40" placeholder="品項" aria-label="品項">
-      <span class="ledger-yen-in"><input name="yen" inputmode="numeric" placeholder="金額" aria-label="金額（日幣）"></span>
+      <span class="ledger-yen-in"><input name="yen" inputmode="numeric" placeholder="金額" aria-label="金額"></span>
       <button class="ledger-go" type="submit" aria-label="新增這筆">＋</button>
     </form>
     <div id="ledger-list"></div>
-    <p class="ledger-empty" id="ledger-empty">還沒有記錄。輸入品項與日幣金額按「＋」就會記下，依天自動分組。</p>
+    <p class="ledger-empty" id="ledger-empty">還沒有記錄。輸入品項與金額按「＋」就會記下，依天自動分組；金額左邊的 ¥ 點一下可改記台幣。</p>
   </div>
   <noscript><p class="ledger-empty">記帳需要開啟 JavaScript。</p></noscript>
   <div class="ledger-undo" id="ledger-undo" role="status" aria-live="polite" hidden></div>
@@ -3557,7 +3562,8 @@ body.editing>#editor{display:block !important}
   });
 
   // ── 花費：自己的記帳（只存 localStorage，依本頁路徑分隔；不發任何網路請求）──
-  // 存的是 {rate?, items:[{id, name, yen, ts}]}。rate 只有自己改過才存，沒改就跟 trip.fx 走
+  // 存的是 {rate?, cur?, items:[{id, name, yen, cur?, ts}]}。rate 只有自己改過才存，沒改就跟 trip.fx 走
+  // 每筆的 yen 是「以 cur 計的金額」：cur 不存就是日幣，"TWD" 是台幣；外層 cur 是新增列上次選的幣別
   (function(){
     var root = document.getElementById("ledger");
     if (!root) return;
@@ -3582,16 +3588,33 @@ body.editing>#editor{display:block !important}
     function save(){ try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
     function rate(){ return state.rate > 0 ? state.rate : DEF_RATE; }
 
-    // 全形數字、逗號、¥／円、空白都收；只要正整數日幣
+    // 全形數字、逗號、¥／円、空白都收；只要正整數（日幣或台幣都用這個）
     function parseYen(v){
       v = String(v || "").replace(/[０-９]/g, function(c){ return String.fromCharCode(c.charCodeAt(0) - 0xFEE0); })
-                         .replace(/[,，、¥￥円\s]/g, "");
+                         .replace(/NT\$|[,，、¥￥円$＄元\s]/gi, "");
       if (!/^\d+$/.test(v)) return 0;
       var n = parseInt(v, 10);
       return n > 0 && n <= 1e8 ? n : 0;
     }
     function yen(n){ return "¥" + n.toLocaleString("en-US"); }
-    function twd(n){ return "NT$" + Math.round(n / rate()).toLocaleString("en-US"); }
+    function twd(n){ return "NT$" + Math.round(n).toLocaleString("en-US"); }
+    function money(n, cur){ return cur === "TWD" ? twd(n) : yen(n); }
+    // 每筆各自的幣別換成日幣／台幣，合計與每天小計都用這兩個加總
+    function toLocal(it){ return it.cur === "TWD" ? it.yen * rate() : it.yen; }
+    function toTwd(it){ return it.cur === "TWD" ? it.yen : it.yen / rate(); }
+    // 金額框左邊的幣別鈕：點一下在日幣與台幣之間切換
+    function curButton(wrap, get, set){
+      var b = el("button", "ledger-cur"); b.type = "button";
+      function paint(){
+        var t = get() === "TWD";
+        b.textContent = t ? "NT$" : "¥";
+        b.setAttribute("aria-label", "幣別：" + (t ? "台幣" : "日幣") + "，點一下換成" + (t ? "日幣" : "台幣"));
+        wrap.classList.toggle("is-twd", t);
+      }
+      b.addEventListener("click", function(){ set(get() === "TWD" ? "" : "TWD"); paint(); });
+      wrap.insertBefore(b, wrap.firstChild);
+      paint();
+    }
     function el(tag, cls, text){
       var e = document.createElement(tag);
       if (cls) e.className = cls;
@@ -3613,9 +3636,10 @@ body.editing>#editor{display:block !important}
     var editing = null;   // 正在編輯的那筆 id
 
     function render(){
-      var sum = state.items.reduce(function(a, it){ return a + it.yen; }, 0);
-      document.getElementById("ledger-yen").textContent = yen(sum);
-      document.getElementById("ledger-twd").textContent = "≈ " + twd(sum);
+      var sum = state.items.reduce(function(a, it){ return a + toLocal(it); }, 0);
+      var sumTwd = state.items.reduce(function(a, it){ return a + toTwd(it); }, 0);
+      document.getElementById("ledger-yen").textContent = yen(Math.round(sum));
+      document.getElementById("ledger-twd").textContent = "≈ " + twd(sumTwd);
       renderRate();
       document.getElementById("ledger-empty").hidden = state.items.length > 0;
 
@@ -3623,7 +3647,7 @@ body.editing>#editor{display:block !important}
       state.items.forEach(function(it){
         var g = groupOf(it.ts);
         (groups[g.key] = groups[g.key] || { g: g, items: [], sum: 0 }).items.push(it);
-        groups[g.key].sum += it.yen;
+        groups[g.key].sum += toLocal(it);
       });
       var order = Object.keys(groups).map(function(k){ return groups[k]; })
                         .sort(function(a, b){ return b.g.order - a.g.order; });
@@ -3633,7 +3657,7 @@ body.editing>#editor{display:block !important}
         var h = el("h3");
         h.appendChild(el("span", "lg-no", grp.g.no));
         if (grp.g.date) h.appendChild(el("span", "lg-date", grp.g.date));
-        h.appendChild(el("b", "lg-sub", yen(grp.sum)));
+        h.appendChild(el("b", "lg-sub", yen(Math.round(grp.sum))));
         sec.appendChild(h);
         var ul = el("ul");
         grp.items.sort(function(a, b){ return b.ts - a.ts; }).forEach(function(it){
@@ -3642,9 +3666,12 @@ body.editing>#editor{display:block !important}
           else {
             var b = el("button", "lg-row");
             b.type = "button";
-            b.setAttribute("aria-label", it.name + " " + yen(it.yen) + "，點一下修改");
+            b.setAttribute("aria-label", it.name + " " + money(it.yen, it.cur) + "，點一下修改");
             b.appendChild(el("span", "lg-name", it.name));
-            b.appendChild(el("b", "lg-amt", yen(it.yen)));
+            var amt = el("b", "lg-amt", money(it.yen, it.cur));
+            // 台幣記的那筆，旁邊補一個換算回日幣的數字，對得上小計
+            if (it.cur === "TWD") amt.appendChild(el("span", "lg-alt", "≈ " + yen(Math.round(toLocal(it)))));
+            b.appendChild(amt);
             b.addEventListener("click", function(){ editing = it.id; render(); });
             li.appendChild(b);
           }
@@ -3662,8 +3689,10 @@ body.editing>#editor{display:block !important}
       f.setAttribute("autocomplete", "off");
       var n = el("input"); n.value = it.name; n.maxLength = 40; n.setAttribute("aria-label", "品項");
       var wrap = el("span", "ledger-yen-in");
-      var y = el("input"); y.value = it.yen; y.inputMode = "numeric"; y.setAttribute("aria-label", "金額（日幣）");
+      var y = el("input"); y.value = it.yen; y.inputMode = "numeric"; y.setAttribute("aria-label", "金額");
       wrap.appendChild(y);
+      var cur = it.cur;
+      curButton(wrap, function(){ return cur; }, function(c){ cur = c; });
       var acts = el("div", "lg-edit-acts");
       var ok = el("button", "ledger-btn", "儲存"); ok.type = "submit";
       var cancel = el("button", "ledger-btn", "取消"); cancel.type = "button";
@@ -3675,6 +3704,7 @@ body.editing>#editor{display:block !important}
         var v = parseYen(y.value);
         if (!v) { y.focus(); y.select(); return; }
         it.name = n.value.trim() || "未命名"; it.yen = v;
+        if (cur === "TWD") it.cur = "TWD"; else delete it.cur;
         editing = null; save(); render();
       });
       cancel.addEventListener("click", function(){ editing = null; render(); });
@@ -3735,12 +3765,16 @@ body.editing>#editor{display:block !important}
     var add = document.getElementById("ledger-add");
     // 用 elements 取欄位：form.name 是表單自己的 name 屬性，不是那個輸入框
     var addName = add.elements["name"], addYen = add.elements["yen"];
+    // 新增列的幣別記住上次選的，連續記幾筆台幣不用每次切
+    curButton(addYen.parentNode, function(){ return state.cur; },
+              function(c){ if (c) state.cur = c; else delete state.cur; save(); });
     add.addEventListener("submit", function(e){
       e.preventDefault();
       var v = parseYen(addYen.value);
       if (!v) { addYen.focus(); return; }
       state.items.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
                          name: addName.value.trim() || "未命名", yen: v, ts: Date.now() });
+      if (state.cur === "TWD") state.items[state.items.length - 1].cur = "TWD";
       save(); render();
       add.reset(); addName.focus();
     });
