@@ -1287,11 +1287,11 @@
       "route": "天神 → 住宿（吉塚）",
       "line": "地下鐵空港線　K08 天神 → K11 博多（3站）→ 出閘轉 JR 鹿兒島本線 → JA01 吉塚（1站）",
       "line_color": "#4a6fa5",
-      "platform": "地鐵段往「福岡空港（ふくおかくうこう）」方向；JR 段在博多搭往「小倉（こくら）・門司港（もじこう）」方向（往北、往上り）",
+      "platform": "地鐵段往「福岡空港（ふくおかくうこう）」方向；JR 段看大廳的電子看板挑車：1–4 號月台往「小倉（こくら）・門司港（もじこう）・香椎・福間」的普通／快速／區間快速，或 8 號月台福北ゆたか線往「直方（のおがた）・新飯塚」的普通／快速，都停吉塚（下一站，約 3 分）。特急不停吉塚，別上",
       "time": "地鐵約5分＋轉乘走路約8分＋JR約5分＋步行9分，全程約 30 分",
       "fare": "地鐵約 ¥210＋JR ¥200，合計約 ¥410／人",
       "exit": "吉塚站東口出來往南走約 9 分（約 650m）",
-      "warn": "博多站的 JR 與地下鐵是兩套閘門，要先出地鐵閘門、走到 JR 那側再進站；喝了酒或大家累了，天神直接叫車到住宿約 ¥1,500–2,000、15分鐘，7人兩台",
+      "warn": "地鐵和 JR 是兩套閘門，一定要先出地鐵閘門再進 JR（交通卡兩邊都能刷）；喝了酒或大家累了，天神直接叫車到住宿約 ¥1,500–2,000、15分鐘，7人兩台",
       "photos": [
         {
           "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/56/Tenjin-STA_Central-Gate.jpg/960px-Tenjin-STA_Central-Gate.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
@@ -1301,13 +1301,28 @@
           "taken": "2021/12 拍攝"
         },
         {
+          "src": "https://subway.city.fukuoka.lg.jp/eki/stations/img/map_hakata.jpg",
+          "caption": "地下鐵博多站立體圖。空港線月台在 B3，往上到 B2 中央改札口（紅框），出閘後往中3／中4 上地面，旁邊就是「JR中央改札口」。點圖可放大。",
+          "credit": "福岡市地下鐵官網",
+          "credit_url": "https://subway.city.fukuoka.lg.jp/eki/stations/hakata.php",
+          "taken": "官網 2026/7 更新"
+        },
+        {
+          "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/05/JR-Hakata-STA_Central-Gate.jpg/960px-JR-Hakata-STA_Central-Gate.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+          "caption": "JR 博多站中央改札口。上方大看板列出各班車的月台號碼，找往小倉・門司港・直方方向的普通或快速，看好號碼再進閘。",
+          "credit": "Wikimedia Commons／MaedaAkihiko（CC BY-SA 4.0）",
+          "credit_url": "https://commons.wikimedia.org/wiki/File:JR-Hakata-STA_Central-Gate.jpg",
+          "taken": "2021/12 拍攝"
+        },
+        {
           "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1a/East_entrance_of_Yoshizuka_Station.jpg/960px-East_entrance_of_Yoshizuka_Station.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
           "caption": "吉塚站東口的連絡通道入口（牌子寫「吉塚駅東口連絡通路」）。從這個通道出來就是東口，再往南走約 9 分到住宿。",
           "credit": "Wikimedia Commons／そらみみ（CC BY-SA 4.0）",
           "credit_url": "https://commons.wikimedia.org/wiki/File:East_entrance_of_Yoshizuka_Station.jpg",
           "taken": "2019/10 拍攝"
         }
-      ]
+      ],
+      "transfer": "地鐵在博多下車 → 月台上找「中央改札口」指標，搭手扶梯上 B2 出地鐵中央改札口 → 往前上到 B1，照「JR線」指標搭中3／中4 的手扶梯上地面 → 上來就是 JR 中央改札口，刷交通卡進站。約 5–8 分。拿行李或長輩走不動可搭中央口的電梯，直通 JR 1 樓大廳"
     },
     {
       "day": 5,
@@ -1385,10 +1400,27 @@
       "route": "藥院 → 住宿（吉塚）",
       "line": "地下鐵七隈線　N14 薬院 → N18 博多（4站）→ 出閘轉 JR 鹿兒島本線 → JA01 吉塚（1站）",
       "line_color": "#2f8f7d",
-      "platform": "七隈線往「博多（はかた）」方向；JR 段往「小倉（こくら）・門司港（もじこう）」方向",
+      "platform": "七隈線往「博多（はかた）」方向（終點站）；JR 段看大廳的電子看板挑車：1–4 號月台往「小倉（こくら）・門司港（もじこう）・香椎・福間」的普通／快速／區間快速，或 8 號月台福北ゆたか線往「直方（のおがた）・新飯塚」的普通／快速，都停吉塚（下一站，約 3 分）。特急不停吉塚，別上",
       "time": "七隈線約 7 分＋轉乘＋JR 5 分＋步行 9 分，約 30 分",
       "fare": "約 ¥410／人",
-      "warn": "七隈線的博多站和空港線的博多站在站內不同層，往 JR 閘門要照指標走；隔天 07:30 就要退房，別拖太晚"
+      "warn": "七隈線和空港線的博多站在不同層，別跟著「空港線」指標走；隔天 07:30 就要退房，別拖太晚",
+      "transfer": "七隈線博多站在最深的 B5，出七隈線改札口後照「JR線」指標一路往上到 1 樓，JR 中央改札口在大廳中間，刷交通卡進站。比空港線多走幾層，抓 8–10 分",
+      "photos": [
+        {
+          "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/05/JR-Hakata-STA_Central-Gate.jpg/960px-JR-Hakata-STA_Central-Gate.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+          "caption": "JR 博多站中央改札口。上方大看板列出各班車的月台號碼，找往小倉・門司港・直方方向的普通或快速，看好號碼再進閘。",
+          "credit": "Wikimedia Commons／MaedaAkihiko（CC BY-SA 4.0）",
+          "credit_url": "https://commons.wikimedia.org/wiki/File:JR-Hakata-STA_Central-Gate.jpg",
+          "taken": "2021/12 拍攝"
+        },
+        {
+          "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1a/East_entrance_of_Yoshizuka_Station.jpg/960px-East_entrance_of_Yoshizuka_Station.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+          "caption": "吉塚站東口的連絡通道入口（牌子寫「吉塚駅東口連絡通路」）。從這個通道出來就是東口，再往南走約 9 分到住宿。",
+          "credit": "Wikimedia Commons／そらみみ（CC BY-SA 4.0）",
+          "credit_url": "https://commons.wikimedia.org/wiki/File:East_entrance_of_Yoshizuka_Station.jpg",
+          "taken": "2019/10 拍攝"
+        }
+      ]
     }
   ],
   "transit_note": "信用卡／Apple Pay 感應乗車，同一張卡同一裝置當天三線累計 ¥640 為上限",

@@ -1732,6 +1732,7 @@ body.editing>#editor{display:block !important}
           {%- if t.platform %}<div><dt>方向</dt><dd>{{ t.platform }}</dd></div>{% endif %}
           {%- if t.time %}<div><dt>時間</dt><dd>{{ t.time }}</dd></div>{% endif %}
           {%- if t.fare %}<div><dt>票價</dt><dd>{{ t.fare }}</dd></div>{% endif %}
+          {%- if t.transfer %}<div><dt>轉乘</dt><dd>{{ t.transfer }}</dd></div>{% endif %}
           {%- if t.exit %}<div><dt>出口</dt><dd>{{ t.exit }}</dd></div>{% endif %}
           {%- if t.warn %}<div class="tr-warn"><dt>注意</dt><dd>{{ t.warn }}</dd></div>{% endif %}
         </dl>
