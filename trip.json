@@ -1218,6 +1218,20 @@
           "credit": "福岡機場官網",
           "credit_url": "https://www.fukuoka-airport.jp/tw/access/bus2.html",
           "taken": "官網 2025/7 更新"
+        },
+        {
+          "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ef/Fukuokakuko_Station_202609103.jpg/960px-Fukuokakuko_Station_202609103.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+          "caption": "福岡空港站月台：站名牌「K13 福岡空港」，月台門上寫「博多 中洲川端 天神 姪浜方面ゆき」。這是終點站，進來的車都往這個方向，直接上車。",
+          "credit": "Wikimedia Commons／Twotwo2019（CC BY 4.0）",
+          "credit_url": "https://commons.wikimedia.org/wiki/File:Fukuokakuko_Station_202609103.jpg",
+          "taken": "2026/9 拍攝"
+        },
+        {
+          "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0a/Hakataza-Nishigin_Redevelopment_Bldg_the_7th_Exit_of_Nakasu-Kawabata_Station_Hakata-ku_Fukuoka_20240125.jpg/960px-Hakataza-Nishigin_Redevelopment_Bldg_the_7th_Exit_of_Nakasu-Kawabata_Station_Hakata-ku_Fukuoka_20240125.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+          "caption": "中洲川端站 7 號出口（博多座・西銀大樓）從街上看的樣子。站內照黃色「出口 7」指標走，走上來看到這個入口就對了，再照地圖走約 4 分到飯店。",
+          "credit": "Wikimedia Commons／Hirho（CC BY-SA 4.0）",
+          "credit_url": "https://commons.wikimedia.org/wiki/File:Hakataza-Nishigin_Redevelopment_Bldg_the_7th_Exit_of_Nakasu-Kawabata_Station_Hakata-ku_Fukuoka_20240125.jpg",
+          "taken": "2024/1 拍攝"
         }
       ]
     },
@@ -1242,7 +1256,30 @@
       "platform": "往「姪浜（めいのはま）」方向；往「福岡空港（ふくおかくうこう）」是反方向",
       "time": "步行10分＋地鐵約5分",
       "fare": "約 ¥210／人",
-      "warn": "屋台集中在天神站東側的渡邊通、昭和通一帶；一攤通常坐不到 10 人，7 個人多半得分兩攤"
+      "warn": "屋台集中在天神站東側的渡邊通、昭和通一帶；一攤通常坐不到 10 人，7 個人多半得分兩攤",
+      "photos": [
+        {
+          "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fb/Subway-Kuko-Line_Hakata-STA_Hakata-Gate.jpg/960px-Subway-Kuko-Line_Hakata-STA_Hakata-Gate.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+          "caption": "博多站地下鐵空港線「博多改札口」。在 JR 博多口那一側的地下，照「地下鉄」指標走；橘色閘門可直接刷交通卡。",
+          "credit": "Wikimedia Commons／MaedaAkihiko（CC BY-SA 4.0）",
+          "credit_url": "https://commons.wikimedia.org/wiki/File:Subway-Kuko-Line_Hakata-STA_Hakata-Gate.jpg",
+          "taken": "2021/12 拍攝"
+        },
+        {
+          "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/72/Hakata_Station_Sign_%28Fukuoka_Municipal_Subway%29_2.jpg/960px-Hakata_Station_Sign_%28Fukuoka_Municipal_Subway%29_2.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+          "caption": "博多站月台站名牌「K11 博多」：左邊箭頭是東比恵（往機場、反方向），右邊是祇園。往天神要搭往祇園那側、車頭寫「姪浜」的車。",
+          "credit": "Wikimedia Commons／そらみみ（CC BY-SA 4.0）",
+          "credit_url": "https://commons.wikimedia.org/wiki/File:Hakata_Station_Sign_(Fukuoka_Municipal_Subway)_2.jpg",
+          "taken": "2018/2 拍攝"
+        },
+        {
+          "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/f4/Tenjin_Station_Sign.jpg/960px-Tenjin_Station_Sign.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+          "caption": "看到「K08 天神」站名牌就下車（博多過來第 3 站）。屋台集中在天神站東側的渡邊通、昭和通一帶，出站前先看站內出口圖。",
+          "credit": "Wikimedia Commons／そらみみ（CC BY-SA 4.0）",
+          "credit_url": "https://commons.wikimedia.org/wiki/File:Tenjin_Station_Sign.jpg",
+          "taken": "2018/1 拍攝"
+        }
+      ]
     },
     {
       "day": 4,
@@ -1254,7 +1291,23 @@
       "time": "地鐵約5分＋轉乘走路約8分＋JR約5分＋步行9分，全程約 30 分",
       "fare": "地鐵約 ¥210＋JR ¥200，合計約 ¥410／人",
       "exit": "吉塚站東口出來往南走約 9 分（約 650m）",
-      "warn": "博多站的 JR 與地下鐵是兩套閘門，要先出地鐵閘門、走到 JR 那側再進站；喝了酒或大家累了，天神直接叫車到住宿約 ¥1,500–2,000、15分鐘，7人兩台"
+      "warn": "博多站的 JR 與地下鐵是兩套閘門，要先出地鐵閘門、走到 JR 那側再進站；喝了酒或大家累了，天神直接叫車到住宿約 ¥1,500–2,000、15分鐘，7人兩台",
+      "photos": [
+        {
+          "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/56/Tenjin-STA_Central-Gate.jpg/960px-Tenjin-STA_Central-Gate.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+          "caption": "天神站「中央改札口」。進閘門後往月台，要搭往「中洲川端／福岡空港」方向（站名牌左邊箭頭那側），別搭到往赤坂、姪浜的。",
+          "credit": "Wikimedia Commons／MaedaAkihiko（CC BY-SA 4.0）",
+          "credit_url": "https://commons.wikimedia.org/wiki/File:Tenjin-STA_Central-Gate.jpg",
+          "taken": "2021/12 拍攝"
+        },
+        {
+          "src": "https://thumb.wikimedia.org/wikipedia/commons/thumb/1/1a/East_entrance_of_Yoshizuka_Station.jpg/960px-East_entrance_of_Yoshizuka_Station.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+          "caption": "吉塚站東口的連絡通道入口（牌子寫「吉塚駅東口連絡通路」）。從這個通道出來就是東口，再往南走約 9 分到住宿。",
+          "credit": "Wikimedia Commons／そらみみ（CC BY-SA 4.0）",
+          "credit_url": "https://commons.wikimedia.org/wiki/File:East_entrance_of_Yoshizuka_Station.jpg",
+          "taken": "2019/10 拍攝"
+        }
+      ]
     },
     {
       "day": 5,
