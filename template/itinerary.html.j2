@@ -1121,6 +1121,19 @@ a.tr-route:hover{border-color:currentColor}
 .tr-dot{display:inline-block;width:9px;height:9px;border-radius:50%;
   background:var(--lc,var(--muted));margin-right:.5em;vertical-align:1px}
 .tr-warn dd{color:var(--muted)}
+/* 搭車點照片：按鈕跟行程裡的「活動」同款，彈窗借用 .ev-dlg 的外框，照片要看得清楚所以放寬 */
+.tr-head .tr-photo-open{font:inherit;font-size:14px;color:inherit;background:none;border:0;
+  border-bottom:.8px solid var(--line);padding:0;cursor:pointer;flex:0 0 auto}
+@media print{ .tr-head .tr-photo-open{display:none} }
+.tp-dlg{width:min(560px,calc(100vw - 2*var(--gut)));max-height:min(88vh,900px)}
+.tp-dlg h3{margin-bottom:14px}
+.tp-fig{margin:0}
+.tp-fig+.tp-fig{margin-top:20px;padding-top:18px;border-top:.8px solid var(--line)}
+.tp-fig img{display:block;width:100%;height:auto;max-height:62vh;object-fit:contain;
+  background:var(--line);border-radius:6px}
+.tp-fig figcaption{margin-top:10px;font-size:15px;line-height:1.8}
+.tp-fig small{display:block;margin-top:4px;font-size:12.5px;color:var(--muted)}
+.tp-fig small a{color:inherit}
 .transit-links{margin:clamp(20px,3vh,34px) 0 0;display:flex;flex-wrap:wrap;
   gap:10px clamp(16px,2.6vw,32px);font-size:14.5px}
 .transit-links a{color:inherit;text-decoration:none;border-bottom:.8px solid var(--line)}
@@ -1690,7 +1703,27 @@ body.editing>#editor{display:block !important}
           {%- else %}
           <b class="tr-route">{{ t.route }}</b>
           {%- endif %}
+          {%- if t.photos %}
+          <button type="button" class="ev-open tr-photo-open" aria-haspopup="dialog" aria-controls="tp-{{ day.day_no }}-{{ loop.index0 }}">📷 搭車點</button>
+          {%- endif %}
         </div>
+        {#- 搭車點實景照：站牌、乘車處長怎樣。圖片直接連原出處（不存進 repo），點開彈窗才載入 -#}
+        {% if t.photos %}
+        <dialog class="em-dlg ev-dlg tp-dlg" id="tp-{{ day.day_no }}-{{ loop.index0 }}" aria-labelledby="tp-{{ day.day_no }}-{{ loop.index0 }}-t">
+          <div class="em-dlg-in">
+            <h3 id="tp-{{ day.day_no }}-{{ loop.index0 }}-t">{{ t.route }}</h3>
+            {% for ph in t.photos %}
+            <figure class="tp-fig">
+              <a href="{{ ph.src }}" target="_blank" rel="noopener"><img src="{{ ph.src }}" alt="{{ ph.caption }}" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>
+              <figcaption>{{ ph.caption }}
+                <small>{% if ph.taken %}{{ ph.taken }}・{% endif %}來源：{% if ph.credit_url %}<a href="{{ ph.credit_url }}" target="_blank" rel="noopener">{{ ph.credit }} ↗</a>{% else %}{{ ph.credit }}{% endif %}</small>
+              </figcaption>
+            </figure>
+            {% endfor %}
+            <button type="button" class="em-close" data-em-close aria-label="關閉">關閉</button>
+          </div>
+        </dialog>
+        {% endif %}
         <dl class="tr-meta">
           {%- if t.line %}
           <div><dt>路線</dt><dd>
