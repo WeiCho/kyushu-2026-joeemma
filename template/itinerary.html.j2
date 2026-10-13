@@ -992,6 +992,35 @@ html:not(.js) .em-card{cursor:default}
 
 .em-print{display:none}
 
+/* ── 日文卡 ── */
+.ph-cards{list-style:none;margin:0;padding:0;display:grid;gap:10px;
+  grid-template-columns:repeat(auto-fill,minmax(min(100%,240px),1fr))}
+.ph-card{
+  width:100%;height:100%;min-height:76px;display:grid;gap:4px;align-content:center;text-align:left;
+  padding:12px 16px;background:var(--card);color:var(--ink);
+  border:.8px solid var(--line);border-radius:6px;font:inherit;cursor:pointer;
+}
+.ph-card:active{transform:scale(.985)}
+.ph-zh{font-size:17px;letter-spacing:.04em;line-height:1.5}
+.ph-ja,.ph-big{font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP","Yu Gothic","Meiryo",var(--sans)}
+.ph-ja{font-size:13px;color:var(--muted);line-height:1.6}
+[data-theme-size="large"] .ph-zh{font-size:20px}
+[data-theme-size="large"] .ph-ja{font-size:15px}
+/* 全螢幕：白底黑字最好認，不跟深色模式走（店員那一側不需要護眼） */
+.ph-dlg{
+  width:100vw;height:100vh;height:100dvh;max-width:none;max-height:none;margin:0;
+  border:0;padding:max(24px,env(safe-area-inset-top)) 24px max(24px,env(safe-area-inset-bottom));
+  background:#fff;color:#111;cursor:pointer;
+}
+.ph-dlg[open]{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
+.ph-dlg::backdrop{background:#fff}
+.ph-big{margin:0;white-space:pre-line;font-weight:700;line-height:1.45;letter-spacing:.02em;
+  font-size:clamp(30px,9vw,88px)}
+.ph-sub{margin:28px 0 0;font-size:17px;color:#555}
+.ph-hint{position:absolute;bottom:max(18px,env(safe-area-inset-bottom));left:0;right:0;margin:0;
+  font-size:13px;color:#999}
+@media print{ .ph-dlg{display:none !important} }
+
 /* 保留原本的三欄文字列樣式：螢幕上不用，列印時整套接手 */
 .emergency-grid{display:grid;gap:clamp(14px,2.2vh,26px)}
 .em-row{display:grid;grid-template-columns:minmax(0,1fr);gap:2px}
@@ -1453,6 +1482,7 @@ body.editing>#editor{display:block !important}
     {%- if transit %}<a href="#transit">交通</a>{% endif %}
     <a href="#budget">花費</a>
     {%- if trip.packing %}<a href="#packing">檢查</a>{% endif %}
+    {%- if trip.phrases %}<a href="#phrases">日文</a>{% endif %}
     {%- if trip.emergency %}<a class="nav-urgent" href="#emergency">緊急</a>{% endif %}
   </div>
   <div class="nav-tools">
@@ -1468,6 +1498,7 @@ body.editing>#editor{display:block !important}
         {%- if transit %}<a href="#transit">交通</a>{% endif %}
         <a href="#budget">花費</a>
         {%- if trip.packing %}<a href="#packing">檢查</a>{% endif %}
+        {%- if trip.phrases %}<a href="#phrases">日文</a>{% endif %}
       </div>
       <button class="nav-tool" type="button" data-toggle="edit" aria-label="編輯行程資料">✎</button>
       <button class="nav-tool" type="button" data-toggle="theme" aria-pressed="false" aria-label="切換深色模式">🌙</button>
@@ -1919,6 +1950,34 @@ body.editing>#editor{display:block !important}
 {% endif %}
 
 
+{# ── 日文卡：給店員看的短句。放在緊急之後，選單「日文」直接跳過來。
+   卡片上中文在上（長輩找得到要哪張），日文在下（店員看得到大概）；
+   點下去是全螢幕的日文大字，整支手機轉過去給對方看，點任何地方關掉 ── #}
+{% if trip.phrases %}
+<section class="section" id="phrases">
+  <div class="section-heading">
+    <h2>日文卡</h2>
+    <p>點一張，整個螢幕變成日文大字，直接拿給店員看。再點一下關掉。</p>
+  </div>
+  <ul class="ph-cards">
+  {% for ph in trip.phrases %}
+    <li>
+      <button type="button" class="ph-card" aria-haspopup="dialog" aria-controls="ph-dlg-{{ loop.index0 }}">
+        <span class="ph-zh">{{ ph.zh }}</span>
+        <span class="ph-ja" lang="ja">{{ ph.ja | replace("
+", "") }}</span>
+      </button>
+      <dialog class="ph-dlg" id="ph-dlg-{{ loop.index0 }}" aria-label="{{ ph.zh }}">
+        <p class="ph-big" lang="ja">{{ ph.ja }}</p>
+        <p class="ph-sub">{{ ph.zh }}</p>
+        <p class="ph-hint">點一下關閉</p>
+      </dialog>
+    </li>
+  {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
 {#- 收尾：頁面原本在最後一個勾選框之後直接結束，像被裁掉。
     留在帶內吃同一個底色，只靠細線與字級差異區隔——為了首尾呼應再切一次
     底色，等於為了修辭犧牲連續性，而連續性正是要修的問題本身 -#}
@@ -2262,6 +2321,13 @@ body.editing>#editor{display:block !important}
       var dlg = b.closest("dialog");
       if (dlg) { if (typeof dlg.close === "function") dlg.close(); else dlg.removeAttribute("open"); }
     });
+  });
+  // 日文卡：點卡片全螢幕顯示，全螢幕上點任何地方都關掉（不用找關閉鍵）
+  [].slice.call(document.querySelectorAll(".ph-card")).forEach(function (btn) {
+    var dlg = document.getElementById(btn.getAttribute("aria-controls"));
+    if (!dlg || typeof dlg.showModal !== "function") return;
+    btn.addEventListener("click", function () { dlg.showModal(); });
+    dlg.addEventListener("click", function () { dlg.close(); });
   });
   // 點背景關閉：<dialog> 的點擊事件在 backdrop 上也會觸發，且 target 會是 dialog 本身
   [].slice.call(document.querySelectorAll(".em-dlg")).forEach(function (dlg) {   // 含 .ev-dlg
