@@ -57,7 +57,7 @@ MODELS = (MSM, ECMWF, GFS)
 LABEL = {MSM: "JMA MSM", ECMWF: "ECMWF", GFS: "GFS"}
 
 # WMO 天氣代碼 → 中文。Open-Meteo 的每日代碼是「當天最嚴重的那個」，
-# 所以一天裡只要飄過毛毛雨就會是 51——要搭配降雨機率一起看
+# 一天裡只要飄過毛毛雨就會是 51，所以摘要改用逐時代碼算（見 summarize）
 WMO_ZH = {
     0: "晴", 1: "大致晴", 2: "晴時多雲", 3: "陰",
     45: "霧", 48: "霧",
@@ -69,6 +69,32 @@ WMO_ZH = {
     85: "陣雪", 86: "強陣雪",
     95: "雷雨", 96: "雷雨夾冰雹", 99: "雷雨夾冰雹",
 }
+DAYTIME = range(8, 18)   # 摘要的「晴／陰」看白天這幾個小時
+
+
+def is_wet(code):
+    """降水類代碼（毛毛雨、雨、雪、陣雨、雷雨）；0–48 是晴、雲、霧。"""
+    return code is not None and code >= 51
+
+
+def summarize(codes):
+    """把白天逐時的天氣代碼濃縮成一句話。
+
+    每日代碼是「最嚴重的那個」，一小時毛毛雨就整天變「短暫毛毛雨」，看不出是晴是陰；
+    所以改看白天：天空取最常出現的狀態，下雨的時數另外講。
+    """
+    codes = [c for c in codes if c is not None]
+    if not codes:
+        return None
+    sky = [c for c in codes if not is_wet(c)]
+    wet = [c for c in codes if is_wet(c)]
+    if len(wet) * 2 >= len(codes):          # 白天一半以上在下
+        return WMO_ZH.get(max(set(wet), key=wet.count))
+    # 晴 0 和大致晴 1 合併算，免得兩者各半時被「晴時多雲」搶走
+    bucket = [min(c, 1) if c <= 1 else c for c in sky]
+    top = max(set(bucket), key=bucket.count)
+    text = "晴" if top <= 1 else WMO_ZH.get(top)
+    return f"{text}，短暫有雨" if wet else text
 
 
 def fail(msg):
@@ -94,13 +120,43 @@ def round_or_none(v):
     return None if v is None else int(round(v))
 
 
+# 晴陰分歧用的粗分級：晴 0、晴時多雲 1、陰／霧 2、雨 3。兩個模型差兩級以上
+# （晴 vs 陰、晴時多雲 vs 雨）才提醒；只差一級在雲量預報裡算正常誤差
+SKY_GAP = 2
+
+
+def sky_level(text):
+    if text is None:
+        return None
+    if text == "晴":
+        return 0
+    if text == "晴時多雲":
+        return 1
+    if text in ("陰", "霧"):
+        return 2
+    return 3   # 各種雨雪，以及「晴，短暫有雨」這類
+
+
+def daytime_text(loc, model, iso):
+    """某模型白天的晴陰摘要；白天時段沒涵蓋滿就回 None（MSM 第 3 天常只到中午）。"""
+    h = loc["hourly"]
+    codes = {int(t[11:13]): h[f"weather_code_{model}"][j]
+             for j, t in enumerate(h["time"]) if t.startswith(iso)}
+    day = [codes.get(hh) for hh in DAYTIME]
+    if any(c is None for c in day):
+        return None
+    return summarize([int(c) for c in day])
+
+
 def day_series(loc, model, iso):
-    """某模型在某一天的逐時 [(時, 氣溫, 降雨機率)]；24 小時沒有全部涵蓋就回 None。"""
+    """某模型在某一天的逐時 [(時, 氣溫, 降雨機率, 天氣代碼)]；24 小時沒有全部涵蓋就回 None。"""
     h = loc["hourly"]
     temps = h[f"temperature_2m_{model}"]
     pops = h[f"precipitation_probability_{model}"]
-    rows = [(int(t[11:13]), temps[j], pops[j]) for j, t in enumerate(h["time"]) if t.startswith(iso)]
-    if len(rows) != 24 or any(t is None for _, t, _ in rows):
+    codes = h[f"weather_code_{model}"]
+    rows = [(int(t[11:13]), temps[j], pops[j], codes[j])
+            for j, t in enumerate(h["time"]) if t.startswith(iso)]
+    if len(rows) != 24 or any(r[1] is None for r in rows):
         return None
     return rows
 
@@ -126,23 +182,35 @@ def build(loc, day_date, lead):
     else:
         return None
     rows = series[model]
-    # 降雨機率與天氣代碼：MSM 沒有，借 ECMWF（再不行 GFS）
+    # 降雨機率：MSM 沒有，借 ECMWF（再不行 GFS）
     rain_model = model if model != MSM else (ECMWF if series[ECMWF] else GFS)
-    rain_rows = dict((hh, p) for hh, _, p in (series[rain_model] or []))
+    rain_rows = {r[0]: r[2] for r in series[rain_model] or []}
 
-    temps = [t for _, t, _ in rows]
+    # 晴／陰跟氣溫用同一個模型：各模型對雲量常常差很多（MSM 晴、ECMWF 陰），
+    # 混著用會出現「圖示晴、氣溫卻是陰天的曲線」。某小時缺代碼才依序借別的模型
+    def code_at(hh):
+        for m in (model, rain_model, ECMWF, GFS):
+            c = next((r[3] for r in series[m] or [] if r[0] == hh), None)
+            if c is not None:
+                return int(c)
+        return None
+
+    temps = [r[1] for r in rows]
     step = 1 if lead <= HOURLY_WITHIN else 3
     hours = [
-        {"h": f"{hh:02d}", "t": round_or_none(t), "p": rain_rows.get(hh)}
-        for hh, t, _ in rows
+        {"h": f"{hh:02d}", "t": round_or_none(t), "p": rain_rows.get(hh), "w": code_at(hh)}
+        for hh, t, _, _ in rows
         if hh in HOURS and (hh - HOURS.start) % step == 0
     ]
-    # 天氣代碼在模型的最後一天常常是空的（不滿一天就不給），依序找別的模型補
-    code = next((c for c in (daily_of(loc, m, iso, "weather_code")
-                             for m in (rain_model, ECMWF, GFS, MSM)) if c is not None), None)
+    text = summarize([code_at(hh) for hh in DAYTIME])
+    if text is None:
+        # 逐時代碼全缺才退回每日代碼；模型最後一天常常是空的，依序找別的模型補
+        code = next((c for c in (daily_of(loc, m, iso, "weather_code")
+                                 for m in (rain_model, ECMWF, GFS, MSM)) if c is not None), None)
+        text = WMO_ZH.get(code)
     fc = {
         "model": LABEL[model],
-        "text": WMO_ZH.get(code),
+        "text": text,
         "tmin": round_or_none(min(temps)),
         "tmax": round_or_none(max(temps)),
         "pop": daily_of(loc, rain_model, iso, "precipitation_probability_max"),
@@ -150,10 +218,16 @@ def build(loc, day_date, lead):
         "hours": hours,
     }
 
+    # 晴陰分歧：白天涵蓋滿的模型都拿來比，差兩級以上就把各模型的說法列出來
+    skies = [(LABEL[m], t) for m in MODELS if (t := daytime_text(loc, m, iso))]
+    levels = [sky_level(t) for _, t in skies]
+    if len(skies) >= 2 and max(levels) - min(levels) >= SKY_GAP:
+        fc["sky_spread"] = [{"model": m, "text": t} for m, t in skies]
+
     # 模式分歧：ECMWF 與 GFS 都涵蓋時才比
     if series[ECMWF] and series[GFS]:
-        e = [t for _, t, _ in series[ECMWF]]
-        g = [t for _, t, _ in series[GFS]]
+        e = [r[1] for r in series[ECMWF]]
+        g = [r[1] for r in series[GFS]]
         for name, fn in (("最低溫", min), ("最高溫", max)):
             lo, hi = sorted((round_or_none(fn(e)), round_or_none(fn(g))))
             if hi - lo >= SPREAD_C:
@@ -196,7 +270,7 @@ def main():
         "latitude": ",".join(f"{lat:.3f}" for lat, _ in points),
         "longitude": ",".join(f"{lon:.3f}" for _, lon in points),
         "daily": "weather_code,precipitation_probability_max",
-        "hourly": "temperature_2m,precipitation_probability",
+        "hourly": "temperature_2m,precipitation_probability,weather_code",
         "models": ",".join(MODELS),
         "timezone": "Asia/Tokyo",
         "forecast_days": HORIZON,
@@ -242,7 +316,9 @@ def main():
             sp = fc.get("spread")
             print(f"✅ {day['date']} {label} [{fc['model']}] "
                   f"{fc['tmin']}–{fc['tmax']}°C {fc['text'] or ''} 降雨 {fc['pop']}%（每 {fc['step']} 小時）"
-                  + (f" ⚠ {sp['what']} {sp['lo']}–{sp['hi']}°C" if sp else ""))
+                  + (f" ⚠ {sp['what']} {sp['lo']}–{sp['hi']}°C" if sp else "")
+                  + (" ⚠ 晴陰：" + "、".join(f"{x['model']} {x['text']}" for x in fc["sky_spread"])
+                     if fc.get("sky_spread") else ""))
 
     if not changed:
         print("＝ 預報內容無變化，不寫入")

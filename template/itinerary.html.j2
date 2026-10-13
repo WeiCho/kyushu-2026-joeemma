@@ -17,6 +17,17 @@
 {#- 銜接引子：交代下一區「為何是下一區」，整行可點。
     只用在確實有邏輯關係的兩處；緊急→行程那一跳沒有邏輯關係，
     刻意不放，交給該區既有的深→淺色彩轉場撐住 -#}
+{#- WMO 天氣代碼 → 逐時格子的圖示。18 點以後（十月九州約 17:50 日落）晴天換月亮 -#}
+{%- macro wx_icon(code, hour) -%}
+  {%- if code <= 1 %}{{ "🌙" if hour >= 18 or hour < 6 else "☀️" }}
+  {%- elif code == 2 %}{{ "☁️" if hour >= 18 or hour < 6 else "⛅" }}
+  {%- elif code == 3 %}☁️
+  {%- elif code < 51 %}🌫️
+  {%- elif code >= 95 %}⛈️
+  {%- elif code in [71, 73, 75, 77, 85, 86] %}❄️
+  {%- elif code in [51, 53, 55, 56, 57] %}🌦️
+  {%- else %}🌧️{% endif -%}
+{%- endmacro -%}
 {%- macro handoff(lead) -%}
 <div class="handoff"><span>{{ lead }}</span></div>
 {%- endmacro -%}
@@ -769,6 +780,9 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 }
 .wx-hours li:first-child{border-left:0}
 .wx-hours .h{font-size:12px;color:var(--muted)}
+.wx-hours .w{font-size:18px;line-height:1.3}
+/* 標題列氣溫後面的「晴」「陰」：跟地點名同色，小一號 */
+.wx-text{margin-left:.6em;font-size:14px;color:var(--muted)}
 .wx-hours b{font-size:16px;font-weight:600}
 .wx-hours .p{font-size:12px;color:var(--muted)}
 .wx-hours .wet .p{color:var(--warm)}
@@ -1534,11 +1548,13 @@ body.editing>#editor{display:block !important}
           {%- if spots %}
           {%- for a, f in spots %}
           <details class="wx-hours">
-            <summary><span>{{ a.label }} <b>{{ f.tmin }}–{{ f.tmax }}°C</b></span><span class="wx-more">{{ "每小時" if f.step == 1 else "每 3 小時" }}</span></summary>
+            <summary><span>{{ a.label }} <b>{{ f.tmin }}–{{ f.tmax }}°C</b>{% if f.text %}<span class="wx-text">{{ f.text }}</span>{% endif %}</span><span class="wx-more">{{ "每小時" if f.step == 1 else "每 3 小時" }}</span></summary>
             <ol>
               {%- for h in f.hours %}
               <li{% if h.p is not none and h.p >= 50 %} class="wet"{% endif %}>
-                <span class="h">{{ h.h }}</span><b>{{ h.t }}°</b>
+                <span class="h">{{ h.h }}</span>
+                {%- if h.w is not none %}<span class="w">{{ wx_icon(h.w, h.h | int) }}</span>{% endif %}
+                <b>{{ h.t }}°</b>
                 {%- if h.p is not none %}<span class="p">{{ h.p }}%</span>{% endif %}</li>
               {%- endfor %}
             </ol>
@@ -1546,7 +1562,11 @@ body.editing>#editor{display:block !important}
             {#- ECMWF 與 GFS 溫差 4°C 以上：數字還不可靠，提醒出發前再看 -#}
             <p class="wx-spread">各模式差異大（{{ f.spread.what }} {{ f.spread.lo }}–{{ f.spread.hi }}°C），出發前再看一次</p>
             {%- endif %}
-            <span class="wx-src">氣溫・降雨機率 · {{ f.model or "Open-Meteo" }} · {{ f.updated }} 更新</span>
+            {%- if f.sky_spread %}
+            {#- 各模型對晴陰說法差兩級以上（晴 vs 陰）：雲量是最難預報的，提醒以前一天的氣象廳預報為準 -#}
+            <p class="wx-spread">各模式晴陰說法不一（{% for x in f.sky_spread %}{{ x.model }} {{ x.text }}{{ "、" if not loop.last }}{% endfor %}），出發前一天看氣象廳預報為準</p>
+            {%- endif %}
+            <span class="wx-src">天氣・氣溫・降雨機率 · {{ f.model or "Open-Meteo" }} · {{ f.updated }} 更新</span>
             {%- if a.lat is not none and a.lon is not none %}
             <a class="route-btn wx-windy" href="https://www.windy.com/{{ a.lat }}/{{ a.lon }}?{{ a.lat }},{{ a.lon }},10"
                target="_blank" rel="noopener">Windy 逐時預報・{{ a.label }}&nbsp;↗</a>
