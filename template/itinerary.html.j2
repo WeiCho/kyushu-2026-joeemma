@@ -414,7 +414,7 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 .card-live a.who:hover{border-color:currentColor}
 
 /* ── 票根卡（card.variant = "hello"）──
-   出發前的問候卡做成一張登機票根：上半問候、打孔線、下半航線與倒數。
+   出發前的問候卡做成一張登機票根：上半問候、打孔線、下半航線與 VJW 連結。
    右上角蓋一枚會慢慢轉的環形印章；底色兩團極淡的暖紅／海藍光暈，
    顏色只從既有的 --warm 與高千穗峽照片的水色取，不另立新色 */
 .card-live.card-hello,
@@ -455,18 +455,10 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
   font-family:var(--hello-latin);font-weight:600;font-size:13px;letter-spacing:.16em;
 }
 .hello-route svg{width:22px;height:8px;fill:none;stroke:currentColor;stroke-width:1}
-.hello-count{
-  margin:0;display:flex;align-items:baseline;gap:5px;white-space:nowrap;
-  font-size:12px;letter-spacing:.06em;color:var(--muted);
+.hello-vjw{
+  font-size:13px;letter-spacing:.06em;color:var(--warm);white-space:nowrap;
+  text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:.8px;
 }
-.hello-n{
-  font-family:var(--hello-latin);font-weight:500;font-size:29px;line-height:1;
-  letter-spacing:0;color:var(--warm);font-variant-numeric:tabular-nums;
-}
-.hello-u{font-family:var(--hello-latin);font-size:12.5px}
-/* 沒有 JS（或還沒算好）時是「10.15 — 10.20」，破折號不該放大成倒數字級 */
-.card-hello:not(.is-counted) .hello-n{font-size:12px;color:inherit}
-.card-hello.is-home .hello-k{color:var(--ink)}
 
 .hello-stamp{
   position:absolute;top:-34px;right:-8px;width:80px;height:80px;
@@ -491,15 +483,13 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 }
 @keyframes hello-spin{to{transform:rotate(360deg)}}
 /* 大字模式：卡片加寬，字級跟著其他區塊放大一級；
-   底列寬度不夠時讓倒數折到第二行，而不是把字擠小 */
+   底列寬度不夠時讓 VJW 連結折到第二行，而不是把字擠小 */
 [data-theme-size="large"] .card-deck{--live-box:calc(280px + 32px + 1.6px)}
 [data-theme-size="large"] .hello-title{font-size:15px;letter-spacing:.26em}
 [data-theme-size="large"] .hello-fun{font-size:44px}
 [data-theme-size="large"] .hello-stub{flex-wrap:wrap;row-gap:4px}
 [data-theme-size="large"] .hello-route{font-size:15px}
-[data-theme-size="large"] .hello-count{font-size:15px}
-[data-theme-size="large"] .hello-u{font-size:15px}
-[data-theme-size="large"] .hello-n{font-size:34px}
+[data-theme-size="large"] .hello-vjw{font-size:15px}
 
 /* 手機封面：浮卡固定在右下，原本會壓住照片下緣（正好是小船的位置）。
    改成讓照片只佔「標語之下、浮卡之上」的高度：底部留出浮卡實高
@@ -1402,9 +1392,8 @@ body.editing>#editor{display:block !important}
   <div class="card-deck" id="card-deck">
     {%- for c in cards %}
     {%- if c.variant == "hello" %}
-    {#- 出發前的「票根」卡：上半是問候，打孔線下半是航線與倒數。
-        倒數由下方小段 JS 依今天日期換算（出發前／旅途中第幾天／回家後），
-        沒有 JS 時退回顯示旅程起訖日。環形印章只是裝飾，對讀屏隱藏 -#}
+    {#- 出發前的「票根」卡：上半是問候，打孔線下半是航線與 Visit Japan Web 連結
+        （原本是出發倒數，改成入境要用的 VJW）。環形印章只是裝飾，對讀屏隱藏 -#}
     <article class="card-live card-hello" data-i="{{ loop.index0 }}"
              data-start="{{ trip.start_date }}" data-end="{{ trip.end_date }}">
       <svg class="hello-stamp" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
@@ -1421,10 +1410,7 @@ body.editing>#editor{display:block !important}
           <svg viewBox="0 0 28 8" aria-hidden="true" focusable="false"><path d="M0 4h26M22 1l4 3-4 3"/></svg>
           <span>{{ c.route[1] }}</span></p>
         {%- endif %}
-        <p class="hello-count" aria-live="off">
-          <span class="hello-k">{{ trip.start_date[5:] | replace("-", ".") }}</span>
-          <span class="hello-n">—</span>
-          <span class="hello-u">{{ trip.end_date[5:] | replace("-", ".") }}</span></p>
+        <a class="hello-vjw" href="https://www.vjw.digital.go.jp/" target="_blank" rel="noopener">點我進VJW唷&nbsp;↗</a>
       </div>
     </article>
     {%- else %}
@@ -1446,27 +1432,6 @@ body.editing>#editor{display:block !important}
     {%- endif %}
     {%- endfor %}
   </div>
-  <script>
-  /* 票根卡的倒數：以裝置當地日期計（台灣／日本只差一小時，不影響「第幾天」） */
-  (function(){
-    var card = document.querySelector(".card-hello");
-    if (!card) return;
-    function day(s){ var p = s.split("-"); return new Date(+p[0], p[1]-1, +p[2]); }
-    var now = new Date(), today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    var start = day(card.dataset.start), end = day(card.dataset.end);
-    var toGo = Math.round((start - today) / 864e5);
-    var nth = Math.round((today - start) / 864e5) + 1;
-    var total = Math.round((end - start) / 864e5) + 1;
-    var k, n, u;
-    if (toGo > 0)        { k = "出發倒數"; n = toGo; u = toGo === 1 ? "day" : "days"; }
-    else if (nth <= total){ k = "旅途第";   n = nth;  u = "/ " + total + " 天"; }
-    else                 { k = "歡迎回家"; n = "";   u = ""; card.classList.add("is-home"); }
-    card.querySelector(".hello-k").textContent = k;
-    card.querySelector(".hello-n").textContent = n;
-    card.querySelector(".hello-u").textContent = u;
-    card.classList.add("is-counted");
-  })();
-  </script>
   {%- endif %}
 </header>
 
