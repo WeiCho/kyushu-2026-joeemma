@@ -88,8 +88,6 @@ CATEGORY_OF_BOOKING = {
 }
 # 待確認偵測：名稱或備註命中這些字樣視為尚未定案
 PENDING_RE = re.compile(r"待補|待確認|待報價|待補充|尚未|未定|TBD", re.IGNORECASE)
-# 本日路線一鍵導航：Google Maps 消費者版路線點數上限（origin + waypoints + destination）
-MAX_ROUTE_POINTS = 10
 
 
 class TripError(ValueError):
@@ -252,37 +250,6 @@ def map_url(query):
     return "https://www.google.com/maps/search/?api=1&query=" + quote(str(query))
 
 
-def dir_url(query):
-    return "https://www.google.com/maps/dir/?api=1&destination=" + quote(str(query))
-
-
-def build_route_url(queries):
-    """把當日各站的 map_query 串成 Google Maps 多點路線連結。
-
-    回傳 (url, capped)：
-    - 0 站 → (None, False)
-    - 1 站 → 退化為單點搜尋連結
-    - 多站 → dir 路線；超過上限時只取前段＋終點並回報 capped=True（不靜默截斷）
-    """
-    qs = [q for q in queries if q]
-    if not qs:
-        return None, False
-    if len(qs) == 1:
-        return map_url(qs[0]), False
-    capped = False
-    if len(qs) > MAX_ROUTE_POINTS:
-        qs = qs[:MAX_ROUTE_POINTS - 1] + [qs[-1]]
-        capped = True
-    origin, destination, waypoints = qs[0], qs[-1], qs[1:-1]
-    url = (
-        "https://www.google.com/maps/dir/?api=1"
-        "&origin=" + quote(str(origin))
-        + "&destination=" + quote(str(destination))
-    )
-    if waypoints:
-        url += "&waypoints=" + quote("|".join(str(w) for w in waypoints))
-    return url, capped
-
 
 def make_fx_alt(fx):
     """回傳一個 fx_alt(v) 函式：有匯率且金額非零時輸出「 ≈ ¥12,345」，否則空字串。"""
@@ -363,13 +330,6 @@ def enrich(data):
                     "anchor": f"day-{day_no}",
                 })
             items.append(item)
-        # 交通銜接列連到「下一站」的導航
-        for item, nxt in zip(items, items[1:]):
-            if item.get("next_transit") and nxt.get("map_query"):
-                item["transit_url"] = dir_url(nxt["map_query"])
-        route_url, route_capped = build_route_url(
-            [it.get("map_query") for it in items]
-        )
         spent += subtotal
         days.append({
             **day,
@@ -382,8 +342,6 @@ def enrich(data):
             "weekday_short": WEEKDAYS[d.weekday()][-1],
             "subtotal": subtotal,
             "day_no": day_no,
-            "route_url": route_url,
-            "route_capped": route_capped,
         })
 
     bookings = []

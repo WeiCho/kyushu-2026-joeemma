@@ -738,7 +738,7 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
   .day-aside{border-right:.8px solid var(--line);padding-right:clamp(22px,2.8vw,52px)}
 }
 /* 左欄的大字。字級刻意停在 31px、低於區塊大標的 38px：主題最長的一天有
-   24 個字，再大就會在窄欄裡疊成四五行，把天氣與導航鍵推到摺線以下 */
+   24 個字，再大就會在窄欄裡疊成四五行，把天氣鍵推到摺線以下 */
 .day-name{
   font-size:clamp(23px,2.6vw,31px);line-height:1.45;letter-spacing:.04em;
   text-wrap:balance;
@@ -796,14 +796,12 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 [data-theme-size="large"] .wx-hours .h,[data-theme-size="large"] .wx-hours .p{font-size:14px}
 /* 當日小提醒：跟天氣同一種灰，字級一樣，只用行距分開 */
 .day-note{margin:6px 0 0;font-size:14px;line-height:1.8;color:var(--muted)}
-.day-tools{margin-top:16px}
 .route-btn{
   display:inline-flex;align-items:center;gap:10px;min-height:44px;padding:0 16px;
   border:.8px solid var(--ink);border-radius:4px;text-decoration:none;font-size:15px;
   letter-spacing:.06em;
 }
 .route-btn:hover{background:var(--ink);color:var(--paper)}
-.route-cap{display:block;margin-top:8px;font-size:13px;color:var(--muted)}
 
 /* ── 時間軸 ── */
 .timeline{list-style:none;margin:0;padding:0}
@@ -840,7 +838,6 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 .stop .go{
   display:inline-block;margin-top:11px;font-size:13.5px;color:var(--muted);text-decoration:none;
 }
-.stop .go span{border-bottom:.8px solid var(--line);margin-left:.4em}
 /* 今日模式：已過的行程壓低，但不隱藏 */
 /* 已過行程：原本只用 opacity:.42 傳達，算出來只有 2.45:1，而且語意單靠明暗。
    改成「時間加刪除線 + 名稱降為次要字」，兩個訊號、且都達 AA */
@@ -1302,7 +1299,7 @@ body.editing>#editor{display:block !important}
   :root[data-theme]{
     --paper:#fff;--ink:#2d2519;--line:#c9c7bf;--card:#fff;--muted:#5b554d;--warm:#8c2f22;
   }
-  .sticky-nav,.now-bar,.pending-banner,.day-tools,.daybar,.daypick,.loc,.go,.handoff,.skip{display:none}
+  .sticky-nav,.now-bar,.pending-banner,.daybar,.daypick,.loc,.go,.handoff,.skip{display:none}
   .band::before{background:#fff !important}
   .section{opacity:1 !important}
   /* 紙本印的是「計畫」不是「進度」，不帶今日狀態 */
@@ -1624,12 +1621,6 @@ body.editing>#editor{display:block !important}
           {%- endif %}
 
           {% if day.note %}<p class="day-note">{{ day.note }}</p>{% endif %}
-          {% if day.route_url %}
-          <div class="day-tools">
-            <a class="route-btn" href="{{ day.route_url }}" target="_blank" rel="noopener">本日路線一鍵導航</a>
-            {% if day.route_capped %}<span class="route-cap">點位較多，僅串接前段</span>{% endif %}
-          </div>
-          {% endif %}
         </div>
       <ol class="timeline">
       {% for item in day["items"] %}
@@ -1685,8 +1676,7 @@ body.editing>#editor{display:block !important}
             <p class="meta">{{ meta | join(" · ") }}{% if item.booking and item.booking.code %}{% if meta %} · {% endif %}確認碼 <b>{{ item.booking.code }}</b>{% endif %}</p>
             {% endif %}
             {% if item.next_transit %}
-              {% if item.transit_url %}<a class="go" href="{{ item.transit_url }}">→ {{ item.next_transit }} <span>導航 ↗</span></a>
-              {% else %}<span class="go">→ {{ item.next_transit }}</span>{% endif %}
+              <span class="go">→ {{ item.next_transit }}</span>
             {% endif %}
           </div>
         </li>
@@ -1989,7 +1979,7 @@ body.editing>#editor{display:block !important}
 <div class="now-bar" hidden>
   <div class="now-inner">
     <span class="lbl"></span>
-    <a class="now-go" href="#" target="_blank" rel="noopener" hidden>導航 ↗</a>
+    <a class="now-go" href="#" target="_blank" rel="noopener" hidden>📍 地圖</a>
     <button class="now-dismiss" type="button" aria-label="關閉今日模式">×</button>
   </div>
 </div>
