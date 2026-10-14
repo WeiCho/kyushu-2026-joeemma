@@ -1490,7 +1490,7 @@ body.editing>#editor{display:block !important}
             aria-expanded="false" aria-controls="tools-menu" aria-label="開啟工具選單">
       <i></i><i></i><i></i>
     </button>
-    <div class="tools-menu" id="tools-menu">
+    <div class="tools-menu" id="tools-menu" hidden>
       {#- 手機版把導覽併進同一個抽屜，避免列上出現兩個一模一樣的漢堡鍵。
           桌機 display:none，所以不會被 Tab 走到，焦點數不變 -#}
       <div class="drawer-links">
