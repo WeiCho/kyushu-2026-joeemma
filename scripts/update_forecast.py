@@ -120,34 +120,6 @@ def round_or_none(v):
     return None if v is None else int(round(v))
 
 
-# 晴陰分歧用的粗分級：晴 0、晴時多雲 1、陰／霧 2、雨 3。兩個模型差兩級以上
-# （晴 vs 陰、晴時多雲 vs 雨）才提醒；只差一級在雲量預報裡算正常誤差
-SKY_GAP = 2
-
-
-def sky_level(text):
-    if text is None:
-        return None
-    if text == "晴":
-        return 0
-    if text == "晴時多雲":
-        return 1
-    if text in ("陰", "霧"):
-        return 2
-    return 3   # 各種雨雪，以及「晴，短暫有雨」這類
-
-
-def daytime_text(loc, model, iso):
-    """某模型白天的晴陰摘要；白天時段沒涵蓋滿就回 None（MSM 第 3 天常只到中午）。"""
-    h = loc["hourly"]
-    codes = {int(t[11:13]): h[f"weather_code_{model}"][j]
-             for j, t in enumerate(h["time"]) if t.startswith(iso)}
-    day = [codes.get(hh) for hh in DAYTIME]
-    if any(c is None for c in day):
-        return None
-    return summarize([int(c) for c in day])
-
-
 def day_series(loc, model, iso):
     """某模型在某一天的逐時 [(時, 氣溫, 降雨機率, 天氣代碼)]；24 小時沒有全部涵蓋就回 None。"""
     h = loc["hourly"]
@@ -217,12 +189,6 @@ def build(loc, day_date, lead):
         "step": step,
         "hours": hours,
     }
-
-    # 晴陰分歧：白天涵蓋滿的模型都拿來比，差兩級以上就把各模型的說法列出來
-    skies = [(LABEL[m], t) for m in MODELS if (t := daytime_text(loc, m, iso))]
-    levels = [sky_level(t) for _, t in skies]
-    if len(skies) >= 2 and max(levels) - min(levels) >= SKY_GAP:
-        fc["sky_spread"] = [{"model": m, "text": t} for m, t in skies]
 
     # 模式分歧：ECMWF 與 GFS 都涵蓋時才比
     if series[ECMWF] and series[GFS]:
@@ -316,9 +282,7 @@ def main():
             sp = fc.get("spread")
             print(f"✅ {day['date']} {label} [{fc['model']}] "
                   f"{fc['tmin']}–{fc['tmax']}°C {fc['text'] or ''} 降雨 {fc['pop']}%（每 {fc['step']} 小時）"
-                  + (f" ⚠ {sp['what']} {sp['lo']}–{sp['hi']}°C" if sp else "")
-                  + (" ⚠ 晴陰：" + "、".join(f"{x['model']} {x['text']}" for x in fc["sky_spread"])
-                     if fc.get("sky_spread") else ""))
+                  + (f" ⚠ {sp['what']} {sp['lo']}–{sp['hi']}°C" if sp else ""))
 
     if not changed:
         print("＝ 預報內容無變化，不寫入")

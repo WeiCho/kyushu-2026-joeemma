@@ -1593,10 +1593,6 @@ body.editing>#editor{display:block !important}
             {#- ECMWF 與 GFS 溫差 4°C 以上：數字還不可靠，提醒出發前再看 -#}
             <p class="wx-spread">各模式差異大（{{ f.spread.what }} {{ f.spread.lo }}–{{ f.spread.hi }}°C），出發前再看一次</p>
             {%- endif %}
-            {%- if f.sky_spread %}
-            {#- 各模型對晴陰說法差兩級以上（晴 vs 陰）：雲量是最難預報的，提醒以前一天的氣象廳預報為準 -#}
-            <p class="wx-spread">各模式晴陰說法不一（{% for x in f.sky_spread %}{{ x.model }} {{ x.text }}{{ "、" if not loop.last }}{% endfor %}），出發前一天看氣象廳預報為準</p>
-            {%- endif %}
             <span class="wx-src">天氣・氣溫・降雨機率 · {{ f.model or "Open-Meteo" }} · {{ f.updated }} 更新</span>
             {%- if a.lat is not none and a.lon is not none %}
             <a class="route-btn wx-windy" href="https://www.windy.com/{{ a.lat }}/{{ a.lon }}?{{ a.lat }},{{ a.lon }},10"

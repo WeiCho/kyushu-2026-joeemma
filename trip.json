@@ -355,21 +355,7 @@
             "w": 0
           }
         ],
-        "sky_spread": [
-          {
-            "model": "JMA MSM",
-            "text": "晴"
-          },
-          {
-            "model": "ECMWF",
-            "text": "晴"
-          },
-          {
-            "model": "GFS",
-            "text": "陰"
-          }
-        ],
-        "updated": "10/14 11:01"
+        "updated": "10/14 11:06"
       },
       "weather_live": {
         "text": "福岡 14–25°C・晴・降雨 0%",
@@ -582,21 +568,7 @@
             "w": 1
           }
         ],
-        "sky_spread": [
-          {
-            "model": "JMA MSM",
-            "text": "晴"
-          },
-          {
-            "model": "ECMWF",
-            "text": "陰，短暫有雨"
-          },
-          {
-            "model": "GFS",
-            "text": "陰"
-          }
-        ],
-        "updated": "10/14 11:01"
+        "updated": "10/14 11:06"
       },
       "forecast_extra": [
         {
@@ -704,22 +676,8 @@
               "w": 1
             }
           ],
-          "sky_spread": [
-            {
-              "model": "JMA MSM",
-              "text": "晴"
-            },
-            {
-              "model": "ECMWF",
-              "text": "陰"
-            },
-            {
-              "model": "GFS",
-              "text": "陰"
-            }
-          ],
           "label": "草千里",
-          "updated": "10/14 11:01"
+          "updated": "10/14 11:06"
         }
       ],
       "weather_live": {
@@ -935,17 +893,7 @@
             "w": 0
           }
         ],
-        "sky_spread": [
-          {
-            "model": "ECMWF",
-            "text": "晴，短暫有雨"
-          },
-          {
-            "model": "GFS",
-            "text": "晴"
-          }
-        ],
-        "updated": "10/14 11:01"
+        "updated": "10/14 11:06"
       },
       "weather_live": {
         "text": "別府・由布院 16–27°C・晴時多雲・降雨 20%",
@@ -1140,7 +1088,7 @@
             "w": 3
           }
         ],
-        "updated": "10/14 11:01"
+        "updated": "10/14 11:06"
       },
       "forecast_extra": [
         {
@@ -1188,18 +1136,8 @@
               "w": 1
             }
           ],
-          "sky_spread": [
-            {
-              "model": "ECMWF",
-              "text": "晴"
-            },
-            {
-              "model": "GFS",
-              "text": "陰"
-            }
-          ],
           "label": "福岡",
-          "updated": "10/14 11:01"
+          "updated": "10/14 11:06"
         }
       ]
     },
