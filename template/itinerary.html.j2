@@ -172,7 +172,7 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
 
 /* ── 固定頂列（無字標，導覽靠右）── */
 /* 照 sukima.tokyo.jp：導覽永遠固定在同一個位置、永遠透明、沒有底色 bar。
-   壓在深色塊上時只翻文字顏色（見 .over-dark），不做任何底色或版型切換 */
+   壓在深色塊上時只翻文字顏色（見 .on-dark），不做任何底色或版型切換 */
 .sticky-nav{
   position:fixed;inset:0 0 auto;z-index:40;width:100%;
   pointer-events:none;   /* 透明的滿版容器不該擋住底下的內容 */
@@ -188,9 +188,9 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
    會建立堆疊脈絡、隔離子元素的混色），而掛在 nav 上會把工具選單那塊實心紙色面板
    一起反相成灰藍、圖示消失。改成只在導覽真的壓到深色塊時翻文字顏色——
    沒有底色、沒有 bar、位置完全不動 */
-.sticky-nav.over-dark{color:#fff}
-/* 選單面板有自己的紙色底，不能跟著翻白 */
-.sticky-nav.over-dark .tools-menu{color:var(--ink)}
+/* 逐個連結判斷：桌機的導覽是一直排，緊急色塊收起來之後很矮，常常只壓到下半截，
+   整排一起翻白會讓上半截變成淺底白字。選單面板有自己的紙色底，不在翻色名單裡 */
+.sticky-nav .on-dark,.js .sticky-nav .tools-toggle.on-dark{color:#fff}
 .nav-links{display:flex;gap:clamp(14px,2.2vw,30px);overflow-x:auto;scrollbar-width:none}
 .nav-links::-webkit-scrollbar{display:none}
 .sticky-nav a{
@@ -607,7 +607,7 @@ h1,h2,h3,h4{font-weight:var(--w);margin:0}
    但那個值會隨視窗寬無上限成長——1920 下算出 371px，卡片被壓到 83px、
    名稱折三行，整區崩掉。
    改成相反的策略：導覽不閃避，而是永遠完整落在色塊「內」，重疊交給
-   .over-dark 翻文字顏色處理。3.4vw 恆小於 --gut 的 4.2vw，所以導覽的
+   .on-dark 翻文字顏色處理。3.4vw 恆小於 --gut 的 4.2vw，所以導覽的
    左右緣都在色塊裡，不會發生「一半在深底一半在淺底」的半截字 */
 #emergency{--em-inset:clamp(16px,3.4vw,72px)}
 #emergency::before{
@@ -1201,6 +1201,31 @@ a.tr-route:hover{border-color:currentColor}
 .pack-items input{width:20px;height:20px;accent-color:var(--ink);flex:0 0 auto}
 .pack-items input:checked+span{color:var(--muted);text-decoration:line-through}
 
+/* ── 收合：行程結束後回饋放最上面，其餘各區預設只剩標題，點標題展開。
+   只在有 JS 時收（.js 前綴），JS 沒跑就全部照常顯示；導覽列或錨點連進去會自動展開 ── */
+.fold-btn{
+  all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:.5em;
+  -webkit-tap-highlight-color:transparent;
+}
+.fold-btn:focus-visible{outline:3px solid var(--focus);outline-offset:4px}
+.fold-btn::after{
+  content:"";width:.42em;height:.42em;margin-left:.1em;
+  border-right:2px solid currentColor;border-bottom:2px solid currentColor;
+  transform:translateY(-.12em) rotate(45deg);transition:transform .2s;opacity:.55;
+}
+.is-folded .fold-btn::after{transform:translateY(.05em) rotate(-45deg)}
+.js .section.is-folded>:not(.section-heading),
+.js .section.is-folded .section-heading>:not(h2){display:none}
+.js .section.is-folded .section-heading{margin-bottom:0}
+.js #emergency.is-folded .em-cards,
+.js #emergency.is-folded .em-head p:not(.em-sub){display:none}
+/* 收起來的各區不必再隔一整段 --sec 的高度，標題一個接一個排下來 */
+.js .section.is-folded{padding-top:clamp(28px,5vh,48px)}
+.js #emergency.is-folded{margin-top:clamp(28px,5vh,48px);padding:clamp(24px,4vh,40px) 0}
+#survey{padding-bottom:clamp(16px,3vh,32px)}
+/* 章節之間的銜接引子是寫給「一路往下讀」的人看的；各區可以各自收起來之後，它常常接到一個收著的標題，乾脆不顯示 */
+.has-fold .handoff{display:none}
+
 /* ── 旅後回饋：沿用檢查清單的「細線分隔、無卡片」，一題一段 ── */
 .sv{max-width:44em}
 .sv-q{border:0;margin:0;padding:clamp(18px,2.6vh,26px) 0;border-top:.8px solid var(--line);min-width:0}
@@ -1480,12 +1505,12 @@ body.editing>#editor{display:block !important}
   {#- 「緊急」永遠留在列上、不收進抽屜：人在日本出事時要立刻按到，
       多一層漢堡就是多一次點擊。其餘四條在手機版收進抽屜 -#}
   <div class="nav-links">
+    {%- if trip.survey %}<a href="#survey">回饋</a>{% endif %}
     <a href="#itinerary">行程</a>
     {%- if transit %}<a href="#transit">交通</a>{% endif %}
     <a href="#budget">花費</a>
     {%- if trip.packing %}<a href="#packing">檢查</a>{% endif %}
     {%- if trip.phrases %}<a href="#phrases">日文</a>{% endif %}
-    {%- if trip.survey %}<a href="#survey">回饋</a>{% endif %}
     {%- if trip.emergency %}<a class="nav-urgent" href="#emergency">緊急</a>{% endif %}
   </div>
   <div class="nav-tools">
@@ -1497,12 +1522,12 @@ body.editing>#editor{display:block !important}
       {#- 手機版把導覽併進同一個抽屜，避免列上出現兩個一模一樣的漢堡鍵。
           桌機 display:none，所以不會被 Tab 走到，焦點數不變 -#}
       <div class="drawer-links">
+        {%- if trip.survey %}<a href="#survey">回饋</a>{% endif %}
         <a href="#itinerary">行程</a>
         {%- if transit %}<a href="#transit">交通</a>{% endif %}
         <a href="#budget">花費</a>
         {%- if trip.packing %}<a href="#packing">檢查</a>{% endif %}
         {%- if trip.phrases %}<a href="#phrases">日文</a>{% endif %}
-        {%- if trip.survey %}<a href="#survey">回饋</a>{% endif %}
       </div>
       <button class="nav-tool" type="button" data-toggle="edit" aria-label="編輯行程資料">✎</button>
       <button class="nav-tool" type="button" data-toggle="theme" aria-pressed="false" aria-label="切換深色模式">🌙</button>
@@ -1526,8 +1551,54 @@ body.editing>#editor{display:block !important}
 </div>
 {% endif %}
 
-{# ── 區塊 B：行程 ── #}
+{# ── 區塊 B：旅後回饋＋行程（行程結束後回饋放最上面） ── #}
 <div class="band band-b">
+{# ── 旅後回饋：題目在 trip.survey，送出時用一般表單 POST 到 Google 表單（target 指向隱藏 iframe，
+   不必處理跨網域），回覆進表單連結的試算表，每日排程再抓回 survey_responses.json。
+   填過的人這台手機記一個旗標，下次打開直接顯示謝謝，但可以再填一次 ── #}
+{% if trip.survey %}
+<section class="section" id="survey">
+  <div class="section-heading">
+    <h2>{{ trip.survey.title or "旅後回饋" }}</h2>
+    {% if trip.survey.intro %}<p>{{ trip.survey.intro }}</p>{% endif %}
+  </div>
+  <form class="sv" id="sv-form" action="{{ trip.survey.action }}" method="post" target="sv-sink" novalidate>
+  {% for q in trip.survey.questions %}
+    {% set qid = "sv-q" ~ loop.index %}
+    <fieldset class="sv-q" data-type="{{ q.type }}"{% if q.required %} data-required{% endif %}>
+      <legend id="{{ qid }}"><span class="sv-no lat">{{ "%02d" | format(loop.index) }}</span>{{ q.q }}{% if q.required %}<em class="sv-req">必填</em>{% endif %}</legend>
+      {% if q.type == "text" %}
+        <input class="sv-in" type="text" name="{{ q.entry }}" aria-labelledby="{{ qid }}" autocomplete="{{ 'name' if loop.first else 'off' }}">
+      {% elif q.type == "paragraph" %}
+        <textarea class="sv-in" name="{{ q.entry }}" rows="3" aria-labelledby="{{ qid }}"></textarea>
+      {% elif q.type == "scale" %}
+        <div class="sv-scale">
+          <span class="sv-end">{{ q.labels[0] }}</span>
+          {% for n in range(q.min or 1, (q.max or 5) + 1) %}
+          <label class="sv-pt"><input type="radio" name="{{ q.entry }}" value="{{ n }}"><span class="lat">{{ n }}</span></label>
+          {% endfor %}
+          <span class="sv-end">{{ q.labels[1] }}</span>
+        </div>
+      {% else %}
+        <ul class="sv-opts">
+        {% for o in q.options %}
+          <li><label><input type="{{ 'checkbox' if q.type == 'checkbox' else 'radio' }}" name="{{ q.entry }}" value="{{ o }}"><span>{{ o }}</span></label></li>
+        {% endfor %}
+        </ul>
+      {% endif %}
+    </fieldset>
+  {% endfor %}
+    <p class="sv-err" id="sv-err" role="alert" hidden></p>
+    <button class="sv-go" type="submit">送出</button>
+  </form>
+  <div class="sv-done" id="sv-done" hidden>
+    <p>收到了，謝謝你！你的回饋會用在下一次的行程。</p>
+    <button class="ledger-btn" type="button" id="sv-again">再填一份</button>
+  </div>
+  <iframe name="sv-sink" id="sv-sink" title="問卷送出" hidden></iframe>
+</section>
+{% endif %}
+
 <section class="section" id="itinerary">
   <div class="section-heading">
     <h2>行程</h2>
@@ -1968,52 +2039,6 @@ body.editing>#editor{display:block !important}
     </li>
   {% endfor %}
   </ul>
-</section>
-{% endif %}
-
-{# ── 旅後回饋：題目在 trip.survey，送出時用一般表單 POST 到 Google 表單（target 指向隱藏 iframe，
-   不必處理跨網域），回覆進表單連結的試算表，每日排程再抓回 survey_responses.json。
-   填過的人這台手機記一個旗標，下次打開直接顯示謝謝，但可以再填一次 ── #}
-{% if trip.survey %}
-<section class="section" id="survey">
-  <div class="section-heading">
-    <h2>{{ trip.survey.title or "旅後回饋" }}</h2>
-    {% if trip.survey.intro %}<p>{{ trip.survey.intro }}</p>{% endif %}
-  </div>
-  <form class="sv" id="sv-form" action="{{ trip.survey.action }}" method="post" target="sv-sink" novalidate>
-  {% for q in trip.survey.questions %}
-    {% set qid = "sv-q" ~ loop.index %}
-    <fieldset class="sv-q" data-type="{{ q.type }}"{% if q.required %} data-required{% endif %}>
-      <legend id="{{ qid }}"><span class="sv-no lat">{{ "%02d" | format(loop.index) }}</span>{{ q.q }}{% if q.required %}<em class="sv-req">必填</em>{% endif %}</legend>
-      {% if q.type == "text" %}
-        <input class="sv-in" type="text" name="{{ q.entry }}" aria-labelledby="{{ qid }}" autocomplete="{{ 'name' if loop.first else 'off' }}">
-      {% elif q.type == "paragraph" %}
-        <textarea class="sv-in" name="{{ q.entry }}" rows="3" aria-labelledby="{{ qid }}"></textarea>
-      {% elif q.type == "scale" %}
-        <div class="sv-scale">
-          <span class="sv-end">{{ q.labels[0] }}</span>
-          {% for n in range(q.min or 1, (q.max or 5) + 1) %}
-          <label class="sv-pt"><input type="radio" name="{{ q.entry }}" value="{{ n }}"><span class="lat">{{ n }}</span></label>
-          {% endfor %}
-          <span class="sv-end">{{ q.labels[1] }}</span>
-        </div>
-      {% else %}
-        <ul class="sv-opts">
-        {% for o in q.options %}
-          <li><label><input type="{{ 'checkbox' if q.type == 'checkbox' else 'radio' }}" name="{{ q.entry }}" value="{{ o }}"><span>{{ o }}</span></label></li>
-        {% endfor %}
-        </ul>
-      {% endif %}
-    </fieldset>
-  {% endfor %}
-    <p class="sv-err" id="sv-err" role="alert" hidden></p>
-    <button class="sv-go" type="submit">送出</button>
-  </form>
-  <div class="sv-done" id="sv-done" hidden>
-    <p>收到了，謝謝你！你的回饋會用在下一次的行程。</p>
-    <button class="ledger-btn" type="button" id="sv-again">再填一份</button>
-  </div>
-  <iframe name="sv-sink" id="sv-sink" title="問卷送出" hidden></iframe>
 </section>
 {% endif %}
 
@@ -2517,9 +2542,9 @@ body.editing>#editor{display:block !important}
   // 緊急色塊左右內縮的實際 px。用 calc() 定義，讀不到數值，
   // 所以量 ::before 的 used value，並只在載入與改變視窗大小時重算
   var emInset = 0;
-  // 導覽實際佔位的兩個元素（連結群、工具鍵）
-  var navInk = head ? [head.querySelector(".nav-links"), head.querySelector(".nav-tools")] : null;
-  if (navInk && (!navInk[0] || !navInk[1])) navInk = null;
+  // 導覽上看得見的字：各個連結與漢堡鍵，逐個判斷有沒有壓在深色塊上
+  var navInk = head ? [].slice.call(head.querySelectorAll(".nav-links a, .tools-toggle")) : null;
+  if (navInk && !navInk.length) navInk = null;
   function measureInset(){
     if (!ov) return;
     emInset = parseFloat(getComputedStyle(ov, "::before").left) || 0;
@@ -2538,27 +2563,31 @@ body.editing>#editor{display:block !important}
     if (head && ov && navInk){
       var er = ov.getBoundingClientRect();
       // 用實際看得見的連結與工具鍵，不能用 .sticky-nav——它是 width:100% 的
-      // 透明容器，橫向永遠和色塊重疊，判斷會恆為 true
-      var a = navInk[0].getBoundingClientRect(), b = navInk[1].getBoundingClientRect();
-      var nT = Math.min(a.top, b.top), nB = Math.max(a.bottom, b.bottom);
-      var nL = Math.min(a.left, b.left), nR = Math.max(a.right, b.right);
-      var overlap = er.top < nB && er.bottom > nT &&
-                    (er.left + emInset) < nR && (er.right - emInset) > nL;
-      head.classList.toggle("over-dark", overlap);
+      // 透明容器，橫向永遠和色塊重疊，判斷會恆為 true。以每個字的中心點為準
+      navInk.forEach(function(el){
+        var r = el.getBoundingClientRect();
+        var cx = (r.left + r.right) / 2, cy = (r.top + r.bottom) / 2;
+        el.classList.toggle("on-dark", r.width > 0 &&
+          cy > er.top && cy < er.bottom &&
+          cx > er.left + emInset && cx < er.right - emInset);
+      });
     }
 
     if (!wantsMotion) return;
     var vh = window.innerHeight;
+    // 捲到底就當作全部看完：各區收起來之後頁面變短，最後幾區的頂端
+    // 永遠到不了觸發位置，不這樣補的話會一直停在半透明、色塊半展開
+    var atEnd = window.scrollY + vh >= document.documentElement.scrollHeight - 2;
     // 左右展開只留給深色花費區；其餘區塊一律底色滿版，只做內容淡入
     if (ov){
       var od = ov.getBoundingClientRect();
       var maxInset = window.innerWidth <= 760 ? 12 : 22;  // 窄螢幕別縮掉太多可視寬度
-      var op = clamp01((vh - od.top) / (vh * 0.65));
+      var op = atEnd ? 1 : clamp01((vh - od.top) / (vh * 0.65));
       ov.style.setProperty("--open", (maxInset * (1 - op)).toFixed(2) + "%");
     }
     for (var j = 0; j < fades.length; j++){
       var fe = fades[j], fd = fe.getBoundingClientRect();
-      var fp = clamp01((vh - fd.top) / (vh * 0.65));
+      var fp = atEnd ? 1 : clamp01((vh - fd.top) / (vh * 0.65));
       // 0.08 而非 0.35：章節頂端一進到畫面就開始亮（95%），72% 時全亮。
       // 用 0.35 的話要等頂端降到 77% 才開始，畫面底部會固定有 22.75% 是
       // 「有內容但看不見」，捲動時讀起來就是一段一段斷開的
@@ -2644,6 +2673,58 @@ body.editing>#editor{display:block !important}
       try { localStorage.removeItem(KEY); } catch (e) {}
       show(false);
       form.querySelector("input,textarea").focus();
+    });
+  })();
+
+  // ── 收合：回饋以外的各區預設收起，標題變成開關。不記狀態，每次打開頁面都從收起開始。
+  // 點導覽列、待確認清單等站內錨點時，先把目標所在的那區展開，瀏覽器再照常跳過去
+  (function(){
+    var secs = [].slice.call(document.querySelectorAll("section.section:not(#survey), #emergency"));
+    if (!secs.length) return;
+    function setFold(sec, folded){
+      sec.classList.toggle("is-folded", folded);
+      var b = sec.querySelector(".fold-btn");
+      if (b) b.setAttribute("aria-expanded", folded ? "false" : "true");
+      // 版面高度變了，讓捲動連動的淡入／色塊展開重算一次
+      window.dispatchEvent(new Event("scroll"));
+    }
+    document.documentElement.classList.add("has-fold");
+    secs.forEach(function(sec){
+      var h = sec.querySelector(".section-heading h2, .em-head h2");
+      if (!h) return;
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "fold-btn";
+      while (h.firstChild) b.appendChild(h.firstChild);
+      h.appendChild(b);
+      b.addEventListener("click", function(){ setFold(sec, !sec.classList.contains("is-folded")); });
+    });
+    function reveal(hash){
+      if (!hash || hash.length < 2) return null;
+      var el;
+      try { el = document.querySelector(hash); } catch (e) { return null; }
+      var sec = el && el.closest(".is-folded");
+      if (sec) setFold(sec, false);
+      return el;
+    }
+    var target = null;
+    try { target = location.hash && document.querySelector(location.hash); } catch (e) {}
+    secs.forEach(function(sec){ setFold(sec, !(target && sec.contains(target))); });
+    // 收合讓版面縮短，載入時瀏覽器已經跳過的錨點位置就不準了，重跳一次
+    if (target) target.scrollIntoView();
+    document.addEventListener("click", function(e){
+      var a = e.target.closest && e.target.closest('a[href^="#"]');
+      if (a) reveal(a.getAttribute("href"));
+    }, true);
+    window.addEventListener("hashchange", function(){ reveal(location.hash); });
+    // 紙本要印全部：印之前全部展開，印完收回原本的樣子
+    var before = null;
+    window.addEventListener("beforeprint", function(){
+      before = secs.map(function(s){ return s.classList.contains("is-folded"); });
+      secs.forEach(function(s){ setFold(s, false); });
+    });
+    window.addEventListener("afterprint", function(){
+      if (before) secs.forEach(function(s, i){ setFold(s, before[i]); });
     });
   })();
 
