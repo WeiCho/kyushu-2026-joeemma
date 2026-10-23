@@ -2,11 +2,11 @@ name: 行程狀態更新（划船開賣・天氣預報）
 
 on:
   schedule:
-    # 一天三次，只在 8/9/10 月跑（UTC；+9 就是 JST）
+    # 一天三次，只在 8–11 月跑（UTC；+9 就是 JST）。11 月是為了收旅後回饋問卷
     #   00:04 UTC = 09:04 JST  ← 每天 09:00 開賣後馬上看，抓「剛開賣就掃掉多少」
     #   04:04 UTC = 13:04 JST  ← 中午，看開賣當天賣完沒
     #   12:04 UTC = 21:04 JST  ← 睡前最後一次
-    - cron: "4 0,4,12 * 8,9,10 *"
+    - cron: "4 0,4,12 * 8-11 *"
   workflow_dispatch:
 
 # 與 deploy.yml 共用同一個 Pages 併發群組，避免兩邊同時部署
@@ -45,13 +45,32 @@ jobs:
         continue-on-error: true
         run: python scripts/update_forecast.py trip.json
 
+      # 旅後回饋：試算表 CSV 網址放在 Secret SURVEY_CSV_URL（試算表是「知道連結可檢視」，網址不進 repo）
+      - name: 抓問卷回覆
+        continue-on-error: true
+        env:
+          SURVEY_CSV_URL: ${{ secrets.SURVEY_CSV_URL }}
+          PYTHONIOENCODING: utf-8
+        run: python scripts/update_survey.py survey_responses.json
+
       - name: Commit & push
         id: commit
         env:
           PYTHONIOENCODING: utf-8
         run: |
+          git add -N survey_responses.json 2>/dev/null || true
+          survey_changed=false
+          git diff --quiet -- survey_responses.json || survey_changed=true
           if git diff --quiet -- trip.json; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
+            if [ "$survey_changed" = true ]; then
+              git config user.name "github-actions[bot]"
+              git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+              git add survey_responses.json
+              git commit -m "chore: 問卷回覆 $(python -c 'import json;print(json.load(open("survey_responses.json",encoding="utf-8"))["count"])') 份"
+              git push origin HEAD:main
+              exit 0
+            fi
             echo "trip.json 無變化，不 commit"
             exit 0
           fi
@@ -89,6 +108,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add trip.json
+          [ "$survey_changed" = true ] && git add survey_responses.json
           git commit -m "$msg"
           git push origin HEAD:main
           echo "changed=true" >> "$GITHUB_OUTPUT"

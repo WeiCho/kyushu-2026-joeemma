@@ -1201,6 +1201,45 @@ a.tr-route:hover{border-color:currentColor}
 .pack-items input{width:20px;height:20px;accent-color:var(--ink);flex:0 0 auto}
 .pack-items input:checked+span{color:var(--muted);text-decoration:line-through}
 
+/* ── 旅後回饋：沿用檢查清單的「細線分隔、無卡片」，一題一段 ── */
+.sv{max-width:44em}
+.sv-q{border:0;margin:0;padding:clamp(18px,2.6vh,26px) 0;border-top:.8px solid var(--line);min-width:0}
+/* legend 預設會坐在 fieldset 的上框線裡；float 讓它回到框內，下一個元素再清掉浮動 */
+.sv-q legend{float:left;width:100%;padding:0;margin-bottom:12px;font-size:16.5px;line-height:1.7;letter-spacing:.04em}
+.sv-q legend+*{clear:both}
+.sv-no{margin-right:12px;font-size:13.5px;letter-spacing:.1em;color:var(--muted)}
+.sv-req{margin-left:.6em;font-style:normal;font-size:12px;color:var(--warm);letter-spacing:.06em}
+.sv-q.is-bad legend{color:var(--warm)}
+.sv-in{
+  display:block;width:100%;font:inherit;font-size:16px;color:var(--ink);background:var(--card);
+  border:.8px solid var(--line);border-radius:4px;padding:8px 10px;min-height:44px;resize:vertical;
+}
+.sv-in:focus-visible,.sv input:focus-visible+span{outline:3px solid var(--focus);outline-offset:1px}
+.sv-opts{list-style:none;margin:0;padding:0}
+.sv-opts label{display:flex;align-items:center;gap:14px;min-height:44px;font-size:16px;line-height:1.6;cursor:pointer}
+.sv-opts input{width:20px;height:20px;accent-color:var(--ink);flex:0 0 auto}
+/* 1–5 分：數字做成方格，選到的反白；兩端說明字放在格子外 */
+.sv-scale{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.sv-end{font-size:13.5px;color:var(--muted)}
+.sv-pt{position:relative;cursor:pointer}
+.sv-pt input{position:absolute;opacity:0;width:1px;height:1px}
+.sv-pt span{
+  display:grid;place-items:center;width:44px;height:44px;font-size:17px;
+  border:.8px solid var(--line);border-radius:4px;background:var(--card);
+}
+.sv-pt input:checked+span{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.sv-err{margin:0 0 12px;font-size:14px;color:var(--warm)}
+.sv-go{
+  min-height:48px;padding:0 32px;border:0;border-radius:4px;cursor:pointer;
+  background:var(--pine);color:var(--paper);font:inherit;font-size:16px;letter-spacing:.2em;
+  margin-top:clamp(14px,2vh,20px);
+}
+:root[data-theme="dark"] .sv-go{background:var(--ink);color:var(--paper)}
+.sv-go:disabled{opacity:.55;cursor:wait}
+.sv-done{border-top:.8px solid var(--line);padding-top:clamp(18px,2.6vh,26px);max-width:44em}
+.sv-done p{margin:0 0 10px;font-size:16.5px;line-height:1.8}
+@media (width<460px){ .sv-scale .sv-end{flex-basis:100%} }
+
 /* ── 今日模式浮條 ── */
 .now-bar{position:fixed;inset:auto 0 0;z-index:45;background:var(--ink);color:var(--paper)}
 .now-inner{
@@ -1328,6 +1367,7 @@ body.editing>#editor{display:block !important}
   .em-row{break-inside:avoid}
   /* 紙上的帳只要清單與合計；輸入列、匯率按鈕、復原提示都是螢幕上的操作 */
   .ledger-add,.ledger-rate button,.ledger-undo,.ledger-warn{display:none !important}
+  #survey{display:none !important}
   .wx-windy{display:none}
   .lg-row{border-bottom-style:solid}
   a{text-decoration:none;color:inherit}
@@ -1445,6 +1485,7 @@ body.editing>#editor{display:block !important}
     <a href="#budget">花費</a>
     {%- if trip.packing %}<a href="#packing">檢查</a>{% endif %}
     {%- if trip.phrases %}<a href="#phrases">日文</a>{% endif %}
+    {%- if trip.survey %}<a href="#survey">回饋</a>{% endif %}
     {%- if trip.emergency %}<a class="nav-urgent" href="#emergency">緊急</a>{% endif %}
   </div>
   <div class="nav-tools">
@@ -1461,6 +1502,7 @@ body.editing>#editor{display:block !important}
         <a href="#budget">花費</a>
         {%- if trip.packing %}<a href="#packing">檢查</a>{% endif %}
         {%- if trip.phrases %}<a href="#phrases">日文</a>{% endif %}
+        {%- if trip.survey %}<a href="#survey">回饋</a>{% endif %}
       </div>
       <button class="nav-tool" type="button" data-toggle="edit" aria-label="編輯行程資料">✎</button>
       <button class="nav-tool" type="button" data-toggle="theme" aria-pressed="false" aria-label="切換深色模式">🌙</button>
@@ -1926,6 +1968,52 @@ body.editing>#editor{display:block !important}
     </li>
   {% endfor %}
   </ul>
+</section>
+{% endif %}
+
+{# ── 旅後回饋：題目在 trip.survey，送出時用一般表單 POST 到 Google 表單（target 指向隱藏 iframe，
+   不必處理跨網域），回覆進表單連結的試算表，每日排程再抓回 survey_responses.json。
+   填過的人這台手機記一個旗標，下次打開直接顯示謝謝，但可以再填一次 ── #}
+{% if trip.survey %}
+<section class="section" id="survey">
+  <div class="section-heading">
+    <h2>{{ trip.survey.title or "旅後回饋" }}</h2>
+    {% if trip.survey.intro %}<p>{{ trip.survey.intro }}</p>{% endif %}
+  </div>
+  <form class="sv" id="sv-form" action="{{ trip.survey.action }}" method="post" target="sv-sink" novalidate>
+  {% for q in trip.survey.questions %}
+    {% set qid = "sv-q" ~ loop.index %}
+    <fieldset class="sv-q" data-type="{{ q.type }}"{% if q.required %} data-required{% endif %}>
+      <legend id="{{ qid }}"><span class="sv-no lat">{{ "%02d" | format(loop.index) }}</span>{{ q.q }}{% if q.required %}<em class="sv-req">必填</em>{% endif %}</legend>
+      {% if q.type == "text" %}
+        <input class="sv-in" type="text" name="{{ q.entry }}" aria-labelledby="{{ qid }}" autocomplete="{{ 'name' if loop.first else 'off' }}">
+      {% elif q.type == "paragraph" %}
+        <textarea class="sv-in" name="{{ q.entry }}" rows="3" aria-labelledby="{{ qid }}"></textarea>
+      {% elif q.type == "scale" %}
+        <div class="sv-scale">
+          <span class="sv-end">{{ q.labels[0] }}</span>
+          {% for n in range(q.min or 1, (q.max or 5) + 1) %}
+          <label class="sv-pt"><input type="radio" name="{{ q.entry }}" value="{{ n }}"><span class="lat">{{ n }}</span></label>
+          {% endfor %}
+          <span class="sv-end">{{ q.labels[1] }}</span>
+        </div>
+      {% else %}
+        <ul class="sv-opts">
+        {% for o in q.options %}
+          <li><label><input type="{{ 'checkbox' if q.type == 'checkbox' else 'radio' }}" name="{{ q.entry }}" value="{{ o }}"><span>{{ o }}</span></label></li>
+        {% endfor %}
+        </ul>
+      {% endif %}
+    </fieldset>
+  {% endfor %}
+    <p class="sv-err" id="sv-err" role="alert" hidden></p>
+    <button class="sv-go" type="submit">送出</button>
+  </form>
+  <div class="sv-done" id="sv-done" hidden>
+    <p>收到了，謝謝你！你的回饋會用在下一次的行程。</p>
+    <button class="ledger-btn" type="button" id="sv-again">再填一份</button>
+  </div>
+  <iframe name="sv-sink" id="sv-sink" title="問卷送出" hidden></iframe>
 </section>
 {% endif %}
 
@@ -2498,6 +2586,66 @@ body.editing>#editor{display:block !important}
       try { localStorage.setItem(key, box.checked ? "1" : "0"); } catch (e) {}
     });
   });
+
+  // ── 旅後回饋：檢查必填 → 原生 POST 到 Google 表單（隱藏 iframe 接回應）→ 顯示謝謝 ──
+  // 跨網域 iframe 讀不到內容，只能以「iframe 載入完成」當作送達；Google 表單本身沒有回傳成功與否
+  (function(){
+    var form = document.getElementById("sv-form");
+    if (!form) return;
+    var done = document.getElementById("sv-done");
+    var err = document.getElementById("sv-err");
+    var sink = document.getElementById("sv-sink");
+    var go = form.querySelector(".sv-go");
+    var KEY = "survey:" + location.pathname;
+    var sending = false;
+    function show(isDone){ form.hidden = isDone; done.hidden = !isDone; }
+    try { if (localStorage.getItem(KEY) === "1") show(true); } catch (e) {}
+
+    function answered(q){
+      var t = q.getAttribute("data-type");
+      if (t === "text" || t === "paragraph") return q.querySelector(".sv-in").value.trim() !== "";
+      return !!q.querySelector("input:checked");
+    }
+    form.addEventListener("change", function(e){
+      var q = e.target.closest(".sv-q");
+      if (q && answered(q)) q.classList.remove("is-bad");
+    });
+    form.addEventListener("submit", function(e){
+      var bad = [];
+      form.querySelectorAll(".sv-q[data-required]").forEach(function(q){
+        var ok = answered(q);
+        q.classList.toggle("is-bad", !ok);
+        if (!ok) bad.push(q);
+      });
+      if (bad.length) {
+        e.preventDefault();
+        err.textContent = "還有 " + bad.length + " 題必填沒填。";
+        err.hidden = false;
+        var first = bad[0].querySelector("input,textarea");
+        if (first) first.focus();
+        return;
+      }
+      err.hidden = true;
+      sending = true;
+      go.disabled = true;
+      go.textContent = "送出中…";
+    });
+    sink.addEventListener("load", function(){
+      if (!sending) return;
+      sending = false;
+      go.disabled = false;
+      go.textContent = "送出";
+      try { localStorage.setItem(KEY, "1"); } catch (e) {}
+      form.reset();
+      show(true);
+      done.scrollIntoView({block:"center"});
+    });
+    document.getElementById("sv-again").addEventListener("click", function(){
+      try { localStorage.removeItem(KEY); } catch (e) {}
+      show(false);
+      form.querySelector("input,textarea").focus();
+    });
+  })();
 
   // ── 花費：自己的記帳（只存 localStorage，依本頁路徑分隔；不發任何網路請求）──
   // 存的是 {rate?, cur?, items:[{id, name, yen, cur?, ts}]}。rate 只有自己改過才存，沒改就跟 trip.fx 走

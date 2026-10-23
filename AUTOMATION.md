@@ -129,6 +129,17 @@ python3 render.py .        # 讀 ./trip.json → 產出 行程表.html + PWA 檔
 
 ---
 
+## 4. 已完成：旅後回饋問卷（survey）
+
+手冊最底下的「旅後回饋」區塊，題目寫在 `trip.json` 的 `trip.survey`（`action` = Google 表單的 formResponse 網址，每題的 `entry` = 表單欄位 ID）。
+
+- 送出：一般表單 POST 到 Google 表單，target 指向隱藏 iframe（不必處理 CORS）；iframe 載入完就當作送達，這台手機記 `survey:<路徑>` 旗標顯示謝謝
+- 表單與回覆試算表是用 Apps Script `FormApp` 在使用者的 Google 帳號建的（2026-10-23）
+  - 表單編輯：https://docs.google.com/forms/d/1YKyybx_M0qntRGNEUkEV3wKvGVtu-Ez8rItG5euTksM/edit
+  - **改題目要兩邊一起改**：選項文字必須和表單完全一致，否則 Google 會拒收；新增題目要重抓 entry ID（viewform 頁的 `FB_PUBLIC_LOAD_DATA_`，`[1][1][i][4][0][0]`）
+- 收回覆：`scripts/update_survey.py` 抓試算表「表單回覆 1」的 CSV 匯出網址（Secret `SURVEY_CSV_URL`，試算表需設「知道連結可檢視」），寫成 `survey_responses.json` 並 commit
+- 每日 workflow 的 cron 延長到 11 月就是為了這個
+
 ## 摘要給接手者
 - `live_status` 功能已上線。
 - 每日更新改用 GitHub Actions（`takachiho.yml`），2026-08-02 起自動跑；2026-09-11 起改抓 eipro 預約日曆、一天三次，無待辦。
