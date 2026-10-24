@@ -1243,13 +1243,14 @@ a.tr-route:hover{border-color:currentColor}
 .sv-opts{list-style:none;margin:0;padding:0}
 .sv-opts label{display:flex;align-items:center;gap:14px;min-height:44px;font-size:16px;line-height:1.6;cursor:pointer}
 .sv-opts input{width:20px;height:20px;accent-color:var(--ink);flex:0 0 auto}
-/* 1–5 分：數字做成方格，選到的反白；兩端說明字放在格子外 */
-.sv-scale{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.sv-end{font-size:13.5px;color:var(--muted)}
+/* 1–5 分：數字做成方格平分一行，選到的反白；兩端說明字放在格子正下方、左右對齊。
+   原本說明字夾在格子兩側，手機寬度放不下只能各自換行，一個在上、一個在下 */
+.sv-scale{display:grid;grid-template-columns:repeat(var(--n,5),minmax(44px,1fr));gap:8px;max-width:360px}
+.sv-ends{grid-column:1/-1;display:flex;justify-content:space-between;gap:12px;font-size:13.5px;color:var(--muted)}
 .sv-pt{position:relative;cursor:pointer}
 .sv-pt input{position:absolute;opacity:0;width:1px;height:1px}
 .sv-pt span{
-  display:grid;place-items:center;width:44px;height:44px;font-size:17px;
+  display:grid;place-items:center;width:100%;height:44px;font-size:17px;
   border:.8px solid var(--line);border-radius:4px;background:var(--card);
 }
 .sv-pt input:checked+span{background:var(--ink);color:var(--paper);border-color:var(--ink)}
@@ -1263,7 +1264,6 @@ a.tr-route:hover{border-color:currentColor}
 .sv-go:disabled{opacity:.55;cursor:wait}
 .sv-done{border-top:.8px solid var(--line);padding-top:clamp(18px,2.6vh,26px);max-width:44em}
 .sv-done p{margin:0 0 10px;font-size:16.5px;line-height:1.8}
-@media (width<460px){ .sv-scale .sv-end{flex-basis:100%} }
 
 /* ── 今日模式浮條 ── */
 .now-bar{position:fixed;inset:auto 0 0;z-index:45;background:var(--ink);color:var(--paper)}
@@ -1572,12 +1572,12 @@ body.editing>#editor{display:block !important}
       {% elif q.type == "paragraph" %}
         <textarea class="sv-in" name="{{ q.entry }}" rows="3" aria-labelledby="{{ qid }}"></textarea>
       {% elif q.type == "scale" %}
-        <div class="sv-scale">
-          <span class="sv-end">{{ q.labels[0] }}</span>
-          {% for n in range(q.min or 1, (q.max or 5) + 1) %}
+        {% set lo, hi = q.min or 1, q.max or 5 %}
+        <div class="sv-scale" style="--n:{{ hi - lo + 1 }}">
+          {% for n in range(lo, hi + 1) %}
           <label class="sv-pt"><input type="radio" name="{{ q.entry }}" value="{{ n }}"><span class="lat">{{ n }}</span></label>
           {% endfor %}
-          <span class="sv-end">{{ q.labels[1] }}</span>
+          <div class="sv-ends" aria-hidden="true"><span>{{ q.labels[0] }}</span><span>{{ q.labels[1] }}</span></div>
         </div>
       {% else %}
         <ul class="sv-opts">
