@@ -139,6 +139,12 @@ python3 render.py .        # 讀 ./trip.json → 產出 行程表.html + PWA 檔
   - **改題目要兩邊一起改**：選項文字必須和表單完全一致，否則 Google 會拒收；新增題目要重抓 entry ID（viewform 頁的 `FB_PUBLIC_LOAD_DATA_`，`[1][1][i][4][0][0]`）
 - 收回覆：`scripts/update_survey.py` 抓試算表「表單回覆 1」的 CSV 匯出網址（Secret `SURVEY_CSV_URL`，試算表需設「知道連結可檢視」），寫成 `survey_responses.json` 並 commit
 - 每日 workflow 的 cron 延長到 11 月就是為了這個
+- **送出就立刻抓**（2026-10-24）：另一個 Apps Script 專案「九州手冊問卷 → 觸發 GitHub 排程」
+  （https://script.google.com/home/projects/1_zws3w-G9jJrnurUINBsqyzgh-XqnW9wN10bGYbRMaiG8BOnNIC6wcKY/edit）
+  對表單裝了「送出時」觸發器，呼叫 GitHub API 的 workflow_dispatch 跑 `takachiho.yml`，約一分鐘後回覆就進 repo
+  - token 是 fine-grained PAT（只限這個 repo、Actions 讀寫），放在該專案「指令碼屬性」的 `GITHUB_TOKEN`；約 30 天後過期，之後就只剩每日排程在抓
+  - 多人同時送出會排隊（workflow 的 `concurrency: pages`），每次都抓全部回覆，不會漏
+  - 觸發失敗看該專案的「執行項目」：401 = token 過期，403/404 = 權限不足
 
 ## 摘要給接手者
 - `live_status` 功能已上線。
